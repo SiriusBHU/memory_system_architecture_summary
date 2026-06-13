@@ -1,0 +1,42 @@
+<svg width="100%" viewBox="0 0 680 550" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>内核内存管理 2A/2B 精修</title>
+<desc>2A 地址空间侧 5 项；2B 物理与回收侧 8 项，含设备/驱动内存、资源隔离与限额、单列的压力与终止。</desc>
+<style>
+svg{font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+--bg:#ffffff;--bd:#e3e3e0;--ink:#1f2024;--ink2:#6b6f76;
+--gf:#f3f4f6;--gs:#cfd3d9;--gi:#3a3f47;
+--tf:#d9efe9;--ts:#74b8a8;--ti:#0f5446;
+--pf:#e9e3f6;--ps:#a489d6;--pi:#4a356f}
+@media (prefers-color-scheme:dark){svg{--bg:#17191d;--bd:#3a3f47;--ink:#e7e9ec;--ink2:#9aa0a8;
+--gf:#2a2e35;--gs:#474d56;--gi:#cdd2d9;
+--tf:#123f39;--ts:#2f7d6e;--ti:#8fd8c8;
+--pf:#2b2547;--ps:#5f4d92;--pi:#cabdee}}
+.bg{fill:var(--bg)}
+.h{font-size:14px;font-weight:600;fill:var(--ink)}
+.s2{font-size:12px;fill:var(--ink2)}
+.purple rect{fill:var(--pf);stroke:var(--ps)}.purple .t{font-size:14px;font-weight:500;fill:var(--pi)}.purple .s{font-size:12px;fill:var(--pi);opacity:.9}
+.teal rect{fill:var(--tf);stroke:var(--ts)}.teal .t{font-size:14px;font-weight:500;fill:var(--ti)}.teal .s{font-size:12px;fill:var(--ti);opacity:.9}
+</style>
+<rect class="bg" x="0" y="0" width="680" height="550"/>
+<text class="h" x="40" y="44">② 操作系统内存管理（内核）· 精修</text>
+<text class="s2" x="40" y="66">2A 地址空间侧 ↔ 2B 物理与回收侧：缺页→建页表，回收→拆页表·换出</text>
+<text class="h" x="40" y="92">2A 地址空间侧</text>
+<text class="h" x="352" y="92">2B 物理与回收侧</text>
+<g class="purple">
+<rect x="40" y="100" width="288" height="48" rx="6"/><text class="t" x="52" y="121">页表管理 PGD~PTE</text><text class="s" x="52" y="138">多级页表 · TTBR0/1 · MMU 遍历</text>
+<rect x="40" y="154" width="288" height="48" rx="6"/><text class="t" x="52" y="175">VMA 管理</text><text class="s" x="52" y="192">vm_area_struct · maple tree</text>
+<rect x="40" y="208" width="288" height="48" rx="6"/><text class="t" x="52" y="229">缺页处理 page fault</text><text class="s" x="52" y="246">minor / major</text>
+<rect x="40" y="262" width="288" height="48" rx="6"/><text class="t" x="52" y="283">按需分页 · COW</text><text class="s" x="52" y="300">惰性分配 · 写时复制</text>
+<rect x="40" y="316" width="288" height="48" rx="6"/><text class="t" x="52" y="337">地址空间布局</text><text class="s" x="52" y="354">用户区 / 内核区 · TTBR0/1</text>
+</g>
+<g class="teal">
+<rect x="352" y="100" width="288" height="48" rx="6"/><text class="t" x="364" y="121">物理页管理</text><text class="s" x="364" y="138">伙伴系统 · Zone · 页帧 · 水线</text>
+<rect x="352" y="154" width="288" height="48" rx="6"/><text class="t" x="364" y="175">内核分配器</text><text class="s" x="364" y="192">slab · slub · vmalloc</text>
+<rect x="352" y="208" width="288" height="48" rx="6"/><text class="t" x="364" y="229">设备 / 驱动内存（DMA·GPU）</text><text class="s" x="364" y="246">dma-buf · CMA · GPU 显存（pinned）</text>
+<rect x="352" y="262" width="288" height="48" rx="6"/><text class="t" x="364" y="283">LRU 链</text><text class="s" x="364" y="300">匿名页 · 文件页 · MGLRU</text>
+<rect x="352" y="316" width="288" height="48" rx="6"/><text class="t" x="364" y="337">page cache 页缓存</text><text class="s" x="364" y="354">文件页 = file LRU</text>
+<rect x="352" y="370" width="288" height="48" rx="6"/><text class="t" x="364" y="391">回收与换页</text><text class="s" x="364" y="408">kswapd · shrinker · force · zram</text>
+<rect x="352" y="424" width="288" height="48" rx="6"/><text class="t" x="364" y="445">资源隔离与限额（memcg）</text><text class="s" x="364" y="462">cgroup 统计 · 限额 · per-memcg LRU</text>
+<rect x="352" y="478" width="288" height="48" rx="6"/><text class="t" x="364" y="499">压力与终止</text><text class="s" x="364" y="516">PSI + 水线 → LMK/LMKD → OOM</text>
+</g>
+</svg>
