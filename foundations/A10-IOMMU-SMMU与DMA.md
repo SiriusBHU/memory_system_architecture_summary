@@ -99,7 +99,7 @@ IOMMU 最早的两个动机都很"工程"：一是**让 32 位老设备访问 4G
 | 设备缺页机制 | SMMUv3 **stall**（平台设备）/ PRI（PCIe） | **ATS + PRI** |
 | 典型受益方 | GPU / NPU 共享应用 VA、相机/编解码大缓冲 DMA | 加速器（DSA 等）、SR-IOV 直通 |
 
-> iOS / XNU 的 DART（Apple 自研 IOMMU）有独立实现与术语，本系列暂 **（待核实 / 留待 A14 平台对照）**。
+> iOS / XNU 的 DART（Apple 自研 IOMMU）有独立实现与术语，见 [A14 · iOS/Darwin 平台对照](../platforms/A14-iOS-Darwin-内存实现.md)。
 
 ## 6. 趋势与未解问题
 
@@ -140,4 +140,4 @@ IOMMU 最早的两个动机都很"工程"：一是**让 32 位老设备访问 4G
 - DMA API / IOVA / strict-vs-deferred：[Dynamic DMA mapping using the generic device (内核文档)](https://docs.kernel.org/core-api/dma-api.html)、[drivers/iommu/dma-iommu.c (torvalds/linux)](https://github.com/torvalds/linux/blob/master/drivers/iommu/dma-iommu.c)
 - AMD SVA 进展（版本旁证）：[AMD Closing In On IOMMU SVA Support For Linux (Phoronix)](https://www.phoronix.com/news/AMD-IOMMU-SVA-Nears)
 
-> **待核实 / 待补**：SVA-on-ARM（SMMUv3）首个稳定合入的内核版本号；iOS/XNU 的 DART 实现与术语（留待 [A14 平台对照]）；机密计算对 IOMMU stage-2 信任模型的具体要求；deferred-flush 在 AOSP/厂商 BSP 的默认取值。
+> **待核实 / 待补**：SVA-on-ARM（SMMUv3）首个稳定合入的内核版本号；iOS/XNU 的 DART 实现与术语（见 [A14 · iOS/Darwin 平台对照](../platforms/A14-iOS-Darwin-内存实现.md)）；机密计算对 IOMMU stage-2 信任模型的具体要求；deferred-flush 在 AOSP/厂商 BSP 的默认取值。
