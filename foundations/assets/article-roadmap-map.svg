@@ -1,0 +1,81 @@
+<svg width="100%" viewBox="0 0 720 780" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>内存管理连载 · 模块层级与演进/篇幅地图</title>
+<desc>按四层架构（用户态 / 内核 2A 地址空间侧 / 内核 2B 物理与回收侧 / 硬件 / 存储与前沿 / 邻接存储 I/O 栈）分组各子模块，按演进速度着色为稳定薄、中等、演进厚三档，标注演进热点⚡与对演进强耦合的稳定模块🔗，并把每个子模块映射到对应文章编号。</desc>
+<style>
+svg{font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+--bg:#ffffff;--cardf:#fafafa;--bd:#e3e3e0;--ink:#1f2024;--ink2:#6b6f76;
+--c1:#9aa1aa;--c2:#3f9b87;--c3:#6f5bcc;--t2f:#eef6f3;--t3f:#f1ecfb}
+@media (prefers-color-scheme:dark){svg{--bg:#17191d;--cardf:#212429;--bd:#3a3f47;--ink:#e7e9ec;--ink2:#9aa0a8;
+--c1:#8a929b;--c2:#4db39c;--c3:#9080e2;--t2f:#15302b;--t3f:#231d40}}
+.bg{fill:var(--bg)}
+.title{font-size:15px;font-weight:600;fill:var(--ink)}
+.band{fill:none;stroke:var(--bd)}
+.h{font-size:12.5px;font-weight:600;fill:var(--ink2)}
+.chip rect{stroke-width:1.2}
+.t1 rect{fill:var(--cardf);stroke:var(--c1)}
+.t2 rect{fill:var(--t2f);stroke:var(--c2)}
+.t3 rect{fill:var(--t3f);stroke:var(--c3);stroke-width:1.7}
+.n{font-size:12.5px;font-weight:600;fill:var(--ink)}
+.s{font-size:10.5px;fill:var(--ink2)}
+.bt{font-size:8.5px;fill:var(--ink2);font-family:ui-monospace,monospace;text-anchor:end}
+.lg{font-size:10.5px;fill:var(--ink2)}
+.note{font-size:10.5px;fill:var(--ink2)}
+</style>
+<rect class="bg" x="0" y="0" width="720" height="780"/>
+<text class="title" x="16" y="26">内存管理连载 · 模块层级与演进/篇幅地图</text>
+
+<rect class="t1" x="16" y="38" width="13" height="13" rx="3" style="fill:var(--cardf);stroke:var(--c1)"/><text class="lg" x="34" y="48">稳定薄</text>
+<rect x="84" y="38" width="13" height="13" rx="3" style="fill:var(--t2f);stroke:var(--c2)"/><text class="lg" x="102" y="48">中等</text>
+<rect x="146" y="38" width="13" height="13" rx="3" style="fill:var(--t3f);stroke:var(--c3);stroke-width:1.7"/><text class="lg" x="164" y="48">演进厚</text>
+<text class="lg" x="222" y="48">⚡ 演进热点</text>
+<text class="lg" x="316" y="48">🔗 与演进强耦合的稳定模块（也加厚）</text>
+<text class="lg" x="572" y="48">A# 文章号</text>
+
+<rect class="band" x="16" y="66" width="688" height="86" rx="10"/>
+<text class="h" x="28" y="85">① 用户态 user space</text>
+<g class="t1"><rect x="30" y="96" width="150" height="44" rx="8"/><text class="n" x="39" y="114">进程地址空间</text><text class="s" x="39" y="130">堆·栈·代码·映射</text><text class="bt" x="171" y="110">A1</text></g>
+<g class="t1"><rect x="198" y="96" width="150" height="44" rx="8"/><text class="n" x="207" y="114">用户态分配器</text><text class="s" x="207" y="130">scudo·libmalloc</text><text class="bt" x="339" y="110">A1</text></g>
+<g class="t2"><rect x="366" y="96" width="150" height="44" rx="8"/><text class="n" x="375" y="114">内存系统调用</text><text class="s" x="375" y="130">mmap·madvise</text><text class="bt" x="507" y="110">A1</text></g>
+<g class="t2"><rect x="534" y="96" width="150" height="44" rx="8"/><text class="n" x="543" y="114">内存度量</text><text class="s" x="543" y="130">VSS·RSS·PSS</text><text class="bt" x="675" y="110">A13</text></g>
+
+<rect class="band" x="16" y="162" width="688" height="86" rx="10"/>
+<text class="h" x="28" y="181">② 内核 · 2A 地址空间侧（"该映射成什么"）</text>
+<g class="t3"><rect x="30" y="192" width="150" height="44" rx="8"/><text class="n" x="39" y="210">VMA 管理 🔗</text><text class="s" x="39" y="226">maple tree</text><text class="bt" x="171" y="206">A1</text></g>
+<g class="t3"><rect x="198" y="192" width="150" height="44" rx="8"/><text class="n" x="207" y="210">页表 PGD~PTE 🔗</text><text class="s" x="207" y="226">多级·TTBR0/1</text><text class="bt" x="339" y="206">A1</text></g>
+<g class="t2"><rect x="366" y="192" width="150" height="44" rx="8"/><text class="n" x="375" y="210">缺页处理</text><text class="s" x="375" y="226">minor·major</text><text class="bt" x="507" y="206">A2</text></g>
+<g class="t1"><rect x="534" y="192" width="150" height="44" rx="8"/><text class="n" x="543" y="210">按需分页·COW</text><text class="s" x="543" y="226">fork·Zygote</text><text class="bt" x="675" y="206">A2</text></g>
+
+<rect class="band" x="16" y="258" width="688" height="198" rx="10"/>
+<text class="h" x="28" y="277">② 内核 · 2B 物理与回收侧（"先踢谁"）</text>
+<g class="t1"><rect x="30" y="288" width="150" height="44" rx="8"/><text class="n" x="39" y="306">伙伴系统·水线</text><text class="s" x="39" y="322">Zone·watermark</text><text class="bt" x="171" y="302">A3</text></g>
+<g class="t1"><rect x="198" y="288" width="150" height="44" rx="8"/><text class="n" x="207" y="306">内核分配器</text><text class="s" x="207" y="322">slab·slub</text><text class="bt" x="339" y="302">A3</text></g>
+<g class="t2"><rect x="366" y="288" width="150" height="44" rx="8"/><text class="n" x="375" y="306">回收</text><text class="s" x="375" y="322">kswapd·shrinker</text><text class="bt" x="507" y="302">A4</text></g>
+<g class="t3"><rect x="534" y="288" width="150" height="44" rx="8"/><text class="n" x="543" y="306">LRU 冷热 ⚡</text><text class="s" x="543" y="322">MGLRU·DAMON</text><text class="bt" x="675" y="302">A5</text></g>
+<g class="t3"><rect x="30" y="344" width="150" height="44" rx="8"/><text class="n" x="39" y="362">换页 ⚡</text><text class="s" x="39" y="378">zram·zswap</text><text class="bt" x="171" y="358">A6</text></g>
+<g class="t2"><rect x="198" y="344" width="150" height="44" rx="8"/><text class="n" x="207" y="362">page cache</text><text class="s" x="207" y="378">文件页·file LRU</text><text class="bt" x="339" y="358">A11</text></g>
+<g class="t3"><rect x="366" y="344" width="150" height="44" rx="8"/><text class="n" x="375" y="362">memcg ⚡</text><text class="s" x="375" y="378">cgroup v2·限额</text><text class="bt" x="507" y="358">A7</text></g>
+<g class="t3"><rect x="534" y="344" width="150" height="44" rx="8"/><text class="n" x="543" y="362">压力与终止 ⚡</text><text class="s" x="543" y="378">PSI·LMKD·Jetsam</text><text class="bt" x="675" y="358">A8</text></g>
+<g class="t3"><rect x="30" y="400" width="150" height="44" rx="8"/><text class="n" x="39" y="418">设备内存 ⚡</text><text class="s" x="39" y="434">dma-buf·CMA·GPU</text><text class="bt" x="171" y="414">A9</text></g>
+<g class="t3"><rect x="198" y="400" width="150" height="44" rx="8"/><text class="n" x="207" y="418">大页·页粒度 ⚡🔗</text><text class="s" x="207" y="434">THP·folios·16KB</text><text class="bt" x="339" y="414">A12</text></g>
+<g class="t1"><rect x="366" y="400" width="150" height="44" rx="8"/><text class="n" x="375" y="418">共享去重</text><text class="s" x="375" y="434">KSM·memfd</text><text class="bt" x="507" y="414">A13</text></g>
+
+<rect class="band" x="16" y="466" width="688" height="86" rx="10"/>
+<text class="h" x="28" y="485">③ 内存管理硬件</text>
+<g class="t2"><rect x="30" y="496" width="150" height="44" rx="8"/><text class="n" x="39" y="514">MMU·TLB</text><text class="s" x="39" y="530">虚实转换·失效</text><text class="bt" x="171" y="510">A1</text></g>
+<g class="t3"><rect x="198" y="496" width="150" height="44" rx="8"/><text class="n" x="207" y="514">IOMMU/SMMU ⚡🔗</text><text class="s" x="207" y="530">SVA·页表共享</text><text class="bt" x="339" y="510">A10</text></g>
+<g class="t1"><rect x="366" y="496" width="150" height="44" rx="8"/><text class="n" x="375" y="514">内存控制器</text><text class="s" x="375" y="530">DRAM·LPDDR</text><text class="bt" x="507" y="510">—</text></g>
+
+<rect class="band" x="16" y="562" width="688" height="86" rx="10"/>
+<text class="h" x="28" y="581">④ 存储层级 · 前沿</text>
+<g class="t1"><rect x="30" y="592" width="150" height="44" rx="8"/><text class="n" x="39" y="610">存储金字塔</text><text class="s" x="39" y="626">寄存器→缓存→闪存</text><text class="bt" x="171" y="606">00</text></g>
+<g class="t3"><rect x="198" y="592" width="150" height="44" rx="8"/><text class="n" x="207" y="610">分层内存 ⚡</text><text class="s" x="207" y="626">CXL·tiered·far</text><text class="bt" x="339" y="606">A15</text></g>
+
+<rect class="band" x="16" y="658" width="688" height="86" rx="10"/>
+<text class="h" x="28" y="677">邻接子系统 · 存储 I/O 栈（仅交界纳入）</text>
+<g class="t1"><rect x="30" y="688" width="150" height="44" rx="8"/><text class="n" x="39" y="706">VFS</text><text class="s" x="39" y="722">统一文件接口</text><text class="bt" x="171" y="702">A11</text></g>
+<g class="t2"><rect x="198" y="688" width="150" height="44" rx="8"/><text class="n" x="207" y="706">文件系统</text><text class="s" x="207" y="722">f2fs·ext4·APFS</text><text class="bt" x="339" y="702">A11</text></g>
+<g class="t1"><rect x="366" y="688" width="150" height="44" rx="8"/><text class="n" x="375" y="706">块层·I/O 调度</text><text class="s" x="375" y="722">合并·排序</text><text class="bt" x="507" y="702">A11</text></g>
+<g class="t1"><rect x="534" y="688" width="150" height="44" rx="8"/><text class="n" x="543" y="706">驱动·设备</text><text class="s" x="543" y="722">UFS·eMMC</text><text class="bt" x="675" y="702">A11</text></g>
+
+<text class="note" x="16" y="766">🔗 与演进强耦合的稳定模块（页表↔IOMMU/SVA、页表↔folios/大页）也按"演进厚"写；模块间的依赖边见 01 文档内嵌的 Mermaid 源。</text>
+</svg>
