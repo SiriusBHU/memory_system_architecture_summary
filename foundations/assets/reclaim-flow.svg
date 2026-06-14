@@ -1,0 +1,109 @@
+<svg width="100%" viewBox="0 0 1080 700" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>回收机制完整路径</title>
+<desc>四类触发(水线/分配慢路径/memcg超限/主动回收)进入回收入口；定作用域→扫LRU选页(A05)→逐页rmap解映射刷TLB(A01)→分三路:文件干净页直接丢、文件脏页回写到文件系统(A11)、匿名页换出zram/swap(A06)；并行shrink_slab缩slab(A03)；释放页还给伙伴系统;复查水线,够则停、不够则升级到LMKD/Jetsam/OOM(A08)杀进程还页。</desc>
+<style>
+svg{font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+--bg:#ffffff;--ink:#1f2024;--ink2:#6b6f76;--arrow:#7d858e;--red:#d65a5a}
+@media (prefers-color-scheme:dark){svg{--bg:#17191d;--ink:#e7e9ec;--ink2:#9aa0a8;--arrow:#8a929b;--red:#e07676}}
+.bg{fill:var(--bg)}
+.title{font-size:13px;font-weight:600;fill:var(--ink)}
+.h{font-size:11.5px;font-weight:600;fill:var(--ink)}
+.s{font-size:9.5px;fill:var(--ink2)}
+.lb{font-size:9.5px;fill:var(--ink2)}
+.neu{fill:rgba(127,127,127,.08);stroke:#9aa1aa;stroke-width:1.2}
+.pr{fill:rgba(79,163,145,.12);stroke:#3f9b87;stroke-width:1.2}
+.am{fill:rgba(201,138,46,.12);stroke:#c98a2e;stroke-width:1.2}
+.bl{fill:rgba(74,127,208,.12);stroke:#4a7fd0;stroke-width:1.2}
+.rd{fill:rgba(214,90,90,.12);stroke:var(--red);stroke-width:1.2}
+.f{stroke:var(--arrow);stroke-width:1.5;fill:none}
+.fr{stroke:var(--red);stroke-width:1.4;fill:none;stroke-dasharray:5 4}
+.fl{stroke:var(--arrow);stroke-width:1.3;fill:none;stroke-dasharray:5 4}
+</style>
+<defs>
+<marker id="m" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--arrow)"/></marker>
+<marker id="mr" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--red)"/></marker>
+</defs>
+<rect class="bg" x="0" y="0" width="1080" height="700"/>
+
+<text class="title" x="18" y="22">回收机制完整路径：触发 → 选页 → 解映射 → 干净丢/脏回写/匿名换出 → 还页 → 兜底升级</text>
+
+<rect class="neu" x="24" y="42" width="212" height="52" rx="8"/>
+<text class="h" x="36" y="63">① 水线 watermark</text>
+<text class="s" x="36" y="81">low→kswapd · min→直接回收</text>
+<rect class="neu" x="250" y="42" width="176" height="52" rx="8"/>
+<text class="h" x="262" y="63">② 分配慢路径</text>
+<text class="s" x="262" y="81">拿不到页→直接回收</text>
+<rect class="neu" x="440" y="42" width="196" height="52" rx="8"/>
+<text class="h" x="452" y="63">③ memcg 超限 (A07)</text>
+<text class="s" x="452" y="81">high 节流 / max→组内 OOM</text>
+<rect class="neu" x="650" y="42" width="212" height="52" rx="8"/>
+<text class="h" x="662" y="63">④ 主动 / 压力回收</text>
+<text class="s" x="662" y="81">memory.reclaim · madvise · PSI</text>
+
+<line class="f" x1="130" y1="94" x2="388" y2="126" marker-end="url(#m)"/>
+<line class="f" x1="338" y1="94" x2="452" y2="126" marker-end="url(#m)"/>
+<line class="f" x1="538" y1="94" x2="510" y2="126" marker-end="url(#m)"/>
+<line class="f" x1="756" y1="94" x2="585" y2="126" marker-end="url(#m)"/>
+
+<rect class="pr" x="240" y="128" width="440" height="48" rx="8"/>
+<text class="h" x="256" y="150">回收入口：kswapd(后台) / 直接回收(阻塞) / per-memcg</text>
+<text class="s" x="256" y="167">→ shrink_node · shrink_lruvec · shrink_slab</text>
+<line class="f" x1="460" y1="176" x2="460" y2="196" marker-end="url(#m)"/>
+
+<rect class="pr" x="300" y="196" width="320" height="44" rx="8"/>
+<text class="h" x="316" y="223">① 定作用域：全局 / per-memcg (A07)</text>
+<line class="f" x1="460" y1="240" x2="460" y2="258" marker-end="url(#m)"/>
+<rect class="pr" x="300" y="258" width="320" height="52" rx="8"/>
+<text class="h" x="316" y="281">② 扫 LRU 选页 (A05)</text>
+<text class="s" x="316" y="299">active→inactive · swappiness · MGLRU</text>
+<line class="f" x1="460" y1="310" x2="460" y2="332" marker-end="url(#m)"/>
+<rect class="pr" x="300" y="332" width="320" height="48" rx="8"/>
+<text class="h" x="316" y="355">③ rmap 反向解映射 + 刷 TLB (A01)</text>
+<text class="s" x="316" y="372">对每个候选页</text>
+
+<rect class="bl" x="720" y="320" width="320" height="40" rx="8"/>
+<text class="h" x="734" y="344">文件·干净页 → 直接丢弃（最便宜·零写）</text>
+<rect class="bl" x="720" y="372" width="320" height="46" rx="8"/>
+<text class="h" x="734" y="392">文件·脏页 → 回写</text>
+<text class="s" x="734" y="409">→ 文件系统 / 块层 / 设备 (A11)</text>
+<rect class="am" x="720" y="430" width="320" height="46" rx="8"/>
+<text class="h" x="734" y="450">匿名页 → 换出</text>
+<text class="s" x="734" y="467">→ zram / swap (A06)</text>
+
+<path class="f" d="M620,356 C680,356 680,340 720,340" marker-end="url(#m)"/>
+<path class="f" d="M620,356 C690,356 690,395 720,395" marker-end="url(#m)"/>
+<path class="f" d="M620,356 C680,356 680,453 720,453" marker-end="url(#m)"/>
+
+<rect class="neu" x="24" y="332" width="210" height="50" rx="8"/>
+<text class="h" x="36" y="354">shrink_slab → shrinker</text>
+<text class="s" x="36" y="371">缩 dentry/inode slab 缓存 (A03)</text>
+<path class="f" d="M300,162 C190,172 129,290 129,332" marker-end="url(#m)"/>
+<text class="lb" x="150" y="250">并行</text>
+
+<rect class="pr" x="300" y="496" width="320" height="44" rx="8"/>
+<text class="h" x="316" y="523">④ 释放页 → 还给伙伴系统 (A03)</text>
+<path class="f" d="M720,340 C660,360 660,505 620,512" marker-end="url(#m)"/>
+<path class="f" d="M720,395 C665,412 665,508 620,518" marker-end="url(#m)"/>
+<path class="f" d="M720,453 C685,470 685,510 620,524" marker-end="url(#m)"/>
+<path class="f" d="M234,357 C292,400 292,505 300,514" marker-end="url(#m)"/>
+
+<rect class="am" x="300" y="560" width="320" height="46" rx="8"/>
+<text class="h" x="316" y="582">伙伴系统：空闲页恢复、水线回升</text>
+<text class="s" x="316" y="599">满足分配 / kswapd 回到 high 睡下</text>
+<line class="f" x1="460" y1="540" x2="460" y2="560" marker-end="url(#m)"/>
+
+<rect class="pr" x="300" y="624" width="320" height="44" rx="8"/>
+<text class="h" x="316" y="651">复查水线：够 → 停 ／ 不够 → 升级</text>
+<line class="f" x1="460" y1="606" x2="460" y2="624" marker-end="url(#m)"/>
+
+<rect class="rd" x="720" y="620" width="320" height="52" rx="8"/>
+<text class="h" x="734" y="643">回收追不上 → 压力升级</text>
+<text class="s" x="734" y="661">PSI↑ → LMKD / Jetsam / OOM (A08)</text>
+<line class="f" x1="620" y1="646" x2="720" y2="646" marker-end="url(#m)"/>
+<text class="lb" x="664" y="639">不够</text>
+<path class="fr" d="M880,672 C880,706 460,706 460,608" marker-end="url(#mr)"/>
+<text class="lb" x="560" y="700">杀进程还页 ↩</text>
+
+<path class="fl" d="M300,583 H14 V70 H24" marker-end="url(#m)"/>
+<text class="lb" x="16" y="330" transform="rotate(-90 16 330)">空闲恢复 → 水线回升 ↺</text>
+</svg>
