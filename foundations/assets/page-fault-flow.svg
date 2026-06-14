@@ -1,0 +1,137 @@
+<svg width="100%" viewBox="0 0 1060 600" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>缺页处理修正流程</title>
+<desc>触发条件为 PTE 无效或写只读；查 VMA 合法性，非法则 SIGSEGV；合法后先判是否写保护错（COW），否则按页不在分匿名/文件、minor/major；已换出走换页 swap-in 而非回收；内存不足时伙伴系统级联触发回收再触发查杀；收尾回填 PTE 并在 COW 时刷 TLB，重执行指令。</desc>
+<style>
+svg{font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+--bg:#ffffff;--ink:#1f2024;--ink2:#6b6f76;--arrow:#7d858e;--red:#d65a5a}
+@media (prefers-color-scheme:dark){svg{--bg:#17191d;--ink:#e7e9ec;--ink2:#9aa0a8;--arrow:#8a929b;--red:#e07676}}
+.bg{fill:var(--bg)}
+.title{font-size:13px;font-weight:600;fill:var(--ink)}
+.h{font-size:11.5px;font-weight:600;fill:var(--ink)}
+.s{font-size:9.5px;fill:var(--ink2)}
+.tg{font-size:9px;fill:var(--ink2);font-style:italic}
+.lb{font-size:9.5px;fill:var(--ink2)}
+.neu{fill:rgba(127,127,127,.08);stroke:#9aa1aa;stroke-width:1.2}
+.am{fill:rgba(201,138,46,.12);stroke:#c98a2e;stroke-width:1.2}
+.bl{fill:rgba(74,127,208,.12);stroke:#4a7fd0;stroke-width:1.2}
+.rd{fill:rgba(214,90,90,.12);stroke:var(--red);stroke-width:1.2}
+.seg{fill:rgba(214,90,90,.10);stroke:var(--red);stroke-width:1.2;stroke-dasharray:5 3}
+.f{stroke:var(--arrow);stroke-width:1.5;fill:none}
+.fr{stroke:var(--red);stroke-width:1.4;fill:none;stroke-dasharray:5 4}
+</style>
+<defs>
+<marker id="m" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--arrow)"/></marker>
+<marker id="mr" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--red)"/></marker>
+</defs>
+<rect class="bg" x="0" y="0" width="1060" height="600"/>
+
+<text class="title" x="18" y="22">缺页处理（修正版）：触发 → 查 VMA → 写保护错? → 分流要页/读入 → 回填 PTE → 重执行</text>
+
+<rect class="neu" x="24" y="42" width="200" height="54" rx="8"/>
+<text class="h" x="38" y="64">① MMU 翻译 VA→PA</text>
+<text class="s" x="38" y="82">PTE 无效 / 写只读 → 触发缺页</text>
+<rect class="neu" x="24" y="110" width="200" height="50" rx="8"/>
+<text class="h" x="38" y="131">② do_page_fault</text>
+<text class="s" x="38" y="149">→ handle_mm_fault</text>
+<rect class="neu" x="24" y="174" width="200" height="44" rx="8"/>
+<text class="h" x="38" y="201">③ 查 VMA：合法？</text>
+<rect class="neu" x="24" y="238" width="200" height="52" rx="8"/>
+<text class="h" x="38" y="259">④ 写保护错？(写只读页)</text>
+<text class="s" x="38" y="277">PTE 有效但不可写 → COW</text>
+<rect class="neu" x="24" y="318" width="200" height="44" rx="8"/>
+<text class="h" x="38" y="345">⑤ 页不在 → 匿名 / 文件</text>
+
+<line class="f" x1="124" y1="96" x2="124" y2="110" marker-end="url(#m)"/>
+<line class="f" x1="124" y1="160" x2="124" y2="174" marker-end="url(#m)"/>
+<line class="f" x1="124" y1="218" x2="124" y2="238" marker-end="url(#m)"/>
+<line class="f" x1="124" y1="290" x2="124" y2="318" marker-end="url(#m)"/>
+<text class="lb" x="130" y="310">否·页不在</text>
+
+<line class="f" x1="224" y1="196" x2="300" y2="196" marker-end="url(#m)"/>
+<text class="lb" x="250" y="189">非法</text>
+<rect class="seg" x="300" y="177" width="150" height="38" rx="8"/>
+<text class="h" x="314" y="200">非法 → SIGSEGV ✕</text>
+
+<line class="f" x1="224" y1="264" x2="300" y2="264" marker-end="url(#m)"/>
+<text class="lb" x="252" y="257">是</text>
+
+<rect class="am" x="300" y="244" width="160" height="44" rx="8"/>
+<text class="h" x="314" y="265">COW 写时复制</text>
+<text class="tg" x="314" y="281">minor · 无 I/O</text>
+<rect class="am" x="300" y="320" width="160" height="40" rx="8"/>
+<text class="h" x="314" y="338">匿名 · 首次访问</text>
+<text class="tg" x="314" y="353">minor</text>
+<rect class="am" x="300" y="378" width="160" height="40" rx="8"/>
+<text class="h" x="314" y="396">匿名 · 已换出</text>
+<text class="tg" x="314" y="411">major</text>
+<rect class="bl" x="300" y="436" width="160" height="40" rx="8"/>
+<text class="h" x="314" y="454">文件 · 命中 cache</text>
+<text class="tg" x="314" y="469">minor</text>
+<rect class="bl" x="300" y="494" width="160" height="40" rx="8"/>
+<text class="h" x="314" y="512">文件 · 未命中</text>
+<text class="tg" x="314" y="527">major</text>
+
+<line class="f" x1="224" y1="340" x2="300" y2="340" marker-end="url(#m)"/>
+<path class="f" d="M224,340 C262,340 262,398 300,398" marker-end="url(#m)"/>
+<path class="f" d="M224,340 C252,340 252,456 300,456" marker-end="url(#m)"/>
+<path class="f" d="M224,340 C246,340 246,514 300,514" marker-end="url(#m)"/>
+
+<rect class="am" x="486" y="244" width="216" height="44" rx="8"/>
+<text class="s" x="498" y="263">拷贝原页 ／ 独占则复用</text>
+<text class="s" x="498" y="279">→ 私有匿名页（COW 后刷 TLB）</text>
+<rect class="am" x="486" y="320" width="216" height="40" rx="8"/>
+<text class="s" x="498" y="338">写 → 要零页 ／ 读 → 映射只读零页</text>
+<rect class="am" x="486" y="378" width="216" height="40" rx="8"/>
+<text class="s" x="498" y="396">swap-in：zram 解压 ／ swap 读回</text>
+<rect class="bl" x="486" y="436" width="216" height="40" rx="8"/>
+<text class="s" x="498" y="454">把 cache 页直接映射进 PTE</text>
+<rect class="bl" x="486" y="494" width="216" height="40" rx="8"/>
+<text class="s" x="498" y="512">经文件系统读入 page cache（含预读）</text>
+
+<line class="f" x1="460" y1="266" x2="486" y2="266" marker-end="url(#m)"/>
+<line class="f" x1="460" y1="340" x2="486" y2="340" marker-end="url(#m)"/>
+<line class="f" x1="460" y1="398" x2="486" y2="398" marker-end="url(#m)"/>
+<line class="f" x1="460" y1="456" x2="486" y2="456" marker-end="url(#m)"/>
+<line class="f" x1="460" y1="514" x2="486" y2="514" marker-end="url(#m)"/>
+
+<rect class="am" x="738" y="244" width="150" height="120" rx="8"/>
+<text class="h" x="752" y="298">伙伴系统</text>
+<text class="s" x="752" y="316">物理页（buddy）</text>
+<rect class="am" x="738" y="378" width="150" height="40" rx="8"/>
+<text class="h" x="752" y="403">换页 zram / swap</text>
+<rect class="bl" x="738" y="436" width="150" height="40" rx="8"/>
+<text class="h" x="752" y="461">page cache</text>
+<rect class="bl" x="738" y="494" width="150" height="40" rx="8"/>
+<text class="s" x="752" y="518">文件系统→块层→设备</text>
+
+<line class="f" x1="702" y1="266" x2="738" y2="290" marker-end="url(#m)"/>
+<line class="f" x1="702" y1="340" x2="738" y2="330" marker-end="url(#m)"/>
+<line class="f" x1="702" y1="398" x2="738" y2="398" marker-end="url(#m)"/>
+<line class="f" x1="702" y1="456" x2="738" y2="456" marker-end="url(#m)"/>
+<line class="f" x1="702" y1="514" x2="738" y2="514" marker-end="url(#m)"/>
+<line class="f" x1="813" y1="494" x2="813" y2="476" marker-end="url(#m)"/>
+<text class="lb" x="818" y="488">填入</text>
+
+<rect class="rd" x="738" y="150" width="150" height="42" rx="8"/>
+<text class="h" x="752" y="176">回收系统 (A04)</text>
+<rect class="rd" x="738" y="74" width="150" height="42" rx="8"/>
+<text class="h" x="752" y="100">查杀 LMKD/OOM (A08)</text>
+<line class="fr" x1="775" y1="244" x2="775" y2="194" marker-end="url(#mr)"/>
+<line class="fr" x1="775" y1="150" x2="775" y2="118" marker-end="url(#mr)"/>
+<text class="lb" x="900" y="222">↑ 内存不足</text>
+<text class="lb" x="900" y="138">↑ 回收不够</text>
+<path class="fr" d="M888,95 C935,95 935,300 888,300" marker-end="url(#mr)"/>
+<text class="lb" x="942" y="200">杀/回收</text>
+<text class="lb" x="942" y="214">→ 还页</text>
+
+<rect class="neu" x="300" y="552" width="402" height="38" rx="8"/>
+<text class="h" x="314" y="575">回填 PTE（建立/更新映射；COW/权限升级 → 刷 TLB）</text>
+<rect class="neu" x="24" y="552" width="252" height="38" rx="8"/>
+<text class="h" x="38" y="575">返回 → 重执行指令 → 翻译成功</text>
+
+<path class="f" d="M813,364 V544 H702" marker-end="url(#m)"/>
+<text class="lb" x="636" y="540">拿到页/数据 →</text>
+<line class="f" x1="300" y1="571" x2="276" y2="571" marker-end="url(#m)"/>
+<path class="f" d="M24,571 H10 V70 H24" marker-end="url(#m)"/>
+<text class="lb" x="120" y="585">↩ 重执行回到 MMU</text>
+</svg>
