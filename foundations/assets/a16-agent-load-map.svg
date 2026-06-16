@@ -1,0 +1,65 @@
+<svg width="100%" viewBox="0 0 772 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="a16title a16desc">
+<title id="a16title">A16 · Agent 时代内存负载 → 下一代系统 × 芯片协同设计二维地图</title>
+<desc id="a16desc">横轴为系统设计（左）与芯片设计（右），纵向按三特征着色：异构（紫）、增长（青）、冷热（橙）。九个主题落格：异构行（芯片侧）A16e IOMMU 统一内存、A16g DRAM·PIM 协同；A16f 端侧 KV Cache 管理为跨系统/芯片、异构+增长的桥接篇；增长行系统侧 A16c 异构压缩 CDSD、A16d 压缩 IP 边际建模，芯片侧 A16h STT/SOT-MRAM、A16i 端侧 UFS-HBF；冷热行系统侧 A16a LRU 主动扫描、A16b XVM(eBPF) LRU，芯片侧为硬件辅助访问统计趋势。立论：Agent 负载叠加而非替换传统前后台负载，同处一块 LPDDR 竞争。对应 advanced/A16-前沿-Agent时代内存负载.md。</desc>
+<style>
+svg{font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+--bg:#ffffff;--bd:#e3e3e0;--ink:#1f2024;--ink2:#6b6f76;--axis:#b3b8bf;
+--het:#6f5bcc;--hetf:#f1ecfb;--grow:#3f9b87;--growf:#eef6f3;--ht:#bf8a2c;--htf:#f7f0e1;--br:#3a6ea5;--brf:#e8f0f8}
+@media (prefers-color-scheme:dark){svg{--bg:#17191d;--bd:#3a3f47;--ink:#e7e9ec;--ink2:#9aa0a8;--axis:#525861;
+--het:#9080e2;--hetf:#231d40;--grow:#4db39c;--growf:#14302b;--ht:#d6a94e;--htf:#322a16;--br:#6f9fd0;--brf:#1b2735}}
+.bg{fill:var(--bg)}
+.title{font-size:15px;font-weight:600;fill:var(--ink)}
+.sub{font-size:10.5px;fill:var(--ink2)}
+.colh{font-size:12.5px;font-weight:600;fill:var(--ink)}
+.rl{font-size:12px;font-weight:600}
+.div{stroke:var(--axis);stroke-width:1.2;stroke-dasharray:5 4}
+.hu{stroke:var(--bd);stroke-width:1.2}
+.n{font-size:11.5px;font-weight:600;fill:var(--ink)}
+.s{font-size:9.5px;fill:var(--ink2)}
+.bt{font-size:8.5px;fill:var(--ink2);font-family:ui-monospace,monospace;text-anchor:end}
+.note{font-size:10px;fill:var(--ink2)}
+.het rect{fill:var(--hetf);stroke:var(--het);stroke-width:1.3}
+.grow rect{fill:var(--growf);stroke:var(--grow);stroke-width:1.3}
+.ht rect{fill:var(--htf);stroke:var(--ht);stroke-width:1.3}
+.br rect{fill:var(--brf);stroke:var(--br);stroke-width:1.7}
+.ghost{fill:none;stroke:var(--bd);stroke-width:1;stroke-dasharray:4 3}
+.taghet{fill:var(--hetf);stroke:var(--het)}.taggrow{fill:var(--growf);stroke:var(--grow)}.taght{fill:var(--htf);stroke:var(--ht)}
+</style>
+<rect class="bg" x="0" y="0" width="772" height="360"/>
+
+<text class="title" x="386" y="24" text-anchor="middle">A16 · Agent 时代内存负载 → 下一代系统 × 芯片协同设计</text>
+<text class="sub" x="386" y="41" text-anchor="middle">立论：负载叠加而非替换 —— Agent 与传统前后台负载同处一块 LPDDR 竞争</text>
+
+<!-- column headers -->
+<text class="colh" x="246" y="60" text-anchor="middle">下一代系统设计（软件栈）</text>
+<text class="colh" x="604" y="60" text-anchor="middle">下一代芯片设计（硬件 / 介质）</text>
+<line class="hu" x1="92" y1="66" x2="400" y2="66"/>
+<line class="hu" x1="452" y1="66" x2="756" y2="66"/>
+<line class="div" x1="426" y1="72" x2="426" y2="312"/>
+
+<!-- row tags -->
+<g><rect class="taghet" x="14" y="80" width="70" height="52" rx="6"/><text class="rl" x="49" y="103" text-anchor="middle" fill="var(--het)">异构</text><text class="s" x="49" y="119" text-anchor="middle">多 IP 竞争</text></g>
+<g><rect class="taggrow" x="14" y="192" width="70" height="52" rx="6"/><text class="rl" x="49" y="215" text-anchor="middle" fill="var(--grow)">增长</text><text class="s" x="49" y="231" text-anchor="middle">双重增长</text></g>
+<g><rect class="taght" x="14" y="254" width="70" height="52" rx="6"/><text class="rl" x="49" y="277" text-anchor="middle" fill="var(--ht)">冷热</text><text class="s" x="49" y="293" text-anchor="middle">前后台皆热</text></g>
+
+<!-- 异构 band -->
+<g><rect class="ghost" x="92" y="80" width="308" height="52" rx="6"/><text class="note" x="246" y="103" text-anchor="middle">异构竞争在系统侧表现为多任务多 IP 争抢，</text><text class="note" x="246" y="119" text-anchor="middle">硬件侧需统一内存 / 异构介质协同 →</text></g>
+<g class="het"><rect x="452" y="80" width="146" height="52" rx="8"/><text class="n" x="462" y="103">IOMMU 统一内存</text><text class="s" x="462" y="120">异构 PF/LRU 治理 DMA</text><text class="bt" x="590" y="96">A16e</text></g>
+<g class="het"><rect x="610" y="80" width="146" height="52" rx="8"/><text class="n" x="620" y="103">DRAM · PIM 协同</text><text class="s" x="620" y="120">异构介质统一调度</text><text class="bt" x="748" y="96">A16g</text></g>
+
+<!-- A16f bridge -->
+<g class="br"><rect x="150" y="142" width="472" height="40" rx="8"/><text class="n" x="166" y="160">A16f · 端侧 KV Cache 管理</text><text class="s" x="166" y="174">异构 + 增长 · 跨系统/芯片 —— KV 常驻 dma-buf、不走普通 LRU、与传统 app 直接竞争</text><text class="bt" x="612" y="158">桥接</text></g>
+
+<!-- 增长 band -->
+<g class="grow"><rect x="92" y="192" width="150" height="52" rx="8"/><text class="n" x="102" y="215">异构压缩 CDSD</text><text class="s" x="102" y="232">按数据类选压</text><text class="bt" x="234" y="208">A16c</text></g>
+<g class="grow"><rect x="250" y="192" width="150" height="52" rx="8"/><text class="n" x="260" y="215">压缩 IP 边际建模</text><text class="s" x="260" y="232">压多少 · 压多狠</text><text class="bt" x="392" y="208">A16d</text></g>
+<g class="grow"><rect x="452" y="192" width="146" height="52" rx="8"/><text class="n" x="462" y="215">STT/SOT-MRAM</text><text class="s" x="462" y="232">非易失多级缓存</text><text class="bt" x="590" y="208">A16h</text></g>
+<g class="grow"><rect x="610" y="192" width="146" height="52" rx="8"/><text class="n" x="620" y="215">端侧 UFS–HBF</text><text class="s" x="620" y="232">高带宽闪存增强</text><text class="bt" x="748" y="208">A16i</text></g>
+
+<!-- 冷热 band -->
+<g class="ht"><rect x="92" y="254" width="150" height="52" rx="8"/><text class="n" x="102" y="277">LRU 主动扫描</text><text class="s" x="102" y="294">被动 → 主动回收</text><text class="bt" x="234" y="270">A16a</text></g>
+<g class="ht"><rect x="250" y="254" width="150" height="52" rx="8"/><text class="n" x="260" y="277">XVM(eBPF) LRU</text><text class="s" x="260" y="294">冷热策略可编程</text><text class="bt" x="392" y="270">A16b</text></g>
+<g><rect class="ghost" x="452" y="254" width="304" height="52" rx="6"/><text class="note" x="604" y="277" text-anchor="middle">硬件辅助访问统计 / Page Fault 协同</text><text class="note" x="604" y="293" text-anchor="middle">（趋势，见 A16a / A16e）</text></g>
+
+<text class="note" x="386" y="334" text-anchor="middle">配色 = 三特征（异构 / 增长 / 冷热）；横向 = 系统设计（左） ↔ 芯片设计（右）；A16f 跨两侧。</text>
+</svg>
