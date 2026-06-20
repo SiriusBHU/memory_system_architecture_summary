@@ -1,0 +1,249 @@
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><title>DAMOS: Introduce Aim-oriented Feedback-driven Aggressiveness Auto Tuning [LWN.net]</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:title" content="DAMOS: Introduce Aim-oriented Feedback-driven Aggressiveness Auto Tuning">
+<meta property="og:site_name" content="LWN.net">
+<meta property="og:type" content="article">
+<meta property="og:description" content="">
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<META NAME="robots" CONTENT="noai, noimageai">
+        <link rel="icon" href="https://static.lwn.net/images/favicon.png"
+              type="image/png">
+        <link rel="alternate" type="application/rss+xml" title="LWN.net headlines" href="https://lwn.net/headlines/rss">
+        <link rel="stylesheet" href="/CSS/lwn">
+<style>div.MakeALink { display: none }</style>
+
+        
+        </head>
+        <body>
+        <a name="t"></a>
+<div id="menu"><a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/logo/barepenguin-70.webp" class="logo"
+                 border="0" alt="LWN.net Logo">
+            <span class="logo">LWN<br>.net</span>
+            <span class="logobl">News from the source</span></a>
+            <a href="/" aria-label="Return to the front page">
+            <img src="https://static.lwn.net/images/lcorner-ss.png" class="sslogo"
+                 border="0" alt="LWN"></a><div class="navmenu-container">
+           <ul class="navmenu">
+        <li><a class="navmenu" href="#t"><b>Content</b></a><ul><li><a href="/current/">Weekly Edition</a></li><li><a href="/Archives/">Archives</a></li><li><a href="/Search/">Search</a></li><li><a href="/Kernel/">Kernel</a></li><li><a href="/Security/">Security</a></li><li><a href="/Calendar/">Events calendar</a></li><li><a href="/Comments/unread">Unread comments</a></li><li><hr></li><li><a href="/op/FAQ.lwn">LWN FAQ</a></li><li><a href="/op/AuthorGuide.lwn">Write for us</a></li></ul></li>
+<li><a class="navmenu" href="#t"><b>Edition</b></a><ul><li><a href="/Articles/950832/">Return to the Announcements page</a></li></ul></li>
+</ul></div>
+</div> <!-- menu -->
+<div class="topnav-spacer"></div>
+<div class="top-banner not-print"><!-- no top ad served --></div>
+<div class="topnav-container">
+<div class="not-handset"><form action="https://lwn.net/Login/" method="post" name="loginform"
+                 class="loginform">
+        <label><b>User:</b> <input type="text" name="uname" value="" size="8" id="uc" /></label> 
+		<label><b>Password:</b> <input type="password" name="pword" size="8" id="pc" /></label> <input type="hidden" name="target" value="/Articles/951195/" /> <input type="submit" name="submit" value="Log in" /></form> |
+           <form action="https://lwn.net/subscribe/" method="post" class="loginform">
+           <input type="submit" name="submit" value="Subscribe" />
+           </form> |
+           <form action="https://lwn.net/Login/newaccount" method="post" class="loginform">
+           <input type="submit" name="submit" value="Register" />
+           </form>
+        </div>
+               <div class="handset-only">
+               <a href="/Login/"><b>Log in</b></a> /
+               <a href="/subscribe/"><b>Subscribe</b></a> /
+               <a href="/Login/newaccount"><b>Register</b></a>
+               </div>
+               </div><div class="maincolumn flexcol">
+<div class="middlecolumn">
+<div class="PageHeadline">
+<h1>DAMOS: Introduce Aim-oriented Feedback-driven Aggressiveness Auto Tuning</h1>
+</div>
+<div class="ArticleText"><main>
+<table>
+<tr><td valign="top"><b>From</b>:</td>
+             <td>&nbsp;</td><td valign="top">SeongJae Park &lt;sj-AT-kernel.org&gt;</td></tr>
+<tr><td valign="top"><b>To</b>:</td>
+             <td>&nbsp;</td><td valign="top">unlisted-recipients:; (no To-header on input)</td></tr>
+<tr><td valign="top"><b>Subject</b>:</td>
+             <td>&nbsp;</td><td valign="top">[RFC PATCH 0/8] DAMOS: Introduce Aim-oriented Feedback-driven Aggressiveness Auto Tuning</td></tr>
+<tr><td valign="top"><b>Date</b>:</td>
+             <td>&nbsp;</td><td valign="top">Sun, 12 Nov 2023 19:45:59 +0000</td></tr>
+<tr><td valign="top"><b>Message-ID</b>:</td>
+             <td>&nbsp;</td><td valign="top">&lt;20231112194607.61399-1-sj@kernel.org&gt;</td></tr>
+<tr><td valign="top"><b>Cc</b>:</td>
+             <td>&nbsp;</td><td valign="top">SeongJae Park &lt;sj-AT-kernel.org&gt;,        Andrew Morton &lt;akpm-AT-linux-foundation.org&gt;,        Jonathan Corbet &lt;corbet-AT-lwn.net&gt;,        Shuah Khan &lt;shuah-AT-kernel.org&gt;,        Brendan Higgins &lt;brendanhiggins-AT-google.com&gt;,        damon-AT-lists.linux.dev, linux-mm-AT-kvack.org,        linux-doc-AT-vger.kernel.org, kunit-dev-AT-googlegroups.com,        linux-kselftest-AT-vger.kernel.org, linux-kernel-AT-vger.kernel.org</td></tr>
+<tr><td valign="top"><b>Archive-link</b>:</td>
+             <td>&nbsp;</td><td valign="top"><a href="https://lwn.net/ml/linux-kernel/20231112194607.61399-1-sj@kernel.org/">Article</a></td></tr>
+</table><p>
+<pre>
+Another candidate of the subject was "Let users feed and tame DAMOS".
+
+DAMOS Control Difficulty
+========================
+
+DAMOS helps users easily implementing effective access pattern aware
+system operations.  However, controlling DAMOS in wild is not that easy.
+The basic way to control DAMON is specifying the target access pattern.
+Hence, the user is assumed to know the access pattern of the system and
+the workloads well.  Though some good tools including DAMON can help
+that, it requires time and resource, and the cost depends on the
+complexity and the dynamicity of the system and workloads.  After all,
+the access pattern consist of three ranges, namely ranges of access
+rate, age, and size of the regions.  Tuning six parameters is already
+complex.  It is not doable for everyone.
+
+To ease the control, DAMOS allows users to set the upper-limit of the
+schemes's aggressiveness, namely DAMOS quota.  Then DAMOS prioritizes
+regions to apply the action under the limit based on the action and the
+access pattern of the regions.  For example, use can ask DAMOS to page
+out up to 100 MiB of memory regions per second.  Then DAMOS pages out
+regions that not accessed for longer time first under the limit.  This
+allows users to set access pattern bit more naively, and focus on only
+the one parameter, the quota.  That is, the number of parameters to tune
+with special care can be reduced from six to one.
+
+Still, however, the optimal value for the quota depends on the system
+and the workloads' characteristics, so not that simple.  The number of
+parameters to tune can also increase again if the user needs to run
+multiple schemes, e.g., collapsing hot pages into THP while splitting
+cold pages into regular pages.
+
+In short, the existing approach asks users to find the perfect or
+adapted tuning and instruct DAMOS how to work.  It requires users to be
+deligent.  That's not a virtue of human, but the machine.
+
+Aim-oriented Feedback-driven DAMOS Quota Auto Tuning
+====================================================
+
+Most users would start using DAMOS since there is something they want to
+achieve with DAMOS.  Having such goal metrics like SLO is common.
+Hence, a better approach would be letting users inform DAMOS what they
+aim to achieve, and how well DAMOS is doing that.  Then DAMOS can
+somehow make it.  In detail, users provide feedback for each DAMOS
+scheme.  DAMOS then tune the quota of each scheme based on the users'
+feedback and the current quota values.
+
+This patchset implements the idea.
+
+Implementation
+--------------
+
+The core logic implementation is in the first patch.  In short, it uses
+below simple feedback loop algorithm to get next aggressiveness from the
+current aggressiveness and the feedback (target_core and current_score)
+for the current aggressiveness.
+
+    f(n, target_score, current_score) =
+        max(f(n - 1) * ((target_score - current_score) / target_score + 1), 1)
+
+Note that this algorithm assumes the aggressiveness and the score are
+positively proportional.  Making it true is the feedback provider's
+responsibility.
+
+Test Results
+------------
+
+To show if this provides the expected benefit, we extend the performance
+tests of damon-tests suite to support virtual address space-based
+proactive reclamation scheme that aims 0.5% last 10 seconds some memory
+PSI.  The test suite runs PARSEC3 and SPLASH-2X workloads with the
+scheme and measure the runtime, the RSS, and the PSI for memory (some).
+We do same with the same scheme but not having the goal, and yet another
+variant of it that the target access patterns of the scheme is tuned for
+each workload, in a offline-tuning approach named DAMOOS[1].
+
+The results that normalized to the output that made without any scheme
+are as below.  The PSI for original run (without any scheme) was zero.
+To avoid divide-by-zero, we normalize the value to that of Not-tuned
+scheme's result.
+
+    xx      Not-tuned         Offline-tuned     Online-tuned
+    RSS     0.622688178226118 0.787950678944904 0.740093483278979
+    runtime 1.11767826657912  1.0564674983585   1.0910833880499
+    PSI     1                 0.727521443794069 0.308498846350299
+
+The not-tuned scheme acheives about 38.7% memory saving but incur about
+11.7% runtime slowdown.  The offline-tuned scheme achieves about 22.2%
+memory saving with about 5.5% runtiem slowdown.  It also achieves about
+28.2% PSI saving.  The online-tuned scheme achieves about 26% memory
+saving with about 9.1% runtime slowdown.  It also achieves about 69.1%
+PSI saving.  Given the online-tuned version is using this RFC level
+implementation and the goal (0.5% last-10 secs memory PSI) was made
+after only a few experiments within a day, I think this results show
+some potential of this feedback-driven auto tuning approach.
+
+The test code is available[2], so you can reproduce on your system.
+
+
+[1] <a href="https://www.amazon.science/publications/daos-data-access-aware-operating-system">https://www.amazon.science/publications/daos-data-access-...</a>
+[2] <a href="https://github.com/damonitor/damon-tests/commit/3f884e61193f0166b8724554b6d06b0c449a712d">https://github.com/damonitor/damon-tests/commit/3f884e611...</a>
+
+
+Patches Sequence
+================
+
+The first four patches implement the core logic and user interfaces for
+the auto tuning.  The first patch implements the core logic for the auto
+tuning, and the API for DAMOS users in the kernel space.  The second
+patch implements basic file operations of DAMON sysfs directories and
+files that will be used for setting the goals and providing the
+feedback.  The third patch connects the quota goals files inputs to the
+DAMOS core logic.  Finally the fourth patch implements a dedicated DAMOS
+sysfs command for efficiently committing the quota goals feedback.
+
+Two patches for simple test of the logic and interfaces follow.  The
+fifth patch implements the core logic unit test.  The sixth patch
+implements a selftest for the DAMON Sysfs interface for the goals.
+
+Finally, two patches for documentation follows.  The seventh patch
+documents the design of the feature.  The final eighth patch updates the
+usage document for the features.
+
+SeongJae Park (8):
+  mm/damon/core: implement goal-oriented feedback-driven quota
+    auto-tuning
+  mm/damon/sysfs-schemes: implement scheme quota goals directory
+  mm/damon/sysfs-schemes: commit damos quota goals user input to DAMOS
+    quota auto-tuning
+  mm/damon/sysfs-schemes: implement a command for scheme quota goals
+    only commit
+  mm/damon/core-test: add a unit test for the feedback loop algorithm
+  selftests/damon: test quota goals directory
+  Docs/mm/damon/design: Document DAMOS quota auto tuning
+  Docs/admin-guide/mm/damon/usage: update for quota goals
+
+ Documentation/admin-guide/mm/damon/usage.rst |  25 +-
+ Documentation/mm/damon/design.rst            |  11 +
+ include/linux/damon.h                        |  19 ++
+ mm/damon/core-test.h                         |  32 +++
+ mm/damon/core.c                              |  65 ++++-
+ mm/damon/sysfs-common.h                      |   3 +
+ mm/damon/sysfs-schemes.c                     | 272 ++++++++++++++++++-
+ mm/damon/sysfs.c                             |  27 ++
+ tools/testing/selftests/damon/sysfs.sh       |  27 ++
+ 9 files changed, 463 insertions(+), 18 deletions(-)
+
+
+base-commit: 4f26b84c39fbc6b03208674681bfde06e0bce25a
+-- 
+2.34.1
+
+
+</pre>
+
+</main></div> <!-- ArticleText -->
+</div> <!-- middlecolumn -->
+<div class="rightcol not-print">
+<!-- no side ad served -->
+</div>
+</div> <!-- maincolumn -->
+
+            <br clear="all">
+            <center>
+            <P>
+            <span class="ReallySmall">
+            Copyright &copy; 2023, Eklektix, Inc.<BR>
+            
+            Comments and public postings are copyrighted by their creators.<br>
+            Linux  is a registered trademark of Linus Torvalds<br>
+            </span>
+            </center>
+            
+            </body></html>

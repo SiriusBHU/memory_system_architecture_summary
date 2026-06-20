@@ -1,0 +1,62 @@
+<svg width="100%" viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t4 d4" font-family="-apple-system,'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',sans-serif">
+<title id="t4">创新④ 机制/策略解耦的可编程回收</title>
+<desc id="d4">改造前：回收策略硬编码在内核，改策略需改内核、重编、重启。改造后：内核保留 LRU 机制，策略经 eBPF struct_ops 由 verifier 校验后加载、热下发、不重启。</desc>
+<style>
+.bg{fill:#ffffff}
+.ttl{font-size:15px;font-weight:600;fill:#1f2024}
+.pl{font-size:11px;font-weight:600;fill:#6b6f76}
+.n{font-size:11px;font-weight:600;fill:#1f2024}
+.s{font-size:9px;fill:#6b6f76}
+.note{font-size:9px;fill:#6b6f76}
+.warn{font-size:9px;font-weight:600;fill:#b3622c}
+.old{fill:#f4f4f2;stroke:#b3b8bf;stroke-width:1.2}
+.sem{fill:#f1ecfb;stroke:#6f5bcc;stroke-width:1.4}
+.ker{fill:#f7f0e1;stroke:#bf8a2c;stroke-width:1.4}
+.key{fill:#fbe9c8;stroke:#bf8a2c;stroke-width:1.9}
+.bt{font-size:8px;fill:#9aa0a8;font-family:ui-monospace,monospace;text-anchor:end}
+</style>
+<rect class="bg" x="0" y="0" width="780" height="240"/>
+<text class="ttl" x="390" y="26" text-anchor="middle">创新④｜机制/策略解耦的可编程回收（eBPF struct_ops）</text>
+<text class="pl" x="190" y="52" text-anchor="middle">改造前 · 策略硬编码</text>
+<text class="pl" x="580" y="52" text-anchor="middle">改造后 · 机制留内核 · 策略下放</text>
+
+<!-- before -->
+<rect class="old" x="60" y="98" width="64" height="40" rx="8"/>
+<text class="n" x="92" y="122" text-anchor="middle">App</text>
+<line x1="124" y1="118" x2="146" y2="118" stroke="#b3b8bf" stroke-width="1.6"/>
+<polygon points="146,114 146,122 153,118" fill="#b3b8bf"/>
+<text class="note" x="139" y="110" text-anchor="middle">syscall</text>
+<rect class="old" x="155" y="92" width="180" height="52" rx="8"/>
+<text class="n" x="245" y="114" text-anchor="middle">Kernel · LRU 策略</text>
+<text class="s" x="245" y="129" text-anchor="middle">硬编码 → 回收判决</text>
+<text class="warn" x="200" y="170" text-anchor="middle">改策略 = 改内核 + 重编 + 重启</text>
+
+<polygon points="356,112 356,132 380,122" fill="#bf8a2c"/>
+<text class="note" x="368" y="146" text-anchor="middle">演进</text>
+
+<!-- after -->
+<rect class="sem" x="430" y="86" width="150" height="36" rx="8"/>
+<text class="n" x="505" y="103" text-anchor="middle">OEM / 策略作者</text>
+<text class="s" x="505" y="116" text-anchor="middle">eBPF struct_ops</text>
+<line x1="505" y1="122" x2="505" y2="139" stroke="#6f5bcc" stroke-width="1.6"/>
+<polygon points="501,139 509,139 505,146" fill="#6f5bcc"/>
+<text class="note" x="600" y="135" text-anchor="middle">verifier 校验 · 热加载</text>
+
+<rect class="ker" x="430" y="148" width="150" height="44" rx="8"/>
+<text class="n" x="505" y="167" text-anchor="middle">Kernel · LRU 机制</text>
+<text class="s" x="505" y="181" text-anchor="middle">链表 / aging / 扫描</text>
+<line x1="580" y1="160" x2="612" y2="160" stroke="#bf8a2c" stroke-width="1.6"/>
+<polygon points="612,156 612,164 619,160" fill="#bf8a2c"/>
+<line x1="619" y1="178" x2="587" y2="178" stroke="#bf8a2c" stroke-width="1.6"/>
+<polygon points="587,174 587,182 580,178" fill="#bf8a2c"/>
+<rect class="key" x="621" y="148" width="134" height="44" rx="8"/>
+<text class="n" x="688" y="167" text-anchor="middle">策略回调</text>
+<text class="s" x="688" y="181" text-anchor="middle">protect / evict / pass</text>
+<text class="warn" x="505" y="214" text-anchor="middle">改策略 = 下发新 .o · 不改内核 · 不重启（GKI 热下发）</text>
+
+<!-- legend -->
+<rect class="old" x="120" y="222" width="12" height="9" rx="2"/><text class="note" x="136" y="230">旧 / 硬编码</text>
+<rect class="sem" x="216" y="222" width="12" height="9" rx="2"/><text class="note" x="232" y="230">策略层（可编程）</text>
+<rect class="ker" x="330" y="222" width="12" height="9" rx="2"/><text class="note" x="346" y="230">内核机制</text>
+<text class="bt" x="764" y="234">struct_ops</text>
+</svg>

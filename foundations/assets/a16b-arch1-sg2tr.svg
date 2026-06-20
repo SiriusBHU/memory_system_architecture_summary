@@ -1,0 +1,56 @@
+<svg width="100%" viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t1 d1" font-family="-apple-system,'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',sans-serif">
+<title id="t1">创新① 语义引导的两级回收架构 SG-2TR</title>
+<desc id="d1">改造前：全地址空间逐页 LRU、无语义、扫描面100%。改造后：应用/框架语义在 VRegion 粗排并剪枝候选，内核页面级 LRU 在候选内精排并用 recency/refault 纠偏。</desc>
+<style>
+.bg{fill:#ffffff}
+.ttl{font-size:15px;font-weight:600;fill:#1f2024}
+.pl{font-size:11px;font-weight:600;fill:#6b6f76}
+.n{font-size:11px;font-weight:600;fill:#1f2024}
+.s{font-size:9px;fill:#6b6f76}
+.note{font-size:9px;fill:#6b6f76}
+.old{fill:#f4f4f2;stroke:#b3b8bf;stroke-width:1.2}
+.sem{fill:#f1ecfb;stroke:#6f5bcc;stroke-width:1.4}
+.ker{fill:#f7f0e1;stroke:#bf8a2c;stroke-width:1.4}
+.key{fill:#fbe9c8;stroke:#bf8a2c;stroke-width:1.9}
+.bt{font-size:8px;fill:#9aa0a8;font-family:ui-monospace,monospace;text-anchor:end}
+</style>
+<rect class="bg" x="0" y="0" width="780" height="240"/>
+<text class="ttl" x="390" y="26" text-anchor="middle">创新①｜语义引导的两级回收架构（SG-2TR）</text>
+<text class="pl" x="190" y="52" text-anchor="middle">改造前 · 扁平页面 LRU</text>
+<text class="pl" x="580" y="52" text-anchor="middle">改造后 · 语义粗排 → 页面精排</text>
+
+<!-- before -->
+<rect class="old" x="95" y="108" width="190" height="48" rx="8"/>
+<text class="n" x="190" y="130" text-anchor="middle">全地址空间逐页 LRU</text>
+<text class="s" x="190" y="145" text-anchor="middle">无语义 · 扫描面 100% · 只看近因</text>
+<text class="note" x="190" y="178" text-anchor="middle">扫描面大、与“真重要”错位</text>
+
+<!-- evolve -->
+<polygon points="356,122 356,142 380,132" fill="#bf8a2c"/>
+<text class="note" x="368" y="156" text-anchor="middle">演进</text>
+
+<!-- after: 3-stage flow -->
+<rect class="sem" x="404" y="108" width="100" height="48" rx="8"/>
+<text class="n" x="454" y="129" text-anchor="middle">应用/框架语义</text>
+<text class="s" x="454" y="144" text-anchor="middle">标注 VRegion</text>
+<line x1="504" y1="132" x2="521" y2="132" stroke="#6f5bcc" stroke-width="1.6"/>
+<polygon points="521,128 521,136 528,132" fill="#6f5bcc"/>
+<text class="note" x="516" y="124" text-anchor="middle">eBPF</text>
+
+<rect class="sem" x="530" y="108" width="100" height="48" rx="8"/>
+<text class="n" x="580" y="129" text-anchor="middle">VRegion 粗排</text>
+<text class="s" x="580" y="144" text-anchor="middle">先验 + 候选剪枝</text>
+<line x1="630" y1="132" x2="649" y2="132" stroke="#bf8a2c" stroke-width="1.6"/>
+<polygon points="649,128 649,136 656,132" fill="#bf8a2c"/>
+
+<rect class="ker" x="658" y="108" width="106" height="48" rx="8"/>
+<text class="n" x="711" y="129" text-anchor="middle">页面 LRU 精排</text>
+<text class="s" x="711" y="144" text-anchor="middle">recency 纠偏</text>
+<text class="note" x="584" y="178" text-anchor="middle">语义剪枝 → 逐页判决可负担；内核真值兜底</text>
+
+<!-- legend -->
+<rect class="old" x="206" y="212" width="12" height="10" rx="2"/><text class="note" x="222" y="221">旧 / 被动</text>
+<rect class="sem" x="300" y="212" width="12" height="10" rx="2"/><text class="note" x="316" y="221">应用语义层</text>
+<rect class="ker" x="420" y="212" width="12" height="10" rx="2"/><text class="note" x="436" y="221">内核 LRU 机制</text>
+<text class="bt" x="764" y="234">SG-2TR</text>
+</svg>

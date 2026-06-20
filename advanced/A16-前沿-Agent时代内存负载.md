@@ -5,7 +5,7 @@
 > 📍 **对应总览**：[00 总览](../foundations/00-内存系统总览.md) 的全四层都被波及——但落点集中在「2B 物理与回收侧」（冷热/压缩/回收）、「第 3 层 硬件」（IOMMU/统一内存）、「第 4 层 存储层级」（介质谱系：PIM/MRAM/HBF）。
 > 🧭 **阅读前置**：建议先读 [A15 前沿·先进内存](A15-前沿-先进内存.md)（分层/压缩谱系，A16 在其上加"负载驱动"视角）、[A15c 移动端分层内存与压缩前沿](A15c-移动端分层内存与内存压缩前沿.md)（终端立场的底子）；各深潜篇会各自回链 [A05](../foundations/A05-冷热识别的演进.md)/[A06](../foundations/A06-压缩与换页.md)/[A09](../foundations/A09-设备内存全景.md)/[A10](../foundations/A10-IOMMU-SMMU与DMA.md)。
 > 🌡️ **演进分级**：**演进厚 ⚡（开放连载）**——本 family 是全系列最"未定型"的一组，含大量前沿与前瞻；行文重在**问题动因 → 现有方向 → 趋势与未解**，结论性判断明确标注**综述观点 / 推测 / 待核实**。
-> 📚 **本 family 为开放连载**，9 篇深潜：系统侧 [A16a](A16a-LRU主动扫描.md)·[A16b](A16b-XVM-eBPF的LRU主动感知优化.md)·[A16c](A16c-异构压缩CDSD.md)·[A16d](A16d-压缩IP边际建模.md)；芯片侧 [A16e](A16e-IOMMU统一内存与异构PF-LRU.md)·[A16f](A16f-端侧KV-Cache管理方案.md)·[A16g](A16g-DRAM-PIM异构协同管理.md)·[A16h](A16h-STT-SOT-MRAM多级缓存方案.md)·[A16i](A16i-端侧UFS-HBF增强.md)。
+> 📚 **本 family 为开放连载**，9 篇深潜：系统侧 [A16a](A16a-LRU主动扫描.md)·[A16b](A16b-eBPF可编程回收策略-Android.md)·[A16c](A16c-异构压缩CDSD.md)·[A16d](A16d-压缩IP边际建模.md)；芯片侧 [A16e](A16e-IOMMU统一内存与异构PF-LRU.md)·[A16f](A16f-端侧KV-Cache管理方案.md)·[A16g](A16g-DRAM-PIM异构协同管理.md)·[A16h](A16h-STT-SOT-MRAM多级缓存方案.md)·[A16i](A16i-端侧UFS-HBF增强.md)。
 
 ---
 
@@ -37,7 +37,7 @@ A01–A13 默认一个隐含前提：**主存是一整块 DRAM，唯一的消费
 
 ### 【冷热】更复杂的内存冷热特征 —— 前后台皆热 · 长程后台任务
 经典启发式"**前台热、后台冷**"在 Agent 时代失效——**后台长程 agent 任务（持续推理/检索/工具调用）让后台也热**，前台交互与后台任务**同时活跃**；且 KV 的注意力稀疏、权重的按层/按专家激活让冷热**更快、更结构化、与"哪个 app 在前台"无关**。难再用"场景"粗分冷热。
-- **系统侧裂缝**：[A05](../foundations/A05-冷热识别的演进.md) 的 LRU/MGLRU 是**被动近似** → 需主动扫描、可编程感知（XVM/eBPF）。
+- **系统侧裂缝**：[A05](../foundations/A05-冷热识别的演进.md) 的 LRU/MGLRU 是**被动近似** → 需主动扫描、可编程回收（eBPF）。
 - **芯片侧裂缝**：冷热全靠软件采样太慢 → 需硬件辅助访问统计 / page fault 协同。
 
 > 一句话立论：**负载叠加（终端约束）× 三特征（异构/增长/冷热），共同把"软件栈"和"硬件/介质"同时顶到墙上——下一代只能是系统与芯片协同地改。**
@@ -55,12 +55,12 @@ A01–A13 默认一个隐含前提：**主存是一整块 DRAM，唯一的消费
 | **异构** | （竞争表现为多任务多 IP 争抢） | [A16e IOMMU 统一内存](A16e-IOMMU统一内存与异构PF-LRU.md)、[A16g DRAM·PIM 协同](A16g-DRAM-PIM异构协同管理.md) |
 | **桥接** | — [A16f 端侧 KV Cache 管理](A16f-端侧KV-Cache管理方案.md)（异构+增长 · 跨系统/芯片）— | |
 | **增长** | [A16c 异构压缩 CDSD](A16c-异构压缩CDSD.md)、[A16d 压缩 IP 边际建模](A16d-压缩IP边际建模.md) | [A16h STT/SOT-MRAM](A16h-STT-SOT-MRAM多级缓存方案.md)、[A16i 端侧 UFS–HBF](A16i-端侧UFS-HBF增强.md) |
-| **冷热** | [A16a LRU 主动扫描](A16a-LRU主动扫描.md)、[A16b XVM(eBPF) LRU](A16b-XVM-eBPF的LRU主动感知优化.md) | （硬件辅助访问统计 / PF 协同，趋势） |
+| **冷热** | [A16a LRU 主动扫描](A16a-LRU主动扫描.md)、[A16b eBPF 可编程回收](A16b-eBPF可编程回收策略-Android.md) | （硬件辅助访问统计 / PF 协同，趋势） |
 
 ## 4. 下一代系统设计 · 四题导览（A16a–A16d）
 
 - **[A16a · LRU 主动扫描](A16a-LRU主动扫描.md)（冷热）**：当"前台热/后台冷"失效，回收要从**被动等水线**转向**主动按节奏扫**。讲 MGLRU aging 的页表走查、DAMON 区域采样两种便宜扫描器，以及 Senpai/DAMOS 式以 PSI 为反馈的激进度自调。
-- **[A16b · XVM(eBPF) 的 LRU 主动感知](A16b-XVM-eBPF的LRU主动感知优化.md)（冷热）**：再进一步，把"判冷热、保护谁"的**策略本身**做成可编程。XVM 是 HarmonyOS 用 eBPF 做**整机文件页 LRU** 的框架（细节待核实），对照 Linux 的 eBPF-mm / Cache-is-King。
+- **[A16b · eBPF 可编程回收策略](A16b-eBPF可编程回收策略-Android.md)（冷热）**：再进一步，把"判冷热、保护谁"的**策略本身**做成可编程。锚点放 Android：eBPF 在 Android 已是生产级（用于网络/tracing/GPU，**非内存回收**），而用 eBPF 编程回收（eBPF-mm / Cache-is-King / BPF-OOM / reclaim_ext）仍是上游研究、**无一进主线**；并以 `sched_ext`（6.12 已落地）为"核心策略可经 BPF struct_ops 可编程化"的先例。鸿蒙另走 XVM 路线，资料稀薄、本系列不展开。
 - **[A16c · 异构压缩 CDSD](A16c-异构压缩CDSD.md)（增长）**：增长把压缩顶成主力扩容，但**一把算法压一切**在异构数据上太亏。讲按数据类（匿名/文件/KV/设备缓冲）异构选压；CDSD 是终端的 LZ4 家族变体实例（规格待核实）；并厘清 KV 的**有损**专用压缩与 zram **无损**压缩是两套世界。
 - **[A16d · 压缩 IP 边际建模](A16d-压缩IP边际建模.md)（增长）**：落盘量、算法固定后，**压多少、压多狠**是个控制题。把压缩路径建成有代价的服务队列，给出"边际收益 = 边际成本"的判据（原创框架、公式示意），并指出 `swappiness` 即今天那个粗糙的静态影子价格。
 
@@ -78,7 +78,7 @@ A16 不是另起炉灶，而是把既有机制篇**沿"负载驱动"重新串一
 
 | 既有篇 | A16 怎么消费 / 外延它 |
 |---|---|
-| [A04 回收](../foundations/A04-回收总论.md) / [A05 冷热](../foundations/A05-冷热识别的演进.md) | 被动回收 → [A16a](A16a-LRU主动扫描.md) 主动扫描；固定策略 → [A16b](A16b-XVM-eBPF的LRU主动感知优化.md) 可编程策略 |
+| [A04 回收](../foundations/A04-回收总论.md) / [A05 冷热](../foundations/A05-冷热识别的演进.md) | 被动回收 → [A16a](A16a-LRU主动扫描.md) 主动扫描；固定策略 → [A16b](A16b-eBPF可编程回收策略-Android.md) 可编程策略 |
 | [A06 压缩换页](../foundations/A06-压缩与换页.md) | 单算法 → [A16c](A16c-异构压缩CDSD.md) 异构选压；静态旋钮 → [A16d](A16d-压缩IP边际建模.md) 边际建模 |
 | [A09 设备内存](../foundations/A09-设备内存全景.md) / [A10 IOMMU](../foundations/A10-IOMMU-SMMU与DMA.md) | pinned/不进 LRU、SVA → [A16e](A16e-IOMMU统一内存与异构PF-LRU.md) 把设备数据纳入冷热治理；[A16f](A16f-端侧KV-Cache管理方案.md) KV 落在 dma-buf |
 | [A15 分层/PIM](A15-前沿-先进内存.md) / [A15b DAMON](A15b-DAMON与分层内存实践.md) / [A15c 移动端](A15c-移动端分层内存与内存压缩前沿.md) | 介质谱系 → [A16g](A16g-DRAM-PIM异构协同管理.md)/[A16h](A16h-STT-SOT-MRAM多级缓存方案.md)/[A16i](A16i-端侧UFS-HBF增强.md)；DAMON 迁移/自调 → [A16a](A16a-LRU主动扫描.md)/[A16d](A16d-压缩IP边际建模.md) |
@@ -87,11 +87,11 @@ A16 不是另起炉灶，而是把既有机制篇**沿"负载驱动"重新串一
 
 A16 含大量前沿与前瞻，**sourcing 风险按篇差异很大**，特此声明基调（详见各篇文末「待核实」）。**注意：下面的 🟢/🟡/🔴 指的是「支撑论证的素材（已有机制 / 学术工作）是否充足」，与「方案是否已被业界落地」无关——9 个方案均未落地（见篇首立场）。**
 
-- **公开源充足 🟢**：[A16a](A16a-LRU主动扫描.md)（内核回收/MGLRU/DAMON）、[A16e](A16e-IOMMU统一内存与异构PF-LRU.md)（IOMMU/SVA）、[A16f](A16f-端侧KV-Cache管理方案.md)（PagedAttention 等）。
+- **公开源充足 🟢**：[A16a](A16a-LRU主动扫描.md)（内核回收/MGLRU/DAMON）、[A16b](A16b-eBPF可编程回收策略-Android.md)（Android eBPF 加载模型/MGLRU/上游 eBPF-mm·BPF-OOM·sched_ext，均一手）、[A16e](A16e-IOMMU统一内存与异构PF-LRU.md)（IOMMU/SVA）、[A16f](A16f-端侧KV-Cache管理方案.md)（PagedAttention 等）。
 - **部分需推断/旁证 🟡**：[A16c](A16c-异构压缩CDSD.md)（KV 压缩论文充足，CDSD 缩写本身待核实）、[A16g](A16g-DRAM-PIM异构协同管理.md)（硬件有、OS 统一调度多研究）、[A16h](A16h-STT-SOT-MRAM多级缓存方案.md)（器件有、端侧产品化待证）。
-- **公开源稀薄 🔴**：[A16b](A16b-XVM-eBPF的LRU主动感知优化.md)（XVM 细节）、[A16d](A16d-压缩IP边际建模.md)（原创模型，公式示意）、[A16i](A16i-端侧UFS-HBF增强.md)（HBF 最新、数字按厂商声明）。
+- **公开源稀薄 🔴**：[A16d](A16d-压缩IP边际建模.md)（原创模型，公式示意）、[A16i](A16i-端侧UFS-HBF增强.md)（HBF 最新、数字按厂商声明）。
 
-**纪律**：内部设想/前瞻一律标"综述观点 / 推测 / 待核实"；不臆造版本号、接口名、链接；跨平台严格区分术语（XVM ≠ 通用 eBPF-for-mm；KV 有损"压缩" ≠ zram 无损压缩；lmkd ≠ jetsam）。
+**纪律**：内部设想/前瞻一律标"综述观点 / 推测 / 待核实"；不臆造版本号、接口名、链接；跨平台严格区分术语（Android eBPF 现用于网络/tracing/GPU ≠ 可编程内存回收（仍是上游研究）；KV 有损"压缩" ≠ zram 无损压缩；lmkd ≠ jetsam）。
 
 ## 8. 来源与延伸阅读
 
@@ -103,7 +103,7 @@ A16 含大量前沿与前瞻，**sourcing 风险按篇差异很大**，特此声
 - 介质/芯片侧：PIM、MRAM、HBF、统一内存（见 [A16e](A16e-IOMMU统一内存与异构PF-LRU.md)–[A16i](A16i-端侧UFS-HBF增强.md) 的来源）
 
 **九篇深潜**
-- 系统：[A16a](A16a-LRU主动扫描.md) · [A16b](A16b-XVM-eBPF的LRU主动感知优化.md) · [A16c](A16c-异构压缩CDSD.md) · [A16d](A16d-压缩IP边际建模.md)
+- 系统：[A16a](A16a-LRU主动扫描.md) · [A16b](A16b-eBPF可编程回收策略-Android.md) · [A16c](A16c-异构压缩CDSD.md) · [A16d](A16d-压缩IP边际建模.md)
 - 芯片：[A16e](A16e-IOMMU统一内存与异构PF-LRU.md) · [A16f](A16f-端侧KV-Cache管理方案.md) · [A16g](A16g-DRAM-PIM异构协同管理.md) · [A16h](A16h-STT-SOT-MRAM多级缓存方案.md) · [A16i](A16i-端侧UFS-HBF增强.md)
 
 > **待核实 / 待补**：本总论的三特征划分与二维落格是**组织性框架**（综述视角），各主题的事实性细节以对应深潜篇及其「待核实」为准；端侧 Agent 负载的定量特征（KV/权重体量、冷热时间尺度）随模型与机型差异大，需按场景实测；芯片侧多数方向（PIM 统一调度、MRAM 多级缓存、HBF-on-mobile）的产品化时间线高度不确定，按时间衰减看待。

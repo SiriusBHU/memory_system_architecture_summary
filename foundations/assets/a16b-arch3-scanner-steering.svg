@@ -1,0 +1,53 @@
+<svg width="100%" viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t3 d3" font-family="-apple-system,'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',sans-serif">
+<title id="t3">创新③ 语义定向主动扫描</title>
+<desc id="d3">改造前：主动扫描器扫全地址空间或按频率分区，高 CPU 与能耗。改造后：eBPF 语义策略指定候选 VRegion，扫描器只走语义热点，同等新鲜度更省电。</desc>
+<style>
+.bg{fill:#ffffff}
+.ttl{font-size:15px;font-weight:600;fill:#1f2024}
+.pl{font-size:11px;font-weight:600;fill:#6b6f76}
+.n{font-size:11px;font-weight:600;fill:#1f2024}
+.s{font-size:9px;fill:#6b6f76}
+.note{font-size:9px;fill:#6b6f76}
+.data{font-size:9px;font-weight:600;fill:#3f9b87}
+.old{fill:#f4f4f2;stroke:#b3b8bf;stroke-width:1.2}
+.sem{fill:#f1ecfb;stroke:#6f5bcc;stroke-width:1.4}
+.ker{fill:#f7f0e1;stroke:#bf8a2c;stroke-width:1.4}
+.bt{font-size:8px;fill:#9aa0a8;font-family:ui-monospace,monospace;text-anchor:end}
+</style>
+<rect class="bg" x="0" y="0" width="780" height="220"/>
+<text class="ttl" x="390" y="26" text-anchor="middle">创新③｜语义定向主动扫描（Scanner Steering）</text>
+<text class="pl" x="190" y="52" text-anchor="middle">改造前 · 全局 / 频率扫描</text>
+<text class="pl" x="580" y="52" text-anchor="middle">改造后 · 语义定向</text>
+
+<!-- before -->
+<rect class="old" x="55" y="96" width="112" height="46" rx="8"/>
+<text class="n" x="111" y="116" text-anchor="middle">主动扫描器</text>
+<text class="s" x="111" y="131" text-anchor="middle">MGLRU / DAMON</text>
+<line x1="167" y1="119" x2="186" y2="119" stroke="#b3b8bf" stroke-width="1.6"/>
+<polygon points="186,115 186,123 193,119" fill="#b3b8bf"/>
+<rect class="old" x="195" y="96" width="150" height="46" rx="8"/>
+<text class="n" x="270" y="116" text-anchor="middle">扫全地址空间</text>
+<text class="s" x="270" y="131" text-anchor="middle">高 CPU · 能耗</text>
+<text class="note" x="200" y="164" text-anchor="middle">扫描面大、续航受损</text>
+
+<polygon points="356,108 356,128 380,118" fill="#bf8a2c"/>
+<text class="note" x="368" y="142" text-anchor="middle">演进</text>
+
+<!-- after -->
+<rect class="sem" x="408" y="96" width="132" height="46" rx="8"/>
+<text class="n" x="474" y="116" text-anchor="middle">eBPF 语义策略</text>
+<text class="s" x="474" y="131" text-anchor="middle">指定候选 VRegion</text>
+<line x1="540" y1="119" x2="559" y2="119" stroke="#bf8a2c" stroke-width="1.6"/>
+<polygon points="559,115 559,123 566,119" fill="#bf8a2c"/>
+<text class="note" x="553" y="111" text-anchor="middle">定向</text>
+<rect class="ker" x="568" y="96" width="172" height="46" rx="8"/>
+<text class="n" x="654" y="116" text-anchor="middle">扫描器只走热点区</text>
+<text class="s" x="654" y="131" text-anchor="middle">同等新鲜度 · 更省电</text>
+<text class="data" x="574" y="164" text-anchor="middle">aging 能耗 1.0× → 0.3–0.6×（设想，待实测）</text>
+
+<!-- legend -->
+<rect class="old" x="206" y="194" width="12" height="10" rx="2"/><text class="note" x="222" y="203">旧 / 全局扫描</text>
+<rect class="sem" x="316" y="194" width="12" height="10" rx="2"/><text class="note" x="332" y="203">语义策略</text>
+<rect class="ker" x="406" y="194" width="12" height="10" rx="2"/><text class="note" x="422" y="203">内核扫描机制</text>
+<text class="bt" x="764" y="214">Steering</text>
+</svg>

@@ -1,0 +1,55 @@
+<svg width="100%" viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t2 d2" font-family="-apple-system,'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',sans-serif">
+<title id="t2">创新② 先验–真值双层校正</title>
+<desc id="d2">改造前为单信号判决（仅 recency，或纯语义立即回收、无纠偏）。改造后语义先验定偏置、页面 recency/refault 定真值，二者合成判决，真值纠偏先验。</desc>
+<style>
+.bg{fill:#ffffff}
+.ttl{font-size:15px;font-weight:600;fill:#1f2024}
+.pl{font-size:11px;font-weight:600;fill:#6b6f76}
+.n{font-size:11px;font-weight:600;fill:#1f2024}
+.s{font-size:9px;fill:#6b6f76}
+.note{font-size:9px;fill:#6b6f76}
+.data{font-size:9px;font-weight:600;fill:#3f9b87}
+.old{fill:#f4f4f2;stroke:#b3b8bf;stroke-width:1.2}
+.sem{fill:#f1ecfb;stroke:#6f5bcc;stroke-width:1.4}
+.ker{fill:#f7f0e1;stroke:#bf8a2c;stroke-width:1.4}
+.key{fill:#fbe9c8;stroke:#bf8a2c;stroke-width:1.9}
+.bt{font-size:8px;fill:#9aa0a8;font-family:ui-monospace,monospace;text-anchor:end}
+</style>
+<rect class="bg" x="0" y="0" width="780" height="240"/>
+<text class="ttl" x="390" y="26" text-anchor="middle">创新②｜先验–真值双层校正（Prior–Truth Arbitration）</text>
+<text class="pl" x="190" y="52" text-anchor="middle">改造前 · 单信号</text>
+<text class="pl" x="580" y="52" text-anchor="middle">改造后 · 语义先验 + 页面真值</text>
+
+<!-- before -->
+<rect class="old" x="95" y="104" width="190" height="52" rx="8"/>
+<text class="n" x="190" y="126" text-anchor="middle">单信号判决</text>
+<text class="s" x="190" y="141" text-anchor="middle">recency 单层　或　纯语义立即收</text>
+<text class="note" x="190" y="178" text-anchor="middle">无语义先验 / 无纠偏 → 误杀 · refault</text>
+
+<polygon points="356,120 356,140 380,130" fill="#bf8a2c"/>
+<text class="note" x="368" y="154" text-anchor="middle">演进</text>
+
+<!-- after: two inputs merge -->
+<rect class="sem" x="408" y="88" width="128" height="40" rx="8"/>
+<text class="n" x="472" y="106" text-anchor="middle">语义先验</text>
+<text class="s" x="472" y="120" text-anchor="middle">偏置 / 方向（app 标注）</text>
+<rect class="ker" x="408" y="146" width="128" height="40" rx="8"/>
+<text class="n" x="472" y="164" text-anchor="middle">页面真值</text>
+<text class="s" x="472" y="178" text-anchor="middle">recency / refault（内核）</text>
+
+<line x1="536" y1="108" x2="600" y2="128" stroke="#6f5bcc" stroke-width="1.6"/>
+<polygon points="595,122 603,130 593,131" fill="#6f5bcc"/>
+<line x1="536" y1="166" x2="600" y2="146" stroke="#bf8a2c" stroke-width="1.6"/>
+<polygon points="593,143 603,144 595,152" fill="#bf8a2c"/>
+
+<rect class="key" x="606" y="115" width="138" height="44" rx="8"/>
+<text class="n" x="675" y="134" text-anchor="middle">合成判决</text>
+<text class="s" x="675" y="148" text-anchor="middle">真值纠偏先验</text>
+<text class="data" x="580" y="206" text-anchor="middle">实测：少杀 15–30%（process_madvise compaction, LPC）</text>
+
+<!-- legend -->
+<rect class="old" x="206" y="212" width="12" height="10" rx="2"/><text class="note" x="222" y="221">旧 / 单信号</text>
+<rect class="sem" x="306" y="212" width="12" height="10" rx="2"/><text class="note" x="322" y="221">语义先验</text>
+<rect class="ker" x="396" y="212" width="12" height="10" rx="2"/><text class="note" x="412" y="221">页面真值</text>
+<text class="bt" x="764" y="234">Prior–Truth</text>
+</svg>

@@ -1,6 +1,6 @@
 <svg width="100%" viewBox="0 0 772 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="a16title a16desc">
 <title id="a16title">A16 · Agent 时代内存负载 → 下一代系统 × 芯片协同设计二维地图</title>
-<desc id="a16desc">横轴为系统设计（左）与芯片设计（右），纵向按三特征着色：异构（紫）、增长（青）、冷热（橙）。九个主题落格：异构行（芯片侧）A16e IOMMU 统一内存、A16g DRAM·PIM 协同；A16f 端侧 KV Cache 管理为跨系统/芯片、异构+增长的桥接篇；增长行系统侧 A16c 异构压缩 CDSD、A16d 压缩 IP 边际建模，芯片侧 A16h STT/SOT-MRAM、A16i 端侧 UFS-HBF；冷热行系统侧 A16a LRU 主动扫描、A16b XVM(eBPF) LRU，芯片侧为硬件辅助访问统计趋势。立论：Agent 负载叠加而非替换传统前后台负载，同处一块 LPDDR 竞争。图中九个方案均为基于学界与第一性原理的设计探讨，业界（安卓/iOS/鸿蒙）尚未落地。对应 advanced/A16-前沿-Agent时代内存负载.md。</desc>
+<desc id="a16desc">横轴为系统设计（左）与芯片设计（右），纵向按三特征着色：异构（紫）、增长（青）、冷热（橙）。九个主题落格：异构行（芯片侧）A16e IOMMU 统一内存、A16g DRAM·PIM 协同；A16f 端侧 KV Cache 管理为跨系统/芯片、异构+增长的桥接篇；增长行系统侧 A16c 异构压缩 CDSD、A16d 压缩 IP 边际建模，芯片侧 A16h STT/SOT-MRAM、A16i 端侧 UFS-HBF；冷热行系统侧 A16a LRU 主动扫描、A16b eBPF 可编程回收，芯片侧为硬件辅助访问统计趋势。立论：Agent 负载叠加而非替换传统前后台负载，同处一块 LPDDR 竞争。图中九个方案均为基于学界与第一性原理的设计探讨，业界（安卓/iOS/鸿蒙）尚未落地。对应 advanced/A16-前沿-Agent时代内存负载.md。</desc>
 <style>
 svg{font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
 --bg:#ffffff;--bd:#e3e3e0;--ink:#1f2024;--ink2:#6b6f76;--axis:#b3b8bf;
@@ -58,7 +58,7 @@ svg{font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC"
 
 <!-- 冷热 band -->
 <g class="ht"><rect x="92" y="254" width="150" height="52" rx="8"/><text class="n" x="102" y="277">LRU 主动扫描</text><text class="s" x="102" y="294">被动 → 主动回收</text><text class="bt" x="234" y="270">A16a</text></g>
-<g class="ht"><rect x="250" y="254" width="150" height="52" rx="8"/><text class="n" x="260" y="277">XVM(eBPF) LRU</text><text class="s" x="260" y="294">冷热策略可编程</text><text class="bt" x="392" y="270">A16b</text></g>
+<g class="ht"><rect x="250" y="254" width="150" height="52" rx="8"/><text class="n" x="260" y="277">eBPF 可编程回收</text><text class="s" x="260" y="294">冷热策略可编程</text><text class="bt" x="392" y="270">A16b</text></g>
 <g><rect class="ghost" x="452" y="254" width="304" height="52" rx="6"/><text class="note" x="604" y="277" text-anchor="middle">硬件辅助访问统计 / Page Fault 协同</text><text class="note" x="604" y="293" text-anchor="middle">（趋势，见 A16a / A16e）</text></g>
 
 <text class="note" x="386" y="332" text-anchor="middle">配色 = 三特征（异构 / 增长 / 冷热）；横向 = 系统设计（左） ↔ 芯片设计（右）；A16f 跨两侧。</text>
