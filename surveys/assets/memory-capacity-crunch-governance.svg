@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" font-family="system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="12">
+  <style>
+    .title{font-size:16px;font-weight:600;fill:#222}
+    .subtitle{font-size:12px;fill:#555}
+    .hdr{font-size:11px;font-weight:600;fill:#777}
+    .pill{stroke:none}
+    .pill-t{font-size:11px;font-weight:600;fill:#fff}
+    .rbox{fill:#fdecea;stroke:#d98a82}
+    .r-t{font-size:12.5px;font-weight:600;fill:#b03030}
+    .r-s{font-size:10.5px;fill:#a05a52}
+    .gbox{fill:#eaf5ee;stroke:#7bbd97}
+    .g-t{font-size:12.5px;font-weight:600;fill:#1f6b43}
+    .g-s{font-size:10.5px;fill:#3c7a57}
+    .arr{stroke:#9a9a9a;stroke-width:2;fill:none}
+    .tag{font-size:10.5px;fill:#777}
+    .tagb{font-size:11px;font-weight:600;fill:#555}
+    .foot{font-size:10px;fill:#8a8a8a}
+  </style>
+
+  <text x="500" y="28" text-anchor="middle" class="title">每条瓶颈对应的治理手段（B1–B5）</text>
+  <text x="500" y="48" text-anchor="middle" class="subtitle">红色＝当前瓶颈，绿色＝对应治理手段（技术领域 + 做法），右侧标注其归属的 §5 应对方向</text>
+
+  <defs>
+    <marker id="ga" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="strokeWidth" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9a9a9a"/>
+    </marker>
+  </defs>
+
+  <!-- headers -->
+  <text x="83"  y="84" text-anchor="middle" class="hdr">层</text>
+  <text x="135" y="84" class="hdr">瓶颈（当前）</text>
+  <text x="508" y="84" class="hdr">治理手段（技术领域 + 做法）</text>
+  <text x="888" y="84" class="hdr">§5 方向</text>
+
+  <!-- ============ ROW 1 (B1) top=100 ============ -->
+  <rect x="46" y="124" width="74" height="34" rx="6" class="pill" fill="#5589b8"/>
+  <text x="83" y="146" text-anchor="middle" class="pill-t">负载</text>
+  <rect x="132" y="110" width="320" height="72" rx="6" class="rbox"/>
+  <text x="146" y="142" class="r-t">B1 场景化冗余</text>
+  <text x="146" y="162" class="r-s">跨场景驻留 · 整体利用率低</text>
+  <line x1="458" y1="146" x2="500" y2="146" class="arr" marker-end="url(#ga)"/>
+  <rect x="502" y="110" width="374" height="72" rx="6" class="gbox"/>
+  <text x="516" y="136" class="g-t">场景化内存画像 + 整入整出</text>
+  <text x="516" y="156" class="g-s">回栈归因建『场景→内存』映射，</text>
+  <text x="516" y="172" class="g-s">按场景整体换入 / 换出冗余工作集。</text>
+  <text x="888" y="142" class="tagb">§5</text>
+  <text x="888" y="160" class="tag">分层内存</text>
+
+  <!-- ============ ROW 2 (B2) top=192 ============ -->
+  <rect x="46" y="216" width="74" height="34" rx="6" class="pill" fill="#5e8499"/>
+  <text x="83" y="238" text-anchor="middle" class="pill-t">负载/系统</text>
+  <rect x="132" y="202" width="320" height="72" rx="6" class="rbox"/>
+  <text x="146" y="234" class="r-t">B2 系统服务常驻</text>
+  <text x="146" y="254" class="r-s">前台场景无需全部常驻</text>
+  <line x1="458" y1="238" x2="500" y2="238" class="arr" marker-end="url(#ga)"/>
+  <rect x="502" y="202" width="374" height="72" rx="6" class="gbox"/>
+  <text x="516" y="228" class="g-t">系统服务按需驻留</text>
+  <text x="516" y="248" class="g-s">识别前台场景依赖的服务集，</text>
+  <text x="516" y="264" class="g-s">非必需常驻服务内存整体换出。</text>
+  <text x="888" y="234" class="tagb">§5</text>
+  <text x="888" y="252" class="tag">主动回收</text>
+
+  <!-- ============ ROW 3 (B3) top=284 ============ -->
+  <rect x="46" y="308" width="74" height="34" rx="6" class="pill" fill="#6a7b8c"/>
+  <text x="83" y="330" text-anchor="middle" class="pill-t">系统</text>
+  <rect x="132" y="294" width="320" height="72" rx="6" class="rbox"/>
+  <text x="146" y="326" class="r-t">B3 memcg 缺水线</text>
+  <text x="146" y="346" class="r-s">触发粗放 · 静态门限</text>
+  <line x1="458" y1="330" x2="500" y2="330" class="arr" marker-end="url(#ga)"/>
+  <rect x="502" y="294" width="374" height="72" rx="6" class="gbox"/>
+  <text x="516" y="320" class="g-t">per-memcg 自适应水线</text>
+  <text x="516" y="340" class="g-s">按组配置随压力自适应的 low/high 水线，</text>
+  <text x="516" y="356" class="g-s">分组、按实时压力触发回收。</text>
+  <text x="888" y="326" class="tagb">§5</text>
+  <text x="888" y="344" class="tag">主动回收</text>
+
+  <!-- ============ ROW 4 (B4) top=376 ============ -->
+  <rect x="46" y="400" width="74" height="34" rx="6" class="pill" fill="#6a7b8c"/>
+  <text x="83" y="422" text-anchor="middle" class="pill-t">系统</text>
+  <rect x="132" y="386" width="320" height="72" rx="6" class="rbox"/>
+  <text x="146" y="418" class="r-t">B4 文件页 LRU 场景盲</text>
+  <text x="146" y="438" class="r-s">冷热误判 · 假阳 / 假阴</text>
+  <line x1="458" y1="422" x2="500" y2="422" class="arr" marker-end="url(#ga)"/>
+  <rect x="502" y="386" width="374" height="72" rx="6" class="gbox"/>
+  <text x="516" y="412" class="g-t">场景特征冷热识别</text>
+  <text x="516" y="432" class="g-s">在 MGLRU / DAMON 上构建场景特征，</text>
+  <text x="516" y="448" class="g-s">降低假阳 / 假阴，精准回收。</text>
+  <text x="888" y="418" class="tagb">§5</text>
+  <text x="888" y="436" class="tag">主动回收</text>
+
+  <!-- ============ ROW 5 (B5) top=468 ============ -->
+  <rect x="46" y="492" width="74" height="34" rx="6" class="pill" fill="#3f5160"/>
+  <text x="83" y="514" text-anchor="middle" class="pill-t">互联</text>
+  <rect x="132" y="478" width="320" height="72" rx="6" class="rbox"/>
+  <text x="146" y="510" class="r-t">B5 设备钉住不可见</text>
+  <text x="146" y="530" class="r-s">绕过 LRU / 回收看不见</text>
+  <line x1="458" y1="514" x2="500" y2="514" class="arr" marker-end="url(#ga)"/>
+  <rect x="502" y="478" width="374" height="72" rx="6" class="gbox"/>
+  <text x="516" y="504" class="g-t">统一内存治理（IOMMU-SVA）</text>
+  <text x="516" y="524" class="g-s">让 dma-buf / 设备驻留页进入缺页与 LRU，</text>
+  <text x="516" y="540" class="g-s">使钉住内存可观测、可回收。</text>
+  <text x="888" y="510" class="tagb">§5</text>
+  <text x="888" y="528" class="tag">统一治理</text>
+
+  <text x="46" y="582" class="foot">注：四类手段均为「在不增加 DRAM 的前提下提高有效容量」的治理思路，与 §5 应对方向一一对应；B1/B2 的「整入整出」可下沉至 zram / 异构压缩层。</text>
+</svg>

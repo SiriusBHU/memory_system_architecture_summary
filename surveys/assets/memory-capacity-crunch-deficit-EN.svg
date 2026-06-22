@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" font-family="system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="12">
+  <style>
+    .title    { font-size: 16px; font-weight: 600; fill: #222; }
+    .subtitle { font-size: 12px; fill: #555; }
+    .axis     { stroke: #555; stroke-width: 1; }
+    .grid     { stroke: #e6e6e6; stroke-width: 1; stroke-dasharray: 2,3; }
+    .muted    { fill: #777; font-size: 11px; }
+    .ann      { fill: #333; font-size: 11px; }
+    .projection-bg { fill: #f6f6f0; }
+    .leg-box  { fill: white; stroke: #bbb; }
+
+    .line-price { stroke: #c43c3c; stroke-width: 2.6; fill: none; }
+    .line-dem   { stroke: #5589b8; stroke-width: 2.4; fill: none; }
+    .line-cap   { stroke: #2e8b57; stroke-width: 2.4; fill: none; }
+    .gap        { fill: #d62828; fill-opacity: 0.16; stroke: none; }
+    .dot-price  { fill: #c43c3c; }
+    .dot-dem    { fill: #5589b8; }
+    .dot-cap    { fill: #2e8b57; }
+  </style>
+
+  <text x="420" y="26" text-anchor="middle" class="title">The Escape Valve Closes: Price Spikes, Capacity Freezes, Demand Climbs</text>
+  <text x="420" y="44" text-anchor="middle" class="subtitle">Indexed to 2024 = 100. When DRAM tripled, OEMs stopped adding RAM — capacity flatlined while working sets kept growing.</text>
+
+  <!-- projection band from 2026.5 (x=496.25) -->
+  <rect x="496.25" y="70" width="243.75" height="370" class="projection-bg"/>
+  <text x="618" y="86" text-anchor="middle" class="muted">Projection (2026.5 — 2028)</text>
+
+  <!-- Y grid: index 0..500 ; y(v)=440 - v*0.68 -->
+  <g>
+    <line x1="90" x2="740" y1="440" y2="440" class="axis"/>
+    <text x="84" y="443" text-anchor="end" class="muted">0</text>
+    <line x1="90" x2="740" y1="372" y2="372" class="grid"/><text x="84" y="375" text-anchor="end" class="muted">100</text>
+    <line x1="90" x2="740" y1="304" y2="304" class="grid"/><text x="84" y="307" text-anchor="end" class="muted">200</text>
+    <line x1="90" x2="740" y1="236" y2="236" class="grid"/><text x="84" y="239" text-anchor="end" class="muted">300</text>
+    <line x1="90" x2="740" y1="168" y2="168" class="grid"/><text x="84" y="171" text-anchor="end" class="muted">400</text>
+    <line x1="90" x2="740" y1="100" y2="100" class="grid"/><text x="84" y="103" text-anchor="end" class="muted">500</text>
+    <text x="40" y="270" text-anchor="middle" class="muted" transform="rotate(-90 40 270)">Index (2024 = 100)</text>
+  </g>
+  <!-- erase the duplicate 100 at baseline: relabel baseline as 0 visually omitted; keep single 100 line -->
+
+  <!-- X axis -->
+  <g class="muted">
+    <line x1="90" x2="740" y1="440" y2="440" class="axis"/>
+    <text x="90"    y="458" text-anchor="middle">2024</text>
+    <text x="252.5" y="458" text-anchor="middle">2025</text>
+    <text x="415"   y="458" text-anchor="middle">2026</text>
+    <text x="577.5" y="458" text-anchor="middle">2027</text>
+    <text x="740"   y="458" text-anchor="middle">2028</text>
+  </g>
+
+  <!-- =====================================================================
+       Deficit band between DEMAND (upper) and CAPACITY (lower)
+       demand y: 372 359.76 344.12 325.08 304.68
+       cap    y: 372 372    372    360.44 349.56
+  ===================================================================== -->
+  <polygon class="gap"
+    points="90,372 252.5,359.76 415,344.12 577.5,325.08 740,304.68
+            740,349.56 577.5,360.44 415,372 252.5,372 90,372"/>
+
+  <!-- CAPACITY (sea green): 100 100 100 117 133 -->
+  <polyline class="line-cap" points="90,372 252.5,372 415,372 577.5,360.44 740,349.56"/>
+  <g><circle cx="90" cy="372" r="3.4" class="dot-cap"/><circle cx="252.5" cy="372" r="3.4" class="dot-cap"/><circle cx="415" cy="372" r="3.4" class="dot-cap"/><circle cx="577.5" cy="360.44" r="3.4" class="dot-cap"/><circle cx="740" cy="349.56" r="3.4" class="dot-cap"/></g>
+
+  <!-- DEMAND (blue): 100 118 141 169 199 -->
+  <polyline class="line-dem" points="90,372 252.5,359.76 415,344.12 577.5,325.08 740,304.68"/>
+  <g><circle cx="90" cy="372" r="3.4" class="dot-dem"/><circle cx="252.5" cy="359.76" r="3.4" class="dot-dem"/><circle cx="415" cy="344.12" r="3.4" class="dot-dem"/><circle cx="577.5" cy="325.08" r="3.4" class="dot-dem"/><circle cx="740" cy="304.68" r="3.4" class="dot-dem"/></g>
+
+  <!-- PRICE (red): 100 156 444 422 289 -->
+  <polyline class="line-price" points="90,372 252.5,333.92 415,138.08 577.5,153.04 740,243.48"/>
+  <g><circle cx="90" cy="372" r="3.4" class="dot-price"/><circle cx="252.5" cy="333.92" r="3.4" class="dot-price"/><circle cx="415" cy="138.08" r="3.4" class="dot-price"/><circle cx="577.5" cy="153.04" r="3.4" class="dot-price"/><circle cx="740" cy="243.48" r="3.4" class="dot-price"/></g>
+
+  <!-- =====================================================================
+       Annotations
+  ===================================================================== -->
+  <!-- price peak -->
+  <text x="415" y="128" text-anchor="middle" class="ann" fill="#c43c3c" font-weight="600">Mobile DRAM price ×4.4 (2024→2026)</text>
+  <text x="415" y="143" text-anchor="middle" class="muted" fill="#c43c3c">≈$4.5/GB → ≈$20/GB</text>
+  <!-- price easing note -->
+  <text x="742" y="240" class="muted" fill="#c43c3c">eases only if</text>
+  <text x="742" y="253" class="muted" fill="#c43c3c">2027 relief arrives</text>
+
+  <!-- capacity frozen -->
+  <text x="150" y="392" class="ann" fill="#2e8b57" font-weight="600">RAM frozen — OEMs hold 12 GB, skip 16 GB</text>
+  <text x="742" y="352" class="ann" fill="#2e8b57">capacity +33%</text>
+
+  <!-- demand -->
+  <text x="742" y="304" class="ann" fill="#5589b8">demand +99%</text>
+  <text x="430" y="330" class="muted" fill="#b03030">structural shortfall (demand − capacity) widens →</text>
+
+  <!-- =====================================================================
+       Legend
+  ===================================================================== -->
+  <g transform="translate(90, 478)">
+    <rect x="0" y="0" width="820" height="46" class="leg-box"/>
+    <line x1="12" y1="16" x2="44" y2="16" class="line-price"/>
+    <text x="50" y="20" class="ann">Mobile DRAM price ($/GB, indexed)</text>
+    <line x1="300" y1="16" x2="332" y2="16" class="line-dem"/>
+    <text x="338" y="20" class="ann">Memory demand (working set, indexed)</text>
+    <line x1="560" y1="16" x2="592" y2="16" class="line-cap"/>
+    <text x="598" y="20" class="ann">Realized capacity (median flagship RAM)</text>
+
+    <rect x="12" y="30" width="18" height="10" class="gap"/>
+    <text x="36" y="39" class="ann">Structural shortfall = demand growth the frozen capacity cannot meet</text>
+  </g>
+
+  <text x="90" y="534" class="muted" font-size="10">
+    Price path ($/GB): ≈$4.5 (2024) → ≈$7 (2025) → ≈$20 (Q2 2026 / LTA $21) → elevated 2027 → partial relief 2028 if fabs ramp. Sources §8.
+  </text>
+</svg>

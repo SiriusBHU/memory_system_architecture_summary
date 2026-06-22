@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 1104" font-family="system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="12">
+  <style>
+    .title{font-size:16px;font-weight:600;fill:#222}
+    .subtitle{font-size:11.5px;fill:#555}
+    .gutter{font-size:13px;font-weight:600}
+    .gsub{font-size:10px;fill:#8a8a8a}
+    .bandA{fill:#eef4fa;stroke:#9cc0e0}
+    .bandB{fill:#f4f6f5;stroke:#aebcb4}
+    .bandC{fill:#eceff2;stroke:#9aa6b2}
+    .blk{stroke-width:1}
+    .blk-h{font-size:12px;font-weight:600}
+    .chip{fill:#fff;stroke:#cdd5dd;stroke-width:1}
+    .ct{font-size:10px;font-weight:600;fill:#243240}
+    .cs{font-size:8.5px;fill:#6a7480}
+    .note{font-size:10.5px;fill:#555}
+    .warn{font-size:10.5px;fill:#b3641f}
+    .flow{stroke:#6a7b8c;stroke-width:1.5;fill:none}
+    .flab{font-size:9.5px;fill:#5e6f80}
+    .pin{stroke:#d8702a;stroke-width:2;fill:none;stroke-dasharray:6,4;stroke-opacity:.7}
+    .pinlab{font-size:10.5px;fill:#c4601a;font-weight:600}
+    .bhot{fill:#c43c3c;stroke:#fff;stroke-width:2}
+    .bnum{fill:#fff;font-size:11px;font-weight:700}
+    .leg-box{fill:#fff;stroke:#d9a08c}
+    .leg-t{font-size:12px;font-weight:600;fill:#b03030}
+    .leg{font-size:10.5px;fill:#3a3a3a}
+    .legk{font-weight:600;fill:#b03030}
+    .foot{font-size:10px;fill:#8a8a8a}
+  </style>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="strokeWidth" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6a7b8c"/></marker>
+    <marker id="arrP" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="strokeWidth" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d8702a"/></marker>
+  </defs>
+
+  <text x="560" y="30" text-anchor="middle" class="title">手机内存管理全貌：分配 → 记账 → 回收 → 交换/OOM → 设备内存，以及负载提出的关键瓶颈</text>
+  <text x="560" y="52" text-anchor="middle" class="subtitle">① 负载 → ② 内存管理系统（②a 分配 · ②b 记账 · ②c 回收 · ②d 交换/OOM · ②e 设备内存）→ ③ 片上互联与物理内存；红色 B1–B5 为瓶颈在全貌中的位置</text>
+
+  <!-- ============================ BAND ① WORKLOAD ============================ -->
+  <rect x="36" y="76" width="1048" height="104" rx="8" class="bandA"/>
+  <text x="93" y="120" text-anchor="middle" class="gutter" fill="#3d6e96">① 负载层</text>
+  <text x="93" y="138" text-anchor="middle" class="gsub">workload</text>
+
+  <g>
+    <rect x="160" y="92" width="175" height="48" rx="5" class="chip"/><text x="247" y="112" text-anchor="middle" class="ct">前台应用</text><text x="247" y="128" text-anchor="middle" class="cs">浏览器·相机·游戏</text>
+    <rect x="347" y="92" width="175" height="48" rx="5" class="chip"/><text x="434" y="112" text-anchor="middle" class="ct">后台应用</text><text x="434" y="128" text-anchor="middle" class="cs">缓存进程·可被杀</text>
+    <rect x="534" y="92" width="175" height="48" rx="5" class="chip"/><text x="621" y="112" text-anchor="middle" class="ct">系统服务</text><text x="621" y="128" text-anchor="middle" class="cs">system_server 等·常驻</text>
+    <rect x="721" y="92" width="175" height="48" rx="5" class="chip"/><text x="808" y="112" text-anchor="middle" class="ct">端侧 AI</text><text x="808" y="128" text-anchor="middle" class="cs">常驻模型 + KV cache</text>
+    <rect x="908" y="92" width="175" height="48" rx="5" class="chip"/><text x="995" y="112" text-anchor="middle" class="ct">native / HAL</text><text x="995" y="128" text-anchor="middle" class="cs">守护进程·驱动</text>
+  </g>
+  <text x="160" y="166" class="note">产生的内存类型：匿名页(heap/stack) · 文件页(code/mmap) · 共享内存(ashmem) · 图形/设备缓冲(dma-buf) · GPU/NPU 显存</text>
+
+  <!-- ============================ BAND ② MEMORY MANAGEMENT ============================ -->
+  <rect x="36" y="200" width="1048" height="560" rx="8" class="bandB"/>
+  <text x="93" y="455" text-anchor="middle" class="gutter" fill="#52605a">② 内存管理</text>
+  <text x="93" y="473" text-anchor="middle" class="gutter" fill="#52605a">系统层</text>
+  <text x="93" y="491" text-anchor="middle" class="gsub">OS / 内核</text>
+
+  <!-- ②a allocation -->
+  <rect x="160" y="224" width="560" height="150" rx="6" class="blk" fill="#f0f5fb" stroke="#bcd2e6"/>
+  <text x="172" y="243" class="blk-h" fill="#3a6690">②a 分配</text>
+  <g>
+    <rect x="172" y="252" width="126" height="48" rx="4" class="chip"/><text x="235" y="272" text-anchor="middle" class="ct">用户态分配器</text><text x="235" y="287" text-anchor="middle" class="cs">malloc·scudo·ART GC</text>
+    <rect x="308" y="252" width="126" height="48" rx="4" class="chip"/><text x="371" y="272" text-anchor="middle" class="ct">系统调用</text><text x="371" y="287" text-anchor="middle" class="cs">mmap · brk</text>
+    <rect x="444" y="252" width="126" height="48" rx="4" class="chip"/><text x="507" y="272" text-anchor="middle" class="ct">缺页处理</text><text x="507" y="287" text-anchor="middle" class="cs">page fault</text>
+    <rect x="580" y="252" width="126" height="48" rx="4" class="chip"/><text x="643" y="272" text-anchor="middle" class="ct">伙伴系统 buddy</text><text x="643" y="287" text-anchor="middle" class="cs">zones · 水线</text>
+    <rect x="172" y="308" width="126" height="48" rx="4" class="chip"/><text x="235" y="328" text-anchor="middle" class="ct">slab / slub</text><text x="235" y="343" text-anchor="middle" class="cs">内核对象</text>
+    <rect x="308" y="308" width="126" height="48" rx="4" class="chip"/><text x="371" y="328" text-anchor="middle" class="ct">CMA</text><text x="371" y="343" text-anchor="middle" class="cs">连续内存</text>
+    <rect x="444" y="308" width="126" height="48" rx="4" class="chip"/><text x="507" y="328" text-anchor="middle" class="ct">页表 / MMU</text><text x="507" y="343" text-anchor="middle" class="cs">每进程 VMA</text>
+    <rect x="580" y="308" width="126" height="48" rx="4" class="chip"/><text x="643" y="328" text-anchor="middle" class="ct">THP · 规整</text><text x="643" y="343" text-anchor="middle" class="cs">compaction</text>
+  </g>
+
+  <!-- ②b accounting -->
+  <rect x="735" y="224" width="349" height="150" rx="6" class="blk" fill="#eef5f0" stroke="#bcd9c8"/>
+  <text x="747" y="243" class="blk-h" fill="#3a7a5e">②b 记账 / 分组</text>
+  <g>
+    <rect x="747" y="252" width="160" height="48" rx="4" class="chip"/><text x="827" y="272" text-anchor="middle" class="ct">memcg</text><text x="827" y="287" text-anchor="middle" class="cs">memory.high/max/low</text>
+    <rect x="916" y="252" width="160" height="48" rx="4" class="chip"/><text x="996" y="272" text-anchor="middle" class="ct">PSI</text><text x="996" y="287" text-anchor="middle" class="cs">压力 stall</text>
+    <rect x="747" y="308" width="160" height="48" rx="4" class="chip"/><text x="827" y="328" text-anchor="middle" class="ct">RSS / PSS / USS</text><text x="827" y="343" text-anchor="middle" class="cs">按进程记账</text>
+    <rect x="916" y="308" width="160" height="48" rx="4" class="chip"/><text x="996" y="328" text-anchor="middle" class="ct">cgroup v2</text><text x="996" y="343" text-anchor="middle" class="cs">层级 limit</text>
+  </g>
+
+  <!-- ②c reclaim -->
+  <rect x="160" y="392" width="924" height="150" rx="6" class="blk" fill="#fbf3ec" stroke="#e6c9aa"/>
+  <text x="172" y="411" class="blk-h" fill="#a86a2a">②c 回收引擎</text>
+  <g>
+    <rect x="172" y="420" width="172" height="48" rx="4" class="chip"/><text x="258" y="440" text-anchor="middle" class="ct">LRU / MGLRU</text><text x="258" y="455" text-anchor="middle" class="cs">file·anon·多代</text>
+    <rect x="354" y="420" width="172" height="48" rx="4" class="chip"/><text x="440" y="440" text-anchor="middle" class="ct">kswapd</text><text x="440" y="455" text-anchor="middle" class="cs">后台回收</text>
+    <rect x="536" y="420" width="172" height="48" rx="4" class="chip"/><text x="622" y="440" text-anchor="middle" class="ct">direct reclaim</text><text x="622" y="455" text-anchor="middle" class="cs">分配时回收</text>
+    <rect x="718" y="420" width="172" height="48" rx="4" class="chip"/><text x="804" y="440" text-anchor="middle" class="ct">DAMON / DAMOS</text><text x="804" y="455" text-anchor="middle" class="cs">监测·主动回收</text>
+    <rect x="900" y="420" width="172" height="48" rx="4" class="chip"/><text x="986" y="440" text-anchor="middle" class="ct">shrinkers</text><text x="986" y="455" text-anchor="middle" class="cs">dentry·inode·驱动</text>
+    <rect x="172" y="476" width="172" height="48" rx="4" class="chip"/><text x="258" y="496" text-anchor="middle" class="ct">writeback 回写</text><text x="258" y="511" text-anchor="middle" class="cs">脏文件页 → UFS</text>
+    <rect x="354" y="476" width="172" height="48" rx="4" class="chip"/><text x="440" y="496" text-anchor="middle" class="ct">swappiness</text><text x="440" y="511" text-anchor="middle" class="cs">anon/file 平衡</text>
+    <rect x="536" y="476" width="172" height="48" rx="4" class="chip"/><text x="622" y="496" text-anchor="middle" class="ct">workingset</text><text x="622" y="511" text-anchor="middle" class="cs">refault 检测</text>
+    <rect x="718" y="476" width="172" height="48" rx="4" class="chip"/><text x="804" y="496" text-anchor="middle" class="ct">node/zone reclaim</text><text x="804" y="511" text-anchor="middle" class="cs">按节点回收</text>
+    <rect x="900" y="476" width="172" height="48" rx="4" class="chip"/><text x="986" y="496" text-anchor="middle" class="ct">oom_score_adj</text><text x="986" y="511" text-anchor="middle" class="cs">回收/杀 优先级</text>
+  </g>
+
+  <!-- ②d swap & oom -->
+  <rect x="160" y="560" width="455" height="150" rx="6" class="blk" fill="#fbeeee" stroke="#e6bcbc"/>
+  <text x="172" y="579" class="blk-h" fill="#b03030">②d 交换 / OOM</text>
+  <g>
+    <rect x="172" y="588" width="137" height="48" rx="4" class="chip"/><text x="240" y="608" text-anchor="middle" class="ct">zram</text><text x="240" y="623" text-anchor="middle" class="cs">压缩 swap · 片上</text>
+    <rect x="319" y="588" width="137" height="48" rx="4" class="chip"/><text x="387" y="608" text-anchor="middle" class="ct">zswap</text><text x="387" y="623" text-anchor="middle" class="cs">压缩缓存</text>
+    <rect x="466" y="588" width="137" height="48" rx="4" class="chip"/><text x="534" y="608" text-anchor="middle" class="ct">swap cache</text><text x="534" y="623" text-anchor="middle" class="cs">交换槽</text>
+    <rect x="172" y="644" width="210" height="48" rx="4" class="chip"/><text x="277" y="664" text-anchor="middle" class="ct">LMKD</text><text x="277" y="679" text-anchor="middle" class="cs">PSI 驱动 · 杀进程</text>
+    <rect x="392" y="644" width="210" height="48" rx="4" class="chip"/><text x="497" y="664" text-anchor="middle" class="ct">kernel OOM</text><text x="497" y="679" text-anchor="middle" class="cs">最后兜底</text>
+  </g>
+
+  <!-- ②e device / shared memory -->
+  <rect x="629" y="560" width="455" height="150" rx="6" class="blk" fill="#eef1f5" stroke="#bcc6d2"/>
+  <text x="641" y="579" class="blk-h" fill="#4a5a68">②e 设备 / 共享内存</text>
+  <g>
+    <rect x="641" y="588" width="137" height="48" rx="4" class="chip" fill="#fbf3ee"/><text x="709" y="608" text-anchor="middle" class="ct">dma-buf heaps</text><text x="709" y="623" text-anchor="middle" class="cs">system · cma</text>
+    <rect x="788" y="588" width="137" height="48" rx="4" class="chip"/><text x="856" y="608" text-anchor="middle" class="ct">gralloc</text><text x="856" y="623" text-anchor="middle" class="cs">图形缓冲</text>
+    <rect x="935" y="588" width="137" height="48" rx="4" class="chip"/><text x="1003" y="608" text-anchor="middle" class="ct">GPU/NPU 显存</text><text x="1003" y="623" text-anchor="middle" class="cs">驱动管理</text>
+    <rect x="641" y="644" width="137" height="48" rx="4" class="chip" fill="#fbf3ee"/><text x="709" y="664" text-anchor="middle" class="ct">pin / mlock</text><text x="709" y="679" text-anchor="middle" class="cs">钉住·不可回收</text>
+    <rect x="788" y="644" width="137" height="48" rx="4" class="chip"/><text x="856" y="664" text-anchor="middle" class="ct">IOMMU / SVA</text><text x="856" y="679" text-anchor="middle" class="cs">设备缺页</text>
+    <rect x="935" y="644" width="137" height="48" rx="4" class="chip"/><text x="1003" y="664" text-anchor="middle" class="ct">ION</text><text x="1003" y="679" text-anchor="middle" class="cs">legacy</text>
+  </g>
+
+  <text x="172" y="730" class="warn">片上唯一泄压口：匿名页 → 压缩 (zram)，文件页 → 回写 UFS，仍不足 → LMKD/jetsam 杀；移动端不 swap 到闪存。</text>
+
+  <!-- ============================ BAND ③ SoC ============================ -->
+  <rect x="36" y="782" width="1048" height="120" rx="8" class="bandC"/>
+  <text x="93" y="832" text-anchor="middle" class="gutter" fill="#4a5a68">③ 片上互联</text>
+  <text x="93" y="850" text-anchor="middle" class="gutter" fill="#4a5a68">+ 物理内存</text>
+  <text x="93" y="868" text-anchor="middle" class="gsub">SoC</text>
+  <g>
+    <rect x="160" y="812" width="175" height="60" rx="5" class="chip"/><text x="247" y="838" text-anchor="middle" class="ct">计算客户端</text><text x="247" y="855" text-anchor="middle" class="cs">CPU·GPU·NPU·ISP·Codec</text>
+    <rect x="347" y="812" width="175" height="60" rx="5" class="chip"/><text x="434" y="838" text-anchor="middle" class="ct">互联 fabric</text><text x="434" y="855" text-anchor="middle" class="cs">NoC·一致性 + SLC</text>
+    <rect x="534" y="812" width="175" height="60" rx="5" class="chip"/><text x="621" y="838" text-anchor="middle" class="ct">内存控制器</text><text x="621" y="855" text-anchor="middle" class="cs">+ QoS 调度</text>
+    <rect x="721" y="812" width="175" height="60" rx="5" class="chip" fill="#eef2f7"/><text x="808" y="838" text-anchor="middle" class="ct">LPDDR5X / 6</text><text x="808" y="855" text-anchor="middle" class="cs">固定容量（冻结）→ buddy</text>
+    <rect x="908" y="812" width="175" height="60" rx="5" class="chip"/><text x="995" y="838" text-anchor="middle" class="ct">UFS 存储</text><text x="995" y="855" text-anchor="middle" class="cs">文件页来源 · 不作 swap</text>
+  </g>
+
+  <!-- ============================ FLOWS ============================ -->
+  <!-- alloc: workload -> ②a -->
+  <line x1="430" y1="180" x2="430" y2="223" class="flow" marker-end="url(#arr)"/>
+  <text x="438" y="197" class="flab">① 分配（page fault → buddy）</text>
+  <!-- watermark/pressure -> reclaim -->
+  <line x1="440" y1="374" x2="440" y2="391" class="flow" marker-end="url(#arr)"/>
+  <text x="448" y="387" class="flab">水线 / 压力 → 回收</text>
+  <!-- reclaim -> swap/oom -->
+  <line x1="300" y1="542" x2="300" y2="559" class="flow" marker-end="url(#arr)"/>
+  <text x="120" y="554" class="flab">匿名页→压缩 / 不足→杀</text>
+  <!-- file pages <-> UFS backing store -->
+  <line x1="995" y1="802" x2="995" y2="811" class="flow" marker-end="url(#arr)"/>
+  <text x="995" y="798" class="flab" text-anchor="middle">文件页：换入 / 回写 UFS</text>
+  <!-- physical supply LPDDR -> buddy (faint upward, via right gutter to ②a hint) -->
+  <line x1="808" y1="811" x2="808" y2="760" class="flow" stroke-dasharray="3,3" marker-end="url(#arr)"/>
+  <text x="816" y="792" class="flab">物理页 / 固定容量</text>
+
+  <!-- device + pinning bypass: workload -> ②e, skipping ②a/②b/②c -->
+  <polyline class="pin" points="995,180 1098,212 1098,558" marker-end="url(#arrP)"/>
+  <text transform="rotate(-90 1090 380)" x="1090" y="380" text-anchor="middle" class="pinlab">设备内存 · 钉住：绕过 ②c 回收</text>
+
+  <!-- ============================ BOTTLENECK HOTSPOTS ============================ -->
+  <g>
+    <circle cx="430" cy="90" r="12" class="bhot"/><text x="430" y="94" text-anchor="middle" class="bnum">B1</text>
+    <circle cx="621" cy="90" r="12" class="bhot"/><text x="621" y="94" text-anchor="middle" class="bnum">B2</text>
+    <circle cx="760" cy="252" r="12" class="bhot"/><text x="760" y="256" text-anchor="middle" class="bnum">B3</text>
+    <circle cx="322" cy="420" r="12" class="bhot"/><text x="322" y="424" text-anchor="middle" class="bnum">B4</text>
+    <circle cx="653" cy="588" r="12" class="bhot"/><text x="653" y="592" text-anchor="middle" class="bnum">B5</text>
+  </g>
+
+  <!-- ============================ LEGEND ============================ -->
+  <rect x="36" y="918" width="1048" height="160" rx="6" class="leg-box"/>
+  <text x="54" y="942" class="leg-t">关键瓶颈在全貌中的位置（红色编号；治理手段见 §6.3 表与 图4）</text>
+  <text x="54" y="966" class="leg"><tspan class="legk">B1 · 负载层</tspan> — 场景化冗余：应用 / 系统服务跨场景占用不同内存区，整体利用率低、跨场景冗余常驻（可回栈定位）。</text>
+  <text x="54" y="988" class="leg"><tspan class="legk">B2 · 负载层</tspan> — 系统服务常驻：多数前台场景并不需要全部常驻系统服务，缺少按场景的整体换入 / 换出。</text>
+  <text x="54" y="1010" class="leg"><tspan class="legk">B3 · ②b 记账层</tspan> — memcg 缺水线：分组回收缺精细化、自适应的 low/high 水线，触发粗放、不能按组按压力调节。</text>
+  <text x="54" y="1032" class="leg"><tspan class="legk">B4 · ②c 回收层</tspan> — 文件页 LRU 场景盲：整机 LRU 缺场景特征，冷热判定假阳 / 假阴，误回收热页或留滞冷页。</text>
+  <text x="54" y="1054" class="leg"><tspan class="legk">B5 · ②e/③ 设备内存</tspan> — dma-buf / pin / KV / scratch 绕过 page cache 与 LRU、经 IOMMU 直连设备，回收看不见、够不着。</text>
+
+  <text x="36" y="1096" class="foot">注：示意性架构图，组件名以 Linux / Android 内核为准（iOS 近似对应 jetsam 与 Compressed Memory）；橙色虚线＝设备 / 钉住内存绕过回收路径。</text>
+</svg>
