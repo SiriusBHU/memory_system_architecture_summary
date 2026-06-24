@@ -78,8 +78,8 @@ ax = fig.add_axes([0.085, 0.215, 0.80, 0.655])
 # 外推区底色（最底层）
 PROJ_START = 2026.5
 ax.axvspan(PROJ_START, 2028.0, color=C_PROJ, zorder=0)
-# ax.text((PROJ_START + 2028.0) / 2, 185, "外推区（2026.5 — 2028）",
-#         ha="center", va="top", fontsize=10, color=C_MUTED, zorder=1)
+ax.text((PROJ_START + 2028.0) / 2, 185, "外推区（2026.5 — 2028）",
+        ha="center", va="top", fontsize=10, color=C_MUTED, zorder=1)
 
 # 网格（数据之下）
 ax.set_axisbelow(True)
@@ -102,28 +102,28 @@ ax.axvline(2026.75, color=C3D, linewidth=1.0, linestyle=(0, (2, 4)), alpha=0.45,
 # ---------------------------------------------------------------- 阅读提示框（左上空白区）：异构 + 叠加 + 增长
 note = ("三类任务并存、上下文逐层叠加（异构）\n"
         "越晚出现的任务越重，把总上下文一路推高（增长）")
-# ax.text(2024.12, 185, note, fontsize=10, va="top", ha="left", color=C_TXT, linespacing=1.6,
-#         bbox=dict(boxstyle="round,pad=0.55", facecolor="#fbfbf6", edgecolor="#dcdcd2"), zorder=8)
+ax.text(2024.12, 185, note, fontsize=10, va="top", ha="left", color=C_TXT, linespacing=1.6,
+        bbox=dict(boxstyle="round,pad=0.55", facecolor="#fbfbf6", edgecolor="#dcdcd2"), zorder=8)
 
-# # 后台长程层标注（对数轴下红层偏窄，改用浮动箭注指向红区）
-# ax.annotate("③ 后台长程 Agent · 手机端 Claw（多模态）· 增量 →128k",
-#             xy=(2027.7, 45), xytext=(2024.9, 96),
-#             fontsize=9.5, fontweight="bold", color=C3D, zorder=8,
-#             arrowprops=dict(arrowstyle="->", color=C3D, linewidth=1.1, alpha=0.7))
+# 后台长程层标注（对数轴下红层偏窄，改用浮动箭注指向红区）
+ax.annotate("③ 后台长程 Agent · 手机端 Claw（多模态）· 增量 →128k",
+            xy=(2027.7, 45), xytext=(2024.9, 96),
+            fontsize=9.5, fontweight="bold", color=C3D, zorder=8,
+            arrowprops=dict(arrowstyle="->", color=C3D, linewidth=1.1, alpha=0.7))
 
-# # 增长箭注（指向总上沿的陡升段）
-# ax.annotate("增长 → 总需求约 148k", xy=(2027.92, 150), xytext=(2025.85, 52),
-#             fontsize=10, fontweight="bold", color=C3D, zorder=9,
-#             arrowprops=dict(arrowstyle="->", color=C3D, linewidth=1.3, alpha=0.8))
+# 增长箭注（指向总上沿的陡升段）
+ax.annotate("增长 → 总需求约 148k", xy=(2027.92, 150), xytext=(2025.85, 52),
+            fontsize=10, fontweight="bold", color=C3D, zorder=9,
+            arrowprops=dict(arrowstyle="->", color=C3D, linewidth=1.3, alpha=0.8))
 
-# # ---------------------------------------------------------------- 右侧端点：各层贡献 + 合计
-# ax.text(2028.06, 2.0, "① 传统 ~4k", fontsize=9.5, color=C1D, va="center", fontweight="bold")
-# ax.text(2028.06, 9.0, "② 伴随态 +16k", fontsize=9.5, color=C2D, va="center", fontweight="bold")
-# ax.text(2028.06, 50, "③ 后台长程 +128k", fontsize=9.5, color=C3D, va="center", fontweight="bold")
-# ax.text(2028.06, 175, "合计 ≈ 148k", fontsize=10, color="#444", va="center", fontweight="bold")
+# ---------------------------------------------------------------- 右侧端点：各层贡献 + 合计
+ax.text(2028.06, 2.0, "① 传统 ~4k", fontsize=9.5, color=C1D, va="center", fontweight="bold")
+ax.text(2028.06, 9.0, "② 伴随态 +16k", fontsize=9.5, color=C2D, va="center", fontweight="bold")
+ax.text(2028.06, 50, "③ 后台长程 +128k", fontsize=9.5, color=C3D, va="center", fontweight="bold")
+ax.text(2028.06, 175, "合计 ≈ 148k", fontsize=10, color="#444", va="center", fontweight="bold")
 
 # ---------------------------------------------------------------- 坐标轴（纵轴对数，单位 k tokens）
-ax.set_xlim(2023.85, 2028.5)
+ax.set_xlim(2023.85, 2029.7)
 ax.set_yscale("log")
 ax.set_ylim(1, 220)
 ax.set_xticks([2024, 2025, 2026, 2027, 2028])
@@ -132,20 +132,20 @@ ax.yaxis.set_major_locator(FixedLocator([1, 2, 4, 8, 16, 32, 64, 128]))
 ax.yaxis.set_major_formatter(FixedFormatter(["1k", "2k", "4k", "8k", "16k", "32k", "64k", "128k"]))
 ax.yaxis.set_minor_locator(FixedLocator([]))   # 关掉对数轴默认次刻度
 ax.set_xlabel("年份（端侧旗舰）", fontsize=11, color="#666")
-ax.set_ylabel("上下文长度（tokens）", fontsize=11, color="#666")
+ax.set_ylabel("累计上下文长度（tokens，对数轴）", fontsize=11, color="#666")
 ax.tick_params(colors=C_MUTED)
 for side in ("top", "right"):
     ax.spines[side].set_visible(False)
 for side in ("left", "bottom"):
     ax.spines[side].set_color("#aaa")
 
-# # ---------------------------------------------------------------- 标题 / 副标题
-# fig.text(0.5, 0.965, "端侧推理的上下文叠加：三类任务的异构与增长（2024 — 2028）",
-#          ha="center", fontsize=15, fontweight="bold", color="#222")
-# fig.text(0.5, 0.928,
-#          "传统 LLM 打底，伴随态 Agent 与后台长程 Agent 作为增量逐层叠加 —— "
-#          "总上下文被最新最重的任务推高（→ ~148k）",
-#          ha="center", fontsize=10.5, color="#555")
+# ---------------------------------------------------------------- 标题 / 副标题
+fig.text(0.5, 0.965, "端侧推理的上下文叠加：三类任务的异构与增长（2024 — 2028）",
+         ha="center", fontsize=15, fontweight="bold", color="#222")
+fig.text(0.5, 0.928,
+         "传统 LLM 打底，伴随态 Agent 与后台长程 Agent 作为增量逐层叠加 —— "
+         "总上下文被最新最重的任务推高（→ ~148k）",
+         ha="center", fontsize=10.5, color="#555")
 
 # ---------------------------------------------------------------- 图例（坐标轴下方）
 handles = [
@@ -153,22 +153,22 @@ handles = [
     Patch(facecolor=C2, alpha=0.80, label="② 伴随态 Agent（小艺/GUI Agent，图+文，增量 →16k，2025Q4–2026Q1 起）"),
     Patch(facecolor=C3, alpha=0.76, label="③ 后台长程 Agent（手机端 Claw，多模态，增量 →128k，2026Q4–2027Q4 起）"),
 ]
-# ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.10),
-#           ncol=1, frameon=True, fontsize=9, handlelength=1.8)
+ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.10),
+          ncol=1, frameon=True, fontsize=9, handlelength=1.8)
 
-# # ---------------------------------------------------------------- 脚注
-# fig.text(0.085, 0.050,
-#          "读法：三类任务并存、上下文逐层叠加（stack）。传统 LLM 打底，伴随态 / 后台长程作为增量摞在其上；"
-#          "总高度 = 同时常驻的上下文之和。",
-#          fontsize=8, color=C_MUTED)
-# fig.text(0.085, 0.026,
-#          "上下文为示意量级、起始为窗口估计（待核实）；后台长程取较早起点(2026Q4)以示斜率，"
-#          "实际可能延后至 2027Q4。2026.5 右侧为外推。",
-#          fontsize=8, color=C_MUTED)
+# ---------------------------------------------------------------- 脚注
+fig.text(0.085, 0.050,
+         "读法：三类任务并存、上下文逐层叠加（stack）。传统 LLM 打底，伴随态 / 后台长程作为增量摞在其上；"
+         "总高度 = 同时常驻的上下文之和。",
+         fontsize=8, color=C_MUTED)
+fig.text(0.085, 0.026,
+         "上下文为示意量级、起始为窗口估计（待核实）；后台长程取较早起点(2026Q4)以示斜率，"
+         "实际可能延后至 2027Q4。2026.5 右侧为外推。",
+         fontsize=8, color=C_MUTED)
 
 # ---------------------------------------------------------------- 输出（写到脚本所在目录）
 HERE = os.path.dirname(os.path.abspath(__file__))
-fig.savefig(os.path.join(HERE, "agent-era-context-growth-clean.png"), dpi=150)
-fig.savefig(os.path.join(HERE, "agent-era-context-growth-clean.svg"))
+fig.savefig(os.path.join(HERE, "agent-era-context-growth.png"), dpi=150)
+fig.savefig(os.path.join(HERE, "agent-era-context-growth.svg"))
 print("已输出 agent-era-context-growth.png / .svg ->", HERE)
 # plt.show()
