@@ -1,0 +1,51 @@
+<svg width="100%" viewBox="0 0 680 360" xmlns="http://www.w3.org/2000/svg" role="img" preserveAspectRatio="xMidYMid meet">
+<title>端侧 KV-Cache 数据面与控制面架构图</title>
+<desc>数据面：推理框架层产生/消费 KV，异构计算层 NPU/GPU/CPU，共享 LPDDR 内同时放热 KV（pinned dma-buf）与传统 app 内存（零和共享），冷 KV offload 到 UFS 闪存。控制面：OS 内存治理（lmkd/回收/统一治理）管得到传统 app 内存，但对 KV 不透明（两张皮）。</desc>
+<style>
+.t{font:14px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#1f2937}
+.ts{font:12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#6b7280}
+.tl{font:600 12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#6b7280}
+.th{font:600 16px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#111827}
+</style>
+<defs>
+<marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6b7280"/></marker>
+</defs>
+<rect x="0" y="0" width="680" height="360" fill="#ffffff"/>
+<text class="th" x="24" y="28">端侧 KV-Cache 架构图：数据面 × 控制面（两张皮）</text>
+
+<rect x="24" y="44" width="446" height="50" rx="8" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="247" y="65" text-anchor="middle">推理框架层</text>
+<text class="ts" x="247" y="82" text-anchor="middle">分页块表 · 量化/淘汰 · offload 预取器</text>
+
+<rect x="24" y="104" width="446" height="44" rx="8" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="247" y="124" text-anchor="middle">异构计算层</text>
+<text class="ts" x="247" y="140" text-anchor="middle">NPU（消费 KV）· GPU · CPU</text>
+
+<rect x="24" y="160" width="446" height="82" rx="8" fill="#f8fafc" stroke="#d1d5db"/>
+<text class="tl" x="36" y="177">共享 LPDDR（~100 GB/s · dma-buf）· 零和共享</text>
+<rect x="36" y="184" width="205" height="50" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="138" y="203" text-anchor="middle">传统 app 内存</text>
+<text class="ts" x="138" y="219" text-anchor="middle">前台 app · page cache</text>
+<text class="ts" x="138" y="232" text-anchor="middle">受 OS 治理</text>
+<rect x="253" y="184" width="202" height="50" rx="6" fill="#d97706" fill-opacity="0.10" stroke="#d97706"/>
+<text class="t" x="354" y="203" text-anchor="middle">热 KV（pinned）</text>
+<text class="ts" x="354" y="219" text-anchor="middle">框架管 · 不可回收</text>
+<text class="ts" x="354" y="232" text-anchor="middle">与 app 抢同一池</text>
+
+<text class="ts" x="110" y="256">③ offload（预测 + 预取）· 带宽墙 ~20–100×</text>
+<line x1="354" y1="234" x2="354" y2="262" stroke="#6b7280" marker-end="url(#arA)"/>
+<rect x="24" y="262" width="446" height="46" rx="8" fill="#2563eb" fill-opacity="0.08" stroke="#2563eb"/>
+<text class="t" x="247" y="282" text-anchor="middle">冷 KV @ UFS 闪存</text>
+<text class="ts" x="247" y="298" text-anchor="middle">~1–4 GB/s · pSLC 顺序写 · 写寿命 ×8</text>
+
+<rect x="486" y="160" width="176" height="82" rx="8" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="574" y="181" text-anchor="middle">OS 内存治理</text>
+<text class="ts" x="574" y="199" text-anchor="middle">lmkd / PSI</text>
+<text class="ts" x="574" y="215" text-anchor="middle">回收 / MGLRU</text>
+<text class="ts" x="574" y="231" text-anchor="middle">统一治理（A16e·设想）</text>
+<line x1="484" y1="210" x2="459" y2="210" stroke="#6b7280" stroke-dasharray="5 4" marker-end="url(#arA)"/>
+<text class="t" x="471" y="205" text-anchor="middle" fill="#b91c1c">✗</text>
+
+<text class="ts" x="24" y="330">✗ 虚线 = OS 治理看不见 KV（两张皮）：lmkd 可能杀掉前台 app，却动不了臃肿的 KV</text>
+<text class="ts" x="24" y="350">暖 = 热 KV（框架管·pinned）   ·   冷 = 冷 KV（闪存）   ·   实线框 = 受 OS 治理</text>
+</svg>

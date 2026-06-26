@@ -1,0 +1,55 @@
+<svg width="100%" viewBox="0 0 680 600" xmlns="http://www.w3.org/2000/svg" role="img" preserveAspectRatio="xMidYMid meet">
+<title>Android AppFunctions 端侧 Agent 跨 app 编排流程图</title>
+<desc>编译期：@AppFunction+KDoc → KSP 生成 XML schema → OS 端侧索引。运行期：用户自然语言目标 → Gemini/AICore 解析 → AppFunctionManager 发现 → function-calling → EXECUTE_APP_FUNCTIONS 权限闸 → 直接 API 调入 app 执行 → 结构化返回并多步跨 app 编排。</desc>
+<style>
+.t{font:14px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#1f2937}
+.ts{font:12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#6b7280}
+.th{font:600 16px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#111827}
+</style>
+<defs>
+<marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6b7280"/></marker>
+</defs>
+<rect x="0" y="0" width="680" height="600" fill="#ffffff"/>
+<text class="th" x="40" y="30">Android AppFunctions：端侧 Agent 跨 app 编排（流程图）</text>
+
+<rect x="40" y="46" width="600" height="48" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+<text class="t" x="56" y="68">编译期（开发者）</text>
+<text class="ts" x="56" y="86">@AppFunction + KDoc  →  KSP 生成 XML schema  →  Android OS 端侧索引</text>
+<line x1="340" y1="94" x2="340" y2="112" stroke="#6b7280" marker-end="url(#ar2)"/>
+
+<rect x="120" y="112" width="440" height="48" rx="8" fill="#2563eb" fill-opacity="0.06" stroke="#2563eb"/>
+<text class="t" x="136" y="132">① 用户：自然语言目标</text>
+<text class="ts" x="136" y="150">例：把这些发票整理成报销单，发给财务</text>
+<line x1="340" y1="160" x2="340" y2="178" stroke="#6b7280" marker-end="url(#ar2)"/>
+
+<rect x="120" y="178" width="440" height="48" rx="8" fill="#2563eb" fill-opacity="0.06" stroke="#2563eb"/>
+<text class="t" x="136" y="198">② Gemini · AICore / Gemini Nano</text>
+<text class="ts" x="136" y="216">系统级共享端侧模型 · 解析意图（复杂时升级云端）</text>
+<line x1="340" y1="226" x2="340" y2="244" stroke="#6b7280" marker-end="url(#ar2)"/>
+
+<rect x="120" y="244" width="440" height="48" rx="8" fill="#2563eb" fill-opacity="0.06" stroke="#2563eb"/>
+<text class="t" x="136" y="264">③ AppFunctionManager 发现函数</text>
+<text class="ts" x="136" y="282">端侧 schema 检索 · 匹配可用 AppFunction</text>
+<line x1="340" y1="292" x2="340" y2="310" stroke="#6b7280" marker-end="url(#ar2)"/>
+
+<rect x="120" y="310" width="440" height="48" rx="8" fill="#2563eb" fill-opacity="0.06" stroke="#2563eb"/>
+<text class="t" x="136" y="330">④ function-calling</text>
+<text class="ts" x="136" y="348">模型选定函数 + 填充参数</text>
+<line x1="340" y1="358" x2="340" y2="376" stroke="#6b7280" marker-end="url(#ar2)"/>
+
+<rect x="120" y="376" width="440" height="48" rx="8" fill="#2563eb" fill-opacity="0.13" stroke="#2563eb" stroke-width="2"/>
+<text class="t" x="136" y="396">⑤ 权限闸 · EXECUTE_APP_FUNCTIONS</text>
+<text class="ts" x="136" y="414">仅限系统级可信调用方（Gemini / OEM 助手）</text>
+<line x1="340" y1="424" x2="340" y2="442" stroke="#6b7280" marker-end="url(#ar2)"/>
+
+<rect x="120" y="442" width="440" height="48" rx="8" fill="#2563eb" fill-opacity="0.06" stroke="#2563eb"/>
+<text class="t" x="136" y="462">⑥ 直接 Android API 调入 App 执行</text>
+<text class="ts" x="136" y="480">非 accessibility / overlay · 低延迟、UI 改版不失效</text>
+<line x1="340" y1="490" x2="340" y2="508" stroke="#6b7280" marker-end="url(#ar2)"/>
+
+<rect x="120" y="508" width="440" height="48" rx="8" fill="#2563eb" fill-opacity="0.06" stroke="#2563eb"/>
+<text class="t" x="136" y="528">⑦ 结构化返回 + 多步跨 app 编排</text>
+<text class="ts" x="136" y="546">@AppFunctionSerializable · 上一步结果喂下一函数 · 回报用户</text>
+
+<text class="ts" x="40" y="582">灰 = 编译期（开发者）   ·   蓝 = 运行期（设备端）   ·   ⑤ 加粗 = 系统级权限闸</text>
+</svg>

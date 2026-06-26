@@ -1,0 +1,65 @@
+<svg width="100%" viewBox="0 0 680 416" xmlns="http://www.w3.org/2000/svg" role="img" preserveAspectRatio="xMidYMid meet">
+<title>Android AppFunctions 分层架构图</title>
+<desc>五层结构：调用方/Agent 层、系统服务层（AICore 共享模型、OS Schema 索引、AppFunctionManager）、EXECUTE_APP_FUNCTIONS 信任边界、框架/Jetpack 层、应用层、硬件层。蓝色标记系统级共享与受信任组件。</desc>
+<style>
+.t{font:14px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#1f2937}
+.ts{font:12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#6b7280}
+.tl{font:600 12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#6b7280}
+.th{font:600 16px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#111827}
+</style>
+<rect x="0" y="0" width="680" height="416" fill="#ffffff"/>
+<text class="th" x="24" y="28">Android AppFunctions 架构图：五层结构 + 信任边界</text>
+
+<rect x="20" y="42" width="640" height="52" rx="8" fill="#f8fafc" stroke="#d1d5db"/>
+<text class="tl" x="30" y="64">调用方</text><text class="tl" x="30" y="80">Agent 层</text>
+<rect x="150" y="50" width="154" height="36" rx="6" fill="#2563eb" fill-opacity="0.08" stroke="#2563eb"/>
+<text class="t" x="227" y="65" text-anchor="middle">Gemini Agent</text><text class="ts" x="227" y="79" text-anchor="middle">主调用方</text>
+<rect x="323" y="50" width="154" height="36" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="400" y="73" text-anchor="middle">OEM 助手</text>
+<rect x="496" y="50" width="154" height="36" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="573" y="73" text-anchor="middle">Google 授权 app</text>
+
+<rect x="20" y="100" width="640" height="56" rx="8" fill="#f8fafc" stroke="#d1d5db"/>
+<text class="tl" x="30" y="124">系统</text><text class="tl" x="30" y="140">服务层</text>
+<rect x="150" y="108" width="154" height="40" rx="6" fill="#2563eb" fill-opacity="0.08" stroke="#2563eb"/>
+<text class="t" x="227" y="126" text-anchor="middle">AICore · Nano</text><text class="ts" x="227" y="141" text-anchor="middle">系统级共享模型</text>
+<rect x="323" y="108" width="154" height="40" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="400" y="126" text-anchor="middle">OS Schema 索引</text><text class="ts" x="400" y="141" text-anchor="middle">端侧索引</text>
+<rect x="496" y="108" width="154" height="40" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="573" y="126" text-anchor="middle">AppFunctionManager</text><text class="ts" x="573" y="141" text-anchor="middle">发现 + 执行 API</text>
+
+<rect x="20" y="162" width="640" height="28" rx="6" fill="#2563eb" fill-opacity="0.13" stroke="#2563eb" stroke-dasharray="6 4"/>
+<text class="t" x="340" y="180" text-anchor="middle">信任边界 · EXECUTE_APP_FUNCTIONS（仅系统级可信调用方）</text>
+
+<rect x="20" y="196" width="640" height="56" rx="8" fill="#f8fafc" stroke="#d1d5db"/>
+<text class="tl" x="30" y="220">框架</text><text class="tl" x="30" y="236">Jetpack</text>
+<rect x="150" y="204" width="154" height="40" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="227" y="222" text-anchor="middle">注解声明</text><text class="ts" x="227" y="237" text-anchor="middle">@AppFunction + KDoc</text>
+<rect x="323" y="204" width="154" height="40" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="400" y="222" text-anchor="middle">生成 schema</text><text class="ts" x="400" y="237" text-anchor="middle">KSP → XML</text>
+<rect x="496" y="204" width="154" height="40" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="573" y="222" text-anchor="middle">数据类序列化</text><text class="ts" x="573" y="237" text-anchor="middle">@AppFunctionSerializable</text>
+
+<rect x="20" y="258" width="640" height="56" rx="8" fill="#f8fafc" stroke="#d1d5db"/>
+<text class="tl" x="30" y="290">应用层</text>
+<rect x="150" y="266" width="154" height="40" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="227" y="284" text-anchor="middle">App A</text><text class="ts" x="227" y="299" text-anchor="middle">暴露 AppFunctions</text>
+<rect x="323" y="266" width="154" height="40" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="400" y="284" text-anchor="middle">App B</text><text class="ts" x="400" y="299" text-anchor="middle">暴露函数</text>
+<rect x="496" y="266" width="154" height="40" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="573" y="284" text-anchor="middle">App C</text><text class="ts" x="573" y="299" text-anchor="middle">暴露函数</text>
+
+<rect x="20" y="320" width="640" height="50" rx="8" fill="#f8fafc" stroke="#d1d5db"/>
+<text class="tl" x="30" y="349">硬件层</text>
+<rect x="150" y="327" width="113" height="36" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="206" y="349" text-anchor="middle">CPU</text>
+<rect x="279" y="327" width="113" height="36" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="335" y="349" text-anchor="middle">GPU</text>
+<rect x="408" y="327" width="113" height="36" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="464" y="349" text-anchor="middle">NPU</text>
+<rect x="537" y="327" width="113" height="36" rx="6" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="593" y="349" text-anchor="middle">共享 LPDDR</text>
+
+<text class="ts" x="24" y="388">蓝 = 系统级共享 / 受信任组件（共享模型 · 权限闸）</text>
+<text class="ts" x="24" y="406">两条路径：声明索引（编译期）应用→框架→OS 索引   ｜   发现执行（运行期）Agent→[权限闸]→应用</text>
+</svg>

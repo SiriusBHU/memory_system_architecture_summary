@@ -1,0 +1,46 @@
+<svg width="100%" viewBox="0 0 680 462" xmlns="http://www.w3.org/2000/svg" role="img" preserveAspectRatio="xMidYMid meet">
+<title>端侧 KV-Cache 管理流程图：分页、量化淘汰、offload、统一治理</title>
+<desc>逻辑 KV 序列随上下文增长，经①分页块表映射到非连续物理块；热 KV 常驻 LPDDR 高带宽内存并做②量化淘汰；冷 KV 经③预测预取 offload 到 UFS 闪存（pSLC 顺序写、写寿命×8）；理想终局④把 KV 纳入 OS 统一内存治理（业界尚未落地）。</desc>
+<style>
+.t{font:14px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#1f2937}
+.ts{font:12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#6b7280}
+.th{font:600 16px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#111827}
+</style>
+<defs>
+<marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6b7280"/></marker>
+</defs>
+<rect x="0" y="0" width="680" height="462" fill="#ffffff"/>
+<text class="th" x="40" y="30">端侧 KV-Cache 管理：分页 + 量化 + offload + 统一治理（流程图）</text>
+
+<rect x="180" y="46" width="320" height="48" rx="8" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="196" y="66">逻辑 KV 序列（自回归生成）</text>
+<text class="ts" x="196" y="84">随上下文线性增长 · 常 &gt; 模型权重</text>
+<line x1="340" y1="94" x2="340" y2="114" stroke="#6b7280" marker-end="url(#ar4)"/>
+<text class="ts" x="352" y="108">① 分页 · 块表</text>
+
+<rect x="180" y="114" width="320" height="48" rx="8" fill="#ffffff" stroke="#9ca3af"/>
+<text class="t" x="196" y="134">块表：逻辑块 → 非连续物理块</text>
+<text class="ts" x="196" y="152">16 token/块 · 消碎片，吞吐 ×2–4（DC）</text>
+<line x1="340" y1="162" x2="340" y2="182" stroke="#6b7280" marker-end="url(#ar4)"/>
+
+<rect x="150" y="182" width="380" height="66" rx="8" fill="#d97706" fill-opacity="0.10" stroke="#d97706"/>
+<text class="t" x="166" y="202">热 KV @ LPDDR / 设备内存</text>
+<text class="ts" x="166" y="220">~100 GB/s · pinned dma-buf（与 app 抢）</text>
+<text class="ts" x="166" y="238">② 量化/淘汰：KIVI 2-bit · H2O 注意力稀疏</text>
+<line x1="340" y1="248" x2="340" y2="282" stroke="#6b7280" marker-end="url(#ar4)"/>
+<text class="ts" x="352" y="262">③ offload：预测 + 预取</text>
+<text class="ts" x="352" y="277">带宽墙 ~20–100×</text>
+
+<rect x="150" y="282" width="380" height="66" rx="8" fill="#2563eb" fill-opacity="0.08" stroke="#2563eb"/>
+<text class="t" x="166" y="302">冷 KV @ UFS 闪存</text>
+<text class="ts" x="166" y="320">~1–4 GB/s · pSLC 顺序写 · 写寿命 ×8（HiFC）</text>
+<text class="ts" x="166" y="338">KVSwap：内存只留紧凑 K 表示做预测预取</text>
+<line x1="340" y1="348" x2="340" y2="370" stroke="#6b7280" marker-end="url(#ar4)"/>
+<text class="ts" x="352" y="364">④ 纳入治理（设想）</text>
+
+<rect x="150" y="370" width="380" height="50" rx="8" fill="#ffffff" stroke="#6b7280" stroke-dasharray="5 4"/>
+<text class="t" x="166" y="390">④ 纳入 OS 统一内存治理</text>
+<text class="ts" x="166" y="408">冷热迁移/回收 · 与 app 共享预算 · 业界尚未落地</text>
+
+<text class="ts" x="40" y="444">暖 = 热 KV（高带宽常驻）   ·   冷 = 冷 KV（闪存）   ·   虚线 = 设想（业界未落地）</text>
+</svg>
