@@ -14,6 +14,11 @@
 | 5 | [LPDDR5X 带宽与能效优化](lpddr5x-bandwidth-efficiency-CN.md) | Samsung/SK Hynix/Micron 10.7Gbps LPDDR5X, JEDEC | ✅ 已完成 |
 | 6 | [ARM 内存安全与机密计算 (CCA/MTE)](arm-memory-safety-cca-mte-CN.md) | ARM CCA (arxiv 2504.08508), MTE, RME, TikTag | ✅ 已完成 |
 | 7 | [ML 驱动的智能内存分配](ml-driven-memory-allocation-CN.md) | LLAMA (ASPLOS'20), CACM'24, LeCaR, GL-Cache, Voyager, FarSight | ✅ 已完成 |
+| 8 | [终端侧 Agent 记忆系统（外置分层记忆）](on-device-agent-memory-system-CN.md) | MemGPT, Mem0, MemOS, MemoryOS (EMNLP'25), A-MEM (NeurIPS'25) | ✅ 已完成 |
+| 8b | [实际案例结构拆解：PagedAttention 与 MemoryOS](agent-memory-case-studies-CN.md) | vLLM PagedAttention (SOSP'23), MemoryOS, MemOS MemCube | ✅ 已完成 |
+
+> 主题 8 是主题 1（KV Cache 存储层）的上层姊妹篇：聚焦 Agent「记忆系统」的设计——把记忆从上下文窗口外置为分层、可检索、自治理的记忆 OS。
+> 主题 8b 给「KV Cache 管理」与「记忆系统」各挑一个真实系统逐层拆解、配架构图（[assets/pagedattention-arch.svg](assets/pagedattention-arch.svg)、[assets/memoryos-arch.svg](assets/memoryos-arch.svg)），并指出二者经 MemOS `MemCube` 同构于一条记忆层级。
 
 ## 关键源列表
 

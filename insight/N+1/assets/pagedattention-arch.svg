@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1036.8pt" height="654.2937pt" viewBox="0 0 1036.8 654.2937" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-06-25T08:14:10.641994</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.6, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 654.2937 
+L 1036.8 654.2937 
+L 1036.8 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 56.07072 154.50353 
+L 265.04928 154.50353 
+Q 273.22848 154.50353 273.22848 149.38438 
+L 273.22848 124.172568 
+Q 273.22848 119.053419 265.04928 119.053419 
+L 56.07072 119.053419 
+Q 47.89152 119.053419 47.89152 124.172568 
+L 47.89152 149.38438 
+Q 47.89152 154.50353 56.07072 154.50353 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #7ba3cb; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 56.07072 196.09662 
+L 265.04928 196.09662 
+Q 273.22848 196.09662 273.22848 190.977471 
+L 273.22848 165.765659 
+Q 273.22848 160.646509 265.04928 160.646509 
+L 56.07072 160.646509 
+Q 47.89152 160.646509 47.89152 165.765659 
+L 47.89152 190.977471 
+Q 47.89152 196.09662 56.07072 196.09662 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #7ba3cb; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 56.07072 237.689711 
+L 265.04928 237.689711 
+Q 273.22848 237.689711 273.22848 232.570561 
+L 273.22848 207.358749 
+Q 273.22848 202.2396 265.04928 202.2396 
+L 56.07072 202.2396 
+Q 47.89152 202.2396 47.89152 207.358749 
+L 47.89152 232.570561 
+Q 47.89152 237.689711 56.07072 237.689711 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #7ba3cb; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 56.07072 317.676423 
+L 265.04928 317.676423 
+Q 273.22848 317.676423 273.22848 312.557274 
+L 273.22848 287.345462 
+Q 273.22848 282.226312 265.04928 282.226312 
+L 56.07072 282.226312 
+Q 47.89152 282.226312 47.89152 287.345462 
+L 47.89152 312.557274 
+Q 47.89152 317.676423 56.07072 317.676423 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #7ba3cb; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 56.07072 359.269514 
+L 265.04928 359.269514 
+Q 273.22848 359.269514 273.22848 354.150364 
+L 273.22848 328.938552 
+Q 273.22848 323.819403 265.04928 323.819403 
+L 56.07072 323.819403 
+Q 47.89152 323.819403 47.89152 328.938552 
+L 47.89152 354.150364 
+Q 47.89152 359.269514 56.07072 359.269514 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #7ba3cb; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 383.23872 199.296089 
+L 561.54528 199.296089 
+Q 569.72448 199.296089 569.72448 194.176939 
+L 569.72448 117.773631 
+Q 569.72448 112.654482 561.54528 112.654482 
+L 383.23872 112.654482 
+Q 375.05952 112.654482 375.05952 117.773631 
+L 375.05952 194.176939 
+Q 375.05952 199.296089 383.23872 199.296089 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #edbd88; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 383.23872 362.468982 
+L 561.54528 362.468982 
+Q 569.72448 362.468982 569.72448 357.349833 
+L 569.72448 306.542273 
+Q 569.72448 301.423123 561.54528 301.423123 
+L 383.23872 301.423123 
+Q 375.05952 301.423123 375.05952 306.542273 
+L 375.05952 357.349833 
+Q 375.05952 362.468982 383.23872 362.468982 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #edbd88; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 669.51072 125.708313 
+L 812.03328 125.708313 
+Q 820.21248 125.708313 820.21248 120.589164 
+L 820.21248 90.258202 
+Q 820.21248 85.139053 812.03328 85.139053 
+L 669.51072 85.139053 
+Q 661.33152 85.139053 661.33152 90.258202 
+L 661.33152 120.589164 
+Q 661.33152 125.708313 669.51072 125.708313 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #e9e9e2; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 853.54272 125.708313 
+L 996.06528 125.708313 
+Q 1004.24448 125.708313 1004.24448 120.589164 
+L 1004.24448 90.258202 
+Q 1004.24448 85.139053 996.06528 85.139053 
+L 853.54272 85.139053 
+Q 845.36352 85.139053 845.36352 90.258202 
+L 845.36352 120.589164 
+Q 845.36352 125.708313 853.54272 125.708313 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #8fbf9f; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 669.51072 173.700341 
+L 812.03328 173.700341 
+Q 820.21248 173.700341 820.21248 168.581191 
+L 820.21248 138.25023 
+Q 820.21248 133.13108 812.03328 133.13108 
+L 669.51072 133.13108 
+Q 661.33152 133.13108 661.33152 138.25023 
+L 661.33152 168.581191 
+Q 661.33152 173.700341 669.51072 173.700341 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #e9e9e2; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 853.54272 173.700341 
+L 996.06528 173.700341 
+Q 1004.24448 173.700341 1004.24448 168.581191 
+L 1004.24448 138.25023 
+Q 1004.24448 133.13108 996.06528 133.13108 
+L 853.54272 133.13108 
+Q 845.36352 133.13108 845.36352 138.25023 
+L 845.36352 168.581191 
+Q 845.36352 173.700341 853.54272 173.700341 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #8fbf9f; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 669.51072 221.692368 
+L 812.03328 221.692368 
+Q 820.21248 221.692368 820.21248 216.573219 
+L 820.21248 186.242257 
+Q 820.21248 181.123108 812.03328 181.123108 
+L 669.51072 181.123108 
+Q 661.33152 181.123108 661.33152 186.242257 
+L 661.33152 216.573219 
+Q 661.33152 221.692368 669.51072 221.692368 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #e9e9e2; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 853.54272 221.692368 
+L 996.06528 221.692368 
+Q 1004.24448 221.692368 1004.24448 216.573219 
+L 1004.24448 186.242257 
+Q 1004.24448 181.123108 996.06528 181.123108 
+L 853.54272 181.123108 
+Q 845.36352 181.123108 845.36352 186.242257 
+L 845.36352 216.573219 
+Q 845.36352 221.692368 853.54272 221.692368 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #8fbf9f; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 669.51072 269.684396 
+L 812.03328 269.684396 
+Q 820.21248 269.684396 820.21248 264.565246 
+L 820.21248 234.234285 
+Q 820.21248 229.115135 812.03328 229.115135 
+L 669.51072 229.115135 
+Q 661.33152 229.115135 661.33152 234.234285 
+L 661.33152 264.565246 
+Q 661.33152 269.684396 669.51072 269.684396 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #e9e9e2; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_16">
+    <path d="M 853.54272 269.684396 
+L 996.06528 269.684396 
+Q 1004.24448 269.684396 1004.24448 264.565246 
+L 1004.24448 234.234285 
+Q 1004.24448 229.115135 996.06528 229.115135 
+L 853.54272 229.115135 
+Q 845.36352 229.115135 845.36352 234.234285 
+L 845.36352 264.565246 
+Q 845.36352 269.684396 853.54272 269.684396 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #e07a7a; stroke: #c97a6f; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_17">
+    <path d="M 669.51072 317.676423 
+L 812.03328 317.676423 
+Q 820.21248 317.676423 820.21248 312.557274 
+L 820.21248 282.226312 
+Q 820.21248 277.107163 812.03328 277.107163 
+L 669.51072 277.107163 
+Q 661.33152 277.107163 661.33152 282.226312 
+L 661.33152 312.557274 
+Q 661.33152 317.676423 669.51072 317.676423 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #e9e9e2; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_18">
+    <path d="M 853.54272 317.676423 
+L 996.06528 317.676423 
+Q 1004.24448 317.676423 1004.24448 312.557274 
+L 1004.24448 282.226312 
+Q 1004.24448 277.107163 996.06528 277.107163 
+L 853.54272 277.107163 
+Q 845.36352 277.107163 845.36352 282.226312 
+L 845.36352 312.557274 
+Q 845.36352 317.676423 853.54272 317.676423 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #8fbf9f; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_19">
+    <path d="M 669.51072 365.668451 
+L 812.03328 365.668451 
+Q 820.21248 365.668451 820.21248 360.549301 
+L 820.21248 330.21834 
+Q 820.21248 325.09919 812.03328 325.09919 
+L 669.51072 325.09919 
+Q 661.33152 325.09919 661.33152 330.21834 
+L 661.33152 360.549301 
+Q 661.33152 365.668451 669.51072 365.668451 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #e9e9e2; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_20">
+    <path d="M 853.54272 365.668451 
+L 996.06528 365.668451 
+Q 1004.24448 365.668451 1004.24448 360.549301 
+L 1004.24448 330.21834 
+Q 1004.24448 325.09919 996.06528 325.09919 
+L 853.54272 325.09919 
+Q 845.36352 325.09919 845.36352 330.21834 
+L 845.36352 360.549301 
+Q 845.36352 365.668451 853.54272 365.668451 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #e9e9e2; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_21">
+    <path d="M 45.84672 512.844002 
+L 336.61728 512.844002 
+Q 344.79648 512.844002 344.79648 507.724852 
+L 344.79648 424.922607 
+Q 344.79648 419.803458 336.61728 419.803458 
+L 45.84672 419.803458 
+Q 37.66752 419.803458 37.66752 424.922607 
+L 37.66752 507.724852 
+Q 37.66752 512.844002 45.84672 512.844002 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #fbfbf6; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_22">
+    <path d="M 373.01472 512.844002 
+L 663.78528 512.844002 
+Q 671.96448 512.844002 671.96448 507.724852 
+L 671.96448 424.922607 
+Q 671.96448 419.803458 663.78528 419.803458 
+L 373.01472 419.803458 
+Q 364.83552 419.803458 364.83552 424.922607 
+L 364.83552 507.724852 
+Q 364.83552 512.844002 373.01472 512.844002 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #fbfbf6; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_23">
+    <path d="M 700.18272 512.844002 
+L 990.95328 512.844002 
+Q 999.13248 512.844002 999.13248 507.724852 
+L 999.13248 424.922607 
+Q 999.13248 419.803458 990.95328 419.803458 
+L 700.18272 419.803458 
+Q 692.00352 419.803458 692.00352 424.922607 
+L 692.00352 507.724852 
+Q 692.00352 512.844002 700.18272 512.844002 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #fbfbf6; stroke: #cfcfc4; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_24">
+    <path d="M 219.65472 608.828057 
+L 817.14528 608.828057 
+Q 825.32448 608.828057 825.32448 603.708907 
+L 825.32448 556.100816 
+Q 825.32448 550.981666 817.14528 550.981666 
+L 219.65472 550.981666 
+Q 211.47552 550.981666 211.47552 556.100816 
+L 211.47552 603.708907 
+Q 211.47552 608.828057 219.65472 608.828057 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #f3f7f3; stroke: #bbccdd; stroke-width: 1.2; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #222222" x="518.4" y="23.197343" transform="rotate(-0 518.4 23.197343)">vLLM PagedAttention：KV Cache 分页管理结构</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 10px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #888888" x="518.4" y="48.153197" transform="rotate(-0 518.4 48.153197)">定长 KV Block · 块表 logical→physical 非连续映射 · 按需分配 · 写时复制共享 · 自动前缀缓存</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #3a5f80" x="160.56" y="83.987244" transform="rotate(-0 160.56 83.987244)">① 请求序列（逻辑块）</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #9c6b2e" x="467.28" y="83.987244" transform="rotate(-0 467.28 83.987244)">② Block Table 块表</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #4a7a58" x="825.12" y="83.987244" transform="rotate(-0 825.12 83.987244)">③ 物理 KV 块池（显存）</text>
+   </g>
+   <g id="text_6">
+    <text style="font-size: 9.5px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #888888" x="160.56" y="106.383524" transform="rotate(-0 160.56 106.383524)">请求 A</text>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 9px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #333333" x="160.56" y="139.306912" transform="rotate(-0 160.56 139.306912)">L0  (token 0–15)</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 9px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #333333" x="160.56" y="180.900002" transform="rotate(-0 160.56 180.900002)">L1  (token 16–31)</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 8.5px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #333333" x="160.56" y="222.47614" transform="rotate(-0 160.56 222.47614)">L2  (token 32–39，半满)</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 9.5px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #888888" x="160.56" y="275.955354" transform="rotate(-0 160.56 275.955354)">请求 B（与 A 同前缀）</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 9px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #333333" x="160.56" y="302.479805" transform="rotate(-0 160.56 302.479805)">L0'  (token 0–15)</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 9px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #333333" x="160.56" y="344.072896" transform="rotate(-0 160.56 344.072896)">L1'  (token 16–…)</text>
+   </g>
+   <g id="text_13">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #9c6b2e" x="472.392" y="128.779803" transform="rotate(-0 472.392 128.779803)">表 A</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 8.8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #333333" x="472.392" y="147.976614" transform="rotate(-0 472.392 147.976614)">L0 → P7（满 16）</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 8.8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #333333" x="472.392" y="167.173425" transform="rotate(-0 472.392 167.173425)">L1 → P1（满 16）</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 8.8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #333333" x="472.392" y="186.370236" transform="rotate(-0 472.392 186.370236)">L2 → P3（填 8/16）</text>
+   </g>
+   <g id="text_17">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #9c6b2e" x="472.392" y="317.548445" transform="rotate(-0 472.392 317.548445)">表 B</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 8.8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #b5402f" x="472.392" y="335.465468" transform="rotate(-0 472.392 335.465468)">L0' → P7（共享！）</text>
+   </g>
+   <g id="text_19">
+    <text style="font-size: 8.8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #333333" x="472.392" y="352.742598" transform="rotate(-0 472.392 352.742598)">L1' → P9（独占）</text>
+   </g>
+   <g id="text_20">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(735.100031 103.010039)">P0</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(732.172 112.669452)">空闲</text>
+   </g>
+   <g id="text_21">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(919.132031 103.010039)">P1</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(911.865031 112.669452)">A·L1</text>
+   </g>
+   <g id="text_22">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(735.100031 151.002067)">P2</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(732.172 160.661479)">空闲</text>
+   </g>
+   <g id="text_23">
+    <text style="font-size: 8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(919.52775 146.67771)">P3</text>
+    <text style="font-size: 8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(912.76775 155.66321)">A·L2</text>
+    <text style="font-size: 8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(915.023375 164.64871)">8/16</text>
+   </g>
+   <g id="text_24">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(735.083234 198.994094)">P4</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(732.172 208.653507)">空闲</text>
+   </g>
+   <g id="text_25">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(919.132031 198.994094)">P5</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(907.604 208.653507)">其他请求</text>
+   </g>
+   <g id="text_26">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(735.100031 246.986122)">P6</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(732.172 256.645534)">空闲</text>
+   </g>
+   <g id="text_27">
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(919.52775 242.661765)">P7</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(894.815875 251.647265)">A·L0 + B·L0'</text>
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(902.488375 260.632765)">refcount=2</text>
+   </g>
+   <g id="text_28">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(735.100031 294.978149)">P8</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(732.172 304.637562)">空闲</text>
+   </g>
+   <g id="text_29">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(919.132031 294.978149)">P9</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(911.189797 304.637562)">B·L1'</text>
+   </g>
+   <g id="text_30">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(732.274797 342.970177)">P10</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(732.172 352.629589)">空闲</text>
+   </g>
+   <g id="text_31">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(916.306797 342.970177)">P11</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(916.204 352.629589)">空闲</text>
+   </g>
+   <g id="text_32">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #222222" x="518.4" y="400.734625" transform="rotate(-0 518.4 400.734625)">三个关键机制</text>
+   </g>
+   <g id="text_33">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #3a5f80" x="191.232" y="437.208566" transform="rotate(-0 191.232 437.208566)">① 按需分配</text>
+   </g>
+   <g id="text_34">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(131.032 452.448571)">仅在生成到新块时分配物理块；</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(126.732 464.084102)">浪费只发生在序列「最后一块」。</text>
+   </g>
+   <g id="text_35">
+    <text style="font-weight: 700; font-size: 9.2px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #b5402f" x="191.232" y="497.358574" transform="rotate(-0 191.232 497.358574)">碎片/预留浪费  60–80% → &lt;4%</text>
+   </g>
+   <g id="text_36">
+    <text style="font-weight: 700; font-size: 10px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #9c6b2e" x="518.4" y="437.208566" transform="rotate(-0 518.4 437.208566)">② 写时复制（COW）共享</text>
+   </g>
+   <g id="text_37">
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(444.380203 452.448571)">并行采样/beam：多序列共享同一前缀</text>
+    <text style="font-size: 8.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(448.215938 464.084102)">物理块 + 引用计数；写入时才复制。</text>
+   </g>
+   <g id="text_38">
+    <text style="font-weight: 700; font-size: 9.2px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #b5402f" x="518.4" y="497.358574" transform="rotate(-0 518.4 497.358574)">省内存 ≤55%   吞吐 ↑2.2×</text>
+   </g>
+   <g id="text_39">
+    <text style="font-weight: 700; font-size: 9.6px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #4a7a58" x="845.568" y="437.208566" transform="rotate(-0 845.568 437.208566)">③ 自动前缀缓存（跨请求复用）</text>
+   </g>
+   <g id="text_40">
+    <text style="font-size: 8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(752.917375 458.270751)">块哈希链 = H(父块hash, 本块token, LoRA/图像id)</text>
+    <text style="font-size: 8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; fill: #333333" transform="translate(762.6005 469.203251)">命中即 touch（refcount+1，移出空闲队列）</text>
+   </g>
+   <g id="text_41">
+    <text style="font-weight: 700; font-size: 8.4px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #b5402f" x="845.568" y="501.197936" transform="rotate(-0 845.568 501.197936)">空闲块 LRU 队列；仅 refcount==0 可淘汰</text>
+   </g>
+   <g id="text_42">
+    <text style="font-weight: 700; font-size: 9.5px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #4a7a58" x="518.4" y="570.306456" transform="rotate(-0 518.4 570.306456)">端到端吞吐（同等显存）</text>
+   </g>
+   <g id="text_43">
+    <text style="font-size: 9px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #333333" x="518.4" y="593.342629" transform="rotate(-0 518.4 593.342629)">vs HuggingFace Transformers  14–24×   ·   vs HF TGI  2.2–2.5×   ·   LMSYS 实测最高 30×</text>
+   </g>
+   <g id="text_44">
+    <text style="font-size: 8px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: start; fill: #888888" x="27.648" y="637.495294" transform="rotate(-0 27.648 637.495294)">图例： 蓝=逻辑块  橙=块表  绿=物理块(占用)  红=共享/复用块(refcount&gt;1)  灰=空闲块</text>
+   </g>
+   <g id="patch_25">
+    <path d="M 273.024 137.098421 
+Q 324.144 139.338049 374.035341 141.523848 
+" clip-path="url(#p2a77ec907a)" style="fill: none; stroke: #99aaaa; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 368.563262 138.481424 
+L 374.035341 141.523848 
+L 368.318154 144.076057 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #99aaaa; stroke: #99aaaa; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="patch_26">
+    <path d="M 273.024 178.691512 
+Q 324.144 169.733 374.052623 160.986775 
+" clip-path="url(#p2a77ec907a)" style="fill: none; stroke: #99aaaa; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 368.053362 159.195445 
+L 374.052623 160.986775 
+L 369.020002 164.711386 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #99aaaa; stroke: #99aaaa; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="patch_27">
+    <path d="M 273.024 220.284602 
+Q 324.144 200.127951 374.11989 180.422422 
+" clip-path="url(#p2a77ec907a)" style="fill: none; stroke: #99aaaa; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 367.883162 179.871767 
+L 374.11989 180.422422 
+L 369.937328 185.081411 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #99aaaa; stroke: #99aaaa; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="patch_28">
+    <path d="M 273.024 300.271315 
+Q 324.144 315.308817 374.08415 329.999253 
+" clip-path="url(#p2a77ec907a)" style="fill: none; stroke: #99aaaa; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 369.501939 325.732716 
+L 374.08415 329.999253 
+L 367.921594 331.1051 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #99aaaa; stroke: #99aaaa; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="patch_29">
+    <path d="M 273.024 341.864405 
+Q 324.144 345.703767 374.037617 349.451022 
+" clip-path="url(#p2a77ec907a)" style="fill: none; stroke: #99aaaa; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 368.663047 346.23948 
+L 374.037617 349.451022 
+L 368.243641 351.823752 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #99aaaa; stroke: #99aaaa; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="patch_30">
+    <path d="M 569.52 147.976614 
+Q 707.544 198.68819 844.203724 248.898515 
+" clip-path="url(#p2a77ec907a)" style="fill: none; stroke: #4a7a58; stroke-width: 1.3; stroke-linecap: round"/>
+    <path d="M 839.912921 244.339019 
+L 844.203724 248.898515 
+L 837.981645 249.59546 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #4a7a58; stroke: #4a7a58; stroke-width: 1.3; stroke-linecap: round"/>
+   </g>
+   <g id="patch_31">
+    <path d="M 569.52 167.173425 
+Q 707.544 136.298554 844.367823 105.692153 
+" clip-path="url(#p2a77ec907a)" style="fill: none; stroke: #4a7a58; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 838.29165 104.182146 
+L 844.367823 105.692153 
+L 839.514114 109.647087 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #4a7a58; stroke: #4a7a58; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="patch_32">
+    <path d="M 569.52 186.370236 
+Q 707.544 169.892973 844.346834 153.561493 
+" clip-path="url(#p2a77ec907a)" style="fill: none; stroke: #4a7a58; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 838.45441 151.445047 
+L 844.346834 153.561493 
+L 839.118223 157.005564 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #4a7a58; stroke: #4a7a58; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="patch_33">
+    <path d="M 569.52 335.465468 
+Q 707.544 296.271979 843.847179 257.567137 
+" clip-path="url(#p2a77ec907a)" style="fill: none; stroke: #b5402f; stroke-width: 1.6; stroke-linecap: round"/>
+    <path d="M 837.695305 256.403332 
+L 843.847179 257.567137 
+L 839.225011 261.790353 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #b5402f; stroke: #b5402f; stroke-width: 1.6; stroke-linecap: round"/>
+   </g>
+   <g id="patch_34">
+    <path d="M 569.52 352.742598 
+Q 707.544 325.067195 844.362164 297.633577 
+" clip-path="url(#p2a77ec907a)" style="fill: none; stroke: #4a7a58; stroke-width: 1.1; stroke-linecap: round"/>
+    <path d="M 838.320978 295.989172 
+L 844.362164 297.633577 
+L 839.421928 301.479883 
+z
+" clip-path="url(#p2a77ec907a)" style="fill: #4a7a58; stroke: #4a7a58; stroke-width: 1.1; stroke-linecap: round"/>
+   </g>
+   <g id="text_45">
+    <g id="patch_35">
+     <path d="M 612.14 300.804665 
+L 629.14 300.804665 
+Q 630.67 300.804665 630.67 299.274665 
+L 630.67 291.029665 
+Q 630.67 289.499665 629.14 289.499665 
+L 612.14 289.499665 
+Q 610.61 289.499665 610.61 291.029665 
+L 610.61 299.274665 
+Q 610.61 300.804665 612.14 300.804665 
+z
+" style="fill: #ffffff; opacity: 0.85"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'Hiragino Sans GB', 'STHeiti', 'Heiti TC', 'Arial Unicode MS', 'PingFang HK', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', 'WenQuanYi Zen Hei', sans-serif; text-anchor: middle; fill: #b5402f" x="620.64" y="297.540134" transform="rotate(-0 620.64 297.540134)">共享</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p2a77ec907a">
+   <rect x="7.2" y="7.2" width="1022.4" height="639.8937"/>
+  </clipPath>
+ </defs>
+</svg>
