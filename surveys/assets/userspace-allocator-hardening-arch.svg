@@ -1,0 +1,82 @@
+<svg viewBox="0 0 900 572" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',Helvetica,Arial,sans-serif">
+  <defs>
+    <marker id="d" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="900" height="572" fill="#ffffff"/>
+  <text x="450" y="30" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">架构图：用户态分配器 — 原方案 vs 演进方案</text>
+  <text x="450" y="50" text-anchor="middle" font-size="12" fill="#64748b">同一套组件分层 · 箭头标动词 · * = 演进方案的结构改动（分区 / 加固）</text>
+  <line x1="450" y1="70" x2="450" y2="508" stroke="#e2e8f0" stroke-dasharray="3 4"/>
+  <text x="226" y="84" text-anchor="middle" font-size="13.5" font-weight="700" fill="#334155">原方案：size-class freelist</text>
+  <text x="674" y="84" text-anchor="middle" font-size="13.5" font-weight="700" fill="#c2410c">演进方案：分区 + 加固</text>
+
+  <!-- vertical flow verbs (shared, on divider) -->
+  <text x="450" y="148" text-anchor="middle" font-size="10.5" fill="#94a3b8">malloc↓ / free↑</text>
+  <text x="450" y="224" text-anchor="middle" font-size="10.5" fill="#94a3b8">cache 命中 / 回填</text>
+  <text x="450" y="288" text-anchor="middle" font-size="10.5" fill="#94a3b8">split / 回填</text>
+  <text x="450" y="408" text-anchor="middle" font-size="10.5" fill="#94a3b8">向底层要内存</text>
+
+  <!-- ===== ORIGINAL column ===== -->
+  <!-- R1 -->
+  <rect x="40" y="92" width="372" height="40" rx="7" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="226" y="117" text-anchor="middle" font-size="13" fill="#1e293b">应用 (C/C++)　malloc / free / new / delete</text>
+  <line x1="226" y1="132" x2="226" y2="155" stroke="#64748b" marker-end="url(#d)"/>
+  <!-- R2 -->
+  <rect x="40" y="156" width="372" height="52" rx="7" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="226" y="180" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">分配器前端</text>
+  <text x="226" y="198" text-anchor="middle" font-size="11.5" fill="#64748b">按 size 分桶（size-class）</text>
+  <line x1="226" y1="208" x2="226" y2="231" stroke="#64748b" marker-end="url(#d)"/>
+  <!-- R3 -->
+  <rect x="40" y="232" width="372" height="40" rx="7" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="226" y="257" text-anchor="middle" font-size="12.5" fill="#334155">线程缓存 tcache　·　免锁快路径</text>
+  <line x1="226" y1="272" x2="226" y2="295" stroke="#64748b" marker-end="url(#d)"/>
+  <!-- R4 -->
+  <rect x="40" y="296" width="372" height="96" rx="7" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="226" y="318" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">freelist + inline 元数据</text>
+  <text x="226" y="338" text-anchor="middle" font-size="11.5" fill="#64748b">header 紧贴用户数据</text>
+  <text x="226" y="356" text-anchor="middle" font-size="11.5" fill="#64748b">freelist 指针裸存</text>
+  <text x="226" y="376" text-anchor="middle" font-size="11.5" fill="#b91c1c">→ 溢出即可改写、劫持</text>
+  <line x1="226" y1="392" x2="226" y2="415" stroke="#64748b" marker-end="url(#d)"/>
+  <!-- R5 -->
+  <rect x="40" y="416" width="372" height="50" rx="7" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="226" y="439" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">mmap / 页</text>
+  <text x="226" y="457" text-anchor="middle" font-size="11.5" fill="#64748b">free → 即时复用，不分类型</text>
+
+  <!-- ===== EVOLVED column ===== -->
+  <!-- R1 -->
+  <rect x="488" y="92" width="372" height="40" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="674" y="117" text-anchor="middle" font-size="13" fill="#1e293b">应用 (C/C++)　malloc / free（源码基本不改）</text>
+  <line x1="674" y1="132" x2="674" y2="155" stroke="#64748b" marker-end="url(#d)"/>
+  <!-- R2 * -->
+  <rect x="488" y="156" width="372" height="52" rx="7" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="674" y="180" text-anchor="middle" font-size="13" font-weight="600" fill="#9a3412">分配器前端</text>
+  <text x="674" y="198" text-anchor="middle" font-size="11.5" fill="#9a3412">* 按 size + partition / type 双重分桶</text>
+  <line x1="674" y1="208" x2="674" y2="231" stroke="#64748b" marker-end="url(#d)"/>
+  <!-- R3 -->
+  <rect x="488" y="232" width="372" height="40" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="674" y="257" text-anchor="middle" font-size="12.5" fill="#334155">线程缓存 tcache　·　保留免锁快路径</text>
+  <line x1="674" y1="272" x2="674" y2="295" stroke="#64748b" marker-end="url(#d)"/>
+  <!-- R4 * -->
+  <rect x="488" y="296" width="372" height="96" rx="7" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="674" y="318" text-anchor="middle" font-size="13" font-weight="600" fill="#9a3412">freelist + * 校验</text>
+  <text x="674" y="338" text-anchor="middle" font-size="11.5" fill="#9a3412">* 元数据外移 → 守护页 region</text>
+  <text x="674" y="356" text-anchor="middle" font-size="11.5" fill="#9a3412">* 指针反转 + 影子 / CRC32 header</text>
+  <text x="674" y="376" text-anchor="middle" font-size="11.5" fill="#9a3412">* quarantine 延迟复用 + poison</text>
+  <line x1="674" y1="392" x2="674" y2="415" stroke="#64748b" marker-end="url(#d)"/>
+  <!-- R5 * -->
+  <rect x="488" y="416" width="372" height="50" rx="7" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="674" y="439" text-anchor="middle" font-size="13" font-weight="600" fill="#9a3412">mmap / 页 + * 守护页</text>
+  <text x="674" y="457" text-anchor="middle" font-size="11.5" fill="#9a3412">分区边界守护页；同分区才复用</text>
+  <!-- GWP side module -->
+  <line x1="674" y1="466" x2="674" y2="479" stroke="#ea580c" stroke-dasharray="4 3" marker-end="url(#d)"/>
+  <rect x="488" y="480" width="372" height="36" rx="7" fill="#fffbeb" stroke="#f59e0b"/>
+  <text x="674" y="503" text-anchor="middle" font-size="11.5" fill="#92400e">+ GWP-ASan（旁路）：&lt;0.1% 抽样守护页 · 生产常驻探测</text>
+
+  <!-- legend -->
+  <rect x="290" y="528" width="320" height="30" rx="6" fill="#fcfcfd" stroke="#e2e8f0"/>
+  <rect x="306" y="538" width="15" height="11" rx="2" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="327" y="547" font-size="11.5" fill="#475569">* 演进新增结构</text>
+  <rect x="452" y="538" width="15" height="11" rx="2" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="473" y="547" font-size="11.5" fill="#475569">两版共有的组件</text>
+</svg>

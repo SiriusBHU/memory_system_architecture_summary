@@ -1,0 +1,70 @@
+<svg viewBox="0 0 900 556" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',Helvetica,Arial,sans-serif">
+  <defs>
+    <marker id="d2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="900" height="556" fill="#ffffff"/>
+  <text x="450" y="30" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">架构图：内存分配粒度 — 原方案 vs 演进方案</text>
+  <text x="450" y="50" text-anchor="middle" font-size="12" fill="#64748b">同一套组件分层 · 箭头标动词 · * = 演进方案的结构改动（放大粒度）</text>
+  <line x1="450" y1="70" x2="450" y2="496" stroke="#e2e8f0" stroke-dasharray="3 4"/>
+  <text x="226" y="84" text-anchor="middle" font-size="13.5" font-weight="700" fill="#334155">原方案：4K 基页 + 2MB THP</text>
+  <text x="674" y="84" text-anchor="middle" font-size="13.5" font-weight="700" fill="#c2410c">演进方案：16K 基页 / large folio</text>
+
+  <!-- shared verbs on divider -->
+  <text x="450" y="150" text-anchor="middle" font-size="10.5" fill="#94a3b8">translate</text>
+  <text x="450" y="224" text-anchor="middle" font-size="10.5" fill="#94a3b8">walk（miss 时）</text>
+  <text x="450" y="298" text-anchor="middle" font-size="10.5" fill="#94a3b8">alloc / fault</text>
+  <text x="450" y="416" text-anchor="middle" font-size="10.5" fill="#94a3b8">map</text>
+
+  <!-- ===== ORIGINAL ===== -->
+  <rect x="40" y="92" width="372" height="44" rx="7" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="226" y="119" text-anchor="middle" font-size="13" fill="#1e293b">CPU　·　load / store</text>
+  <line x1="226" y1="136" x2="226" y2="159" stroke="#64748b" marker-end="url(#d2)"/>
+  <rect x="40" y="160" width="372" height="50" rx="7" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="226" y="183" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">MMU / TLB</text>
+  <text x="226" y="201" text-anchor="middle" font-size="11.5" fill="#64748b">reach 小（640KB @ M1，每项 4KB）</text>
+  <line x1="226" y1="210" x2="226" y2="233" stroke="#64748b" marker-end="url(#d2)"/>
+  <rect x="40" y="234" width="372" height="44" rx="7" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="226" y="261" text-anchor="middle" font-size="12.5" fill="#334155">页表　·　4 级遍历</text>
+  <line x1="226" y1="278" x2="226" y2="301" stroke="#64748b" marker-end="url(#d2)"/>
+  <rect x="40" y="302" width="372" height="74" rx="7" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="226" y="324" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">分配器</text>
+  <text x="226" y="343" text-anchor="middle" font-size="11.5" fill="#64748b">buddy → 4K 基页</text>
+  <text x="226" y="361" text-anchor="middle" font-size="11.5" fill="#b91c1c">THP → 整段 2M（全有或全无）</text>
+  <line x1="226" y1="376" x2="226" y2="399" stroke="#64748b" marker-end="url(#d2)"/>
+  <rect x="40" y="400" width="372" height="50" rx="7" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="226" y="423" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">物理内存</text>
+  <text x="226" y="441" text-anchor="middle" font-size="11.5" fill="#64748b">4K 基页　·　缺页每页一次</text>
+
+  <!-- ===== EVOLVED ===== -->
+  <rect x="488" y="92" width="372" height="44" rx="7" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="674" y="119" text-anchor="middle" font-size="13" fill="#1e293b">CPU　·　load / store</text>
+  <line x1="674" y1="136" x2="674" y2="159" stroke="#64748b" marker-end="url(#d2)"/>
+  <rect x="488" y="160" width="372" height="50" rx="7" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="674" y="183" text-anchor="middle" font-size="13" font-weight="600" fill="#9a3412">MMU / TLB</text>
+  <text x="674" y="201" text-anchor="middle" font-size="11.5" fill="#9a3412">* reach ×4~16（2.5MB @ M1，contiguous bit）</text>
+  <line x1="674" y1="210" x2="674" y2="233" stroke="#64748b" marker-end="url(#d2)"/>
+  <rect x="488" y="234" width="372" height="44" rx="7" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="674" y="261" text-anchor="middle" font-size="12.5" fill="#9a3412">页表　·　* 更浅 / 更少遍历，记账 ÷4</text>
+  <line x1="674" y1="278" x2="674" y2="301" stroke="#64748b" marker-end="url(#d2)"/>
+  <rect x="488" y="302" width="372" height="74" rx="7" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="674" y="324" text-anchor="middle" font-size="13" font-weight="600" fill="#9a3412">分配器</text>
+  <text x="674" y="343" text-anchor="middle" font-size="11.5" fill="#9a3412">* folio 多尺寸 16 / 32 / 64K</text>
+  <text x="674" y="361" text-anchor="middle" font-size="11.5" fill="#9a3412">* 平滑回退（降一档，非全有或全无）</text>
+  <line x1="674" y1="376" x2="674" y2="399" stroke="#64748b" marker-end="url(#d2)"/>
+  <rect x="488" y="400" width="372" height="50" rx="7" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="674" y="423" text-anchor="middle" font-size="13" font-weight="600" fill="#9a3412">物理内存</text>
+  <text x="674" y="441" text-anchor="middle" font-size="11.5" fill="#9a3412">* 16K 基页(Apple) / large folio　·　缺页 ÷4~16</text>
+
+  <!-- bottom note -->
+  <rect x="40" y="466" width="820" height="34" rx="7" fill="#fcfcfd" stroke="#e2e8f0"/>
+  <text x="450" y="487" text-anchor="middle" font-size="11.5" fill="#475569">同一组件栈不变，差异集中在 TLB reach、页表深度、分配粒度三层；苹果= 固定 16K（无回退），Linux= 动态多尺寸 folio（带回退）</text>
+
+  <!-- legend -->
+  <rect x="290" y="514" width="320" height="30" rx="6" fill="#ffffff" stroke="#e2e8f0"/>
+  <rect x="306" y="524" width="15" height="11" rx="2" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="327" y="533" font-size="11.5" fill="#475569">* 演进新增结构</text>
+  <rect x="452" y="524" width="15" height="11" rx="2" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="473" y="533" font-size="11.5" fill="#475569">两版共有的组件</text>
+</svg>
