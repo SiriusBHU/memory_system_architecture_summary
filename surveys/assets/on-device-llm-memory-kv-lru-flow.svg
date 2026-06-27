@@ -1,0 +1,70 @@
+<svg width="100%" viewBox="0 0 680 560" xmlns="http://www.w3.org/2000/svg" role="img" preserveAspectRatio="xMidYMid meet">
+<title>端侧 KV 页 LRU 生命周期流程图</title>
+<desc>新 KV 页入 active 链头；周期 aging 清 access bit；若 active 尾页仍被命中则 second-chance 留在 active，否则 demote 到 inactive；inactive 页再次命中或 refault 则 promote 回 active；否则经守卫（refcnt>0 或共享前缀则跳过保护）后做升级式分级淘汰量化→offload→drop；被淘汰页留 shadow entry，refault 快则捞回。</desc>
+<style>
+.t{font:14px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#1f2937}
+.ts{font:12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#6b7280}
+.tb{font:600 12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#1f2937}
+.th{font:600 15px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#111827}
+</style>
+<defs>
+<marker id="lf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6b7280"/></marker>
+</defs>
+<rect x="0" y="0" width="680" height="560" fill="#ffffff"/>
+<text class="th" x="24" y="22">端侧 KV 页 LRU 生命周期流程：进链 → aging → demote/promote → 分级淘汰</text>
+<text class="ts" x="24" y="42">虚线框 = 判断；是/否标在箭头；second-chance 与 refault 把被冤枉的热页捞回 active</text>
+
+<rect x="180" y="56" width="300" height="40" rx="8" fill="none" stroke="#9ca3af"/>
+<text class="t" x="330" y="73" text-anchor="middle">新 KV 页（本轮生成）</text>
+<text class="ts" x="330" y="89" text-anchor="middle">入 active 链头 · access bit=1</text>
+<line x1="330" y1="96" x2="330" y2="112" stroke="#6b7280" marker-end="url(#lf)"/>
+
+<rect x="180" y="112" width="300" height="36" rx="8" fill="none" stroke="#9ca3af"/>
+<text class="t" x="330" y="134" text-anchor="middle">周期 aging：清 access bit，推进代次</text>
+<line x1="330" y1="148" x2="330" y2="160" stroke="#6b7280" marker-end="url(#lf)"/>
+
+<rect x="180" y="160" width="300" height="44" rx="8" fill="none" stroke="#6b7280" stroke-dasharray="5 4"/>
+<text class="t" x="330" y="187" text-anchor="middle">active 尾页仍被命中？(access bit=1)</text>
+<text class="tb" x="488" y="178">是</text>
+<line x1="480" y1="182" x2="500" y2="182" stroke="#6b7280" marker-end="url(#lf)"/>
+<rect x="500" y="162" width="172" height="40" rx="8" fill="#d97706" fill-opacity="0.10" stroke="#d97706"/>
+<text class="t" x="586" y="180" text-anchor="middle">second-chance</text>
+<text class="ts" x="586" y="195" text-anchor="middle">留 active · 回 aging</text>
+<text class="tb" x="338" y="222">否</text>
+<line x1="330" y1="204" x2="330" y2="228" stroke="#6b7280" marker-end="url(#lf)"/>
+
+<rect x="180" y="228" width="300" height="36" rx="8" fill="#2563eb" fill-opacity="0.06" stroke="#2563eb"/>
+<text class="t" x="330" y="250" text-anchor="middle">demote → inactive 链尾</text>
+<line x1="330" y1="264" x2="330" y2="276" stroke="#6b7280" marker-end="url(#lf)"/>
+
+<rect x="180" y="276" width="300" height="44" rx="8" fill="none" stroke="#6b7280" stroke-dasharray="5 4"/>
+<text class="t" x="330" y="303" text-anchor="middle">inactive 页再次命中 / refault？</text>
+<text class="tb" x="488" y="294">是</text>
+<line x1="480" y1="298" x2="500" y2="298" stroke="#6b7280" marker-end="url(#lf)"/>
+<rect x="500" y="278" width="172" height="44" rx="8" fill="#d97706" fill-opacity="0.10" stroke="#d97706"/>
+<text class="t" x="586" y="296" text-anchor="middle">promote 回 active</text>
+<text class="ts" x="586" y="312" text-anchor="middle">workingset 保护</text>
+<text class="tb" x="338" y="340">否</text>
+<line x1="330" y1="320" x2="330" y2="344" stroke="#6b7280" marker-end="url(#lf)"/>
+
+<rect x="180" y="344" width="300" height="44" rx="8" fill="none" stroke="#6b7280" stroke-dasharray="5 4"/>
+<text class="t" x="330" y="371" text-anchor="middle">守卫：refcnt&gt;0 或属共享前缀？</text>
+<text class="tb" x="488" y="362">是</text>
+<line x1="480" y1="366" x2="500" y2="366" stroke="#6b7280" marker-end="url(#lf)"/>
+<rect x="500" y="346" width="172" height="40" rx="8" fill="none" stroke="#9ca3af"/>
+<text class="t" x="586" y="364" text-anchor="middle">跳过 · 保护</text>
+<text class="ts" x="586" y="379" text-anchor="middle">不淘汰，留 inactive</text>
+<text class="tb" x="338" y="406">否</text>
+<line x1="330" y1="388" x2="330" y2="412" stroke="#6b7280" marker-end="url(#lf)"/>
+
+<rect x="150" y="412" width="360" height="52" rx="8" fill="#2563eb" fill-opacity="0.08" stroke="#2563eb"/>
+<text class="t" x="330" y="433" text-anchor="middle">分级淘汰（升级式·仍紧张才进下一级）</text>
+<text class="ts" x="330" y="451" text-anchor="middle">② 量化 2-bit → ③ offload UFS（预测预取）→ ④ drop（重算）</text>
+<line x1="330" y1="464" x2="330" y2="484" stroke="#6b7280" marker-end="url(#lf)"/>
+
+<rect x="150" y="484" width="360" height="44" rx="8" fill="none" stroke="#9ca3af"/>
+<text class="t" x="330" y="504" text-anchor="middle">被淘汰页留 shadow entry</text>
+<text class="ts" x="330" y="520" text-anchor="middle">很快 refault → 捞回 promote（A05 workingset）</text>
+
+<text class="ts" x="24" y="548">虚线框 = 判断节点   ·   暖 = 回到 active（热）   ·   蓝 = 走向分级淘汰   ·   灰 = 保护 / 普通步骤</text>
+</svg>

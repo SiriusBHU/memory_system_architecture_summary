@@ -1,0 +1,72 @@
+<svg width="100%" viewBox="0 0 680 432" xmlns="http://www.w3.org/2000/svg" role="img" preserveAspectRatio="xMidYMid meet">
+<title>端侧 Prefix-Cache 治理架构图</title>
+<desc>系统提示作为根节点被所有会话共享，skill 指令块为中间节点被用到它的会话共享，每会话历史为私有叶子，组成共享前缀 KV 树；新请求按最长公共前缀匹配命中复用。治理机制：块哈希去重、引用计数保护、LRU leaf-first 淘汰、热 LPDDR/冷 UFS 分层落盘。</desc>
+<style>
+.t{font:14px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#1f2937}
+.ts{font:12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#6b7280}
+.tl{font:600 12px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#6b7280}
+.th{font:600 15px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#111827}
+</style>
+<defs>
+<marker id="pe" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#6b7280"/></marker>
+</defs>
+<rect x="0" y="0" width="680" height="432" fill="#ffffff"/>
+<text class="th" x="24" y="24">端侧 Prefix-Cache 治理架构：系统提示 + skill + 多轮 → 共享前缀 KV 树</text>
+<text class="ts" x="24" y="44">新请求按最长公共前缀匹配（系统提示 → skill → 历史），命中即复用 KV、跳过重 prefill（RadixAttention / vLLM APC / CachedAttention）</text>
+
+<line x1="174" y1="140" x2="205" y2="111" stroke="#6b7280"/>
+<line x1="174" y1="164" x2="205" y2="225" stroke="#6b7280"/>
+<line x1="355" y1="104" x2="400" y2="86" stroke="#6b7280"/>
+<line x1="355" y1="120" x2="400" y2="138" stroke="#6b7280"/>
+<line x1="355" y1="225" x2="400" y2="222" stroke="#6b7280"/>
+
+<rect x="24" y="118" width="150" height="66" rx="8" fill="#d97706" fill-opacity="0.12" stroke="#d97706"/>
+<text class="t" x="99" y="140" text-anchor="middle">系统提示</text>
+<text class="ts" x="99" y="157" text-anchor="middle">system prompt</text>
+<text class="ts" x="99" y="174" text-anchor="middle">全局共享 · refcnt=3</text>
+
+<rect x="205" y="86" width="150" height="50" rx="8" fill="#d97706" fill-opacity="0.06" stroke="#d97706"/>
+<text class="t" x="280" y="108" text-anchor="middle">skill A 指令块</text>
+<text class="ts" x="280" y="124" text-anchor="middle">共享 · refcnt=2</text>
+<rect x="205" y="200" width="150" height="50" rx="8" fill="#d97706" fill-opacity="0.06" stroke="#d97706"/>
+<text class="t" x="280" y="222" text-anchor="middle">skill B 指令块</text>
+<text class="ts" x="280" y="238" text-anchor="middle">共享 · refcnt=1</text>
+
+<rect x="400" y="64" width="175" height="44" rx="8" fill="none" stroke="#9ca3af"/>
+<text class="t" x="487" y="84" text-anchor="middle">会话1：历史 + 本轮</text>
+<text class="ts" x="487" y="99" text-anchor="middle">私有 · refcnt=1</text>
+<rect x="400" y="116" width="175" height="44" rx="8" fill="none" stroke="#9ca3af"/>
+<text class="t" x="487" y="136" text-anchor="middle">会话2：历史</text>
+<text class="ts" x="487" y="151" text-anchor="middle">私有 · refcnt=1</text>
+<rect x="400" y="200" width="175" height="44" rx="8" fill="none" stroke="#9ca3af"/>
+<text class="t" x="487" y="220" text-anchor="middle">会话3：历史</text>
+<text class="ts" x="487" y="235" text-anchor="middle">私有 · refcnt=1</text>
+
+<text class="tl" x="600" y="120">新请求</text>
+<text class="ts" x="600" y="137">在叶子</text>
+<text class="ts" x="600" y="152">处延长</text>
+
+<text class="tl" x="24" y="282">治理策略</text>
+<rect x="24" y="290" width="148" height="46" rx="8" fill="none" stroke="#9ca3af"/>
+<text class="t" x="98" y="310" text-anchor="middle">块哈希索引</text>
+<text class="ts" x="98" y="326" text-anchor="middle">parent⊕tokens 去重</text>
+<rect x="184" y="290" width="148" height="46" rx="8" fill="none" stroke="#9ca3af"/>
+<text class="t" x="258" y="310" text-anchor="middle">引用计数 refcnt</text>
+<text class="ts" x="258" y="326" text-anchor="middle">ref&gt;0 不可淘汰</text>
+<rect x="344" y="290" width="148" height="46" rx="8" fill="none" stroke="#9ca3af"/>
+<text class="t" x="418" y="310" text-anchor="middle">LRU 淘汰</text>
+<text class="ts" x="418" y="326" text-anchor="middle">leaf-first 最久未用</text>
+<rect x="504" y="290" width="148" height="46" rx="8" fill="none" stroke="#9ca3af"/>
+<text class="t" x="578" y="310" text-anchor="middle">分层 / 落盘</text>
+<text class="ts" x="578" y="326" text-anchor="middle">热 LPDDR · 冷 UFS</text>
+
+<text class="tl" x="24" y="356">存放层级</text>
+<rect x="24" y="362" width="314" height="44" rx="8" fill="#d97706" fill-opacity="0.10" stroke="#d97706"/>
+<text class="t" x="181" y="382" text-anchor="middle">LPDDR：热 / 共享前缀常驻</text>
+<text class="ts" x="181" y="398" text-anchor="middle">~100 GB/s · pinned</text>
+<rect x="350" y="362" width="302" height="44" rx="8" fill="#2563eb" fill-opacity="0.08" stroke="#2563eb"/>
+<text class="t" x="501" y="382" text-anchor="middle">UFS：冷前缀 Q4 落盘</text>
+<text class="ts" x="501" y="398" text-anchor="middle">safetensors · 恢复免重 prefill</text>
+
+<text class="ts" x="24" y="424">暖 = 热 / 共享前缀（常驻）   ·   蓝 = 冷前缀（落盘）   ·   灰 = 会话私有 / 治理模块   ·   refcnt = 引用计数保护</text>
+</svg>
