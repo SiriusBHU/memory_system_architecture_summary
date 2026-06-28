@@ -1,0 +1,195 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 940" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,Noto Sans CJK SC,sans-serif">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+    <marker id="arb" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto-start-reverse"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#dc2626"/></marker>
+    <marker id="arp" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#7c3aed"/></marker>
+    <linearGradient id="sigma" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#93c5fd"/><stop offset="0.25" stop-color="#fca5a5"/><stop offset="0.45" stop-color="#fde68a"/><stop offset="0.62" stop-color="#bae6fd"/><stop offset="0.78" stop-color="#fca5a5"/><stop offset="1" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <style>
+      .badge{fill:#1e293b}.bt{fill:#fff;font-size:12px;font-weight:700;text-anchor:middle}
+      .lyr{font-weight:700;fill:#0f172a}.mlab{font-weight:700;fill:#0f172a;font-size:13.5px}
+      .sub{fill:#334155;font-size:11px}.vlab{fill:#64748b;font-size:11px}
+    </style>
+  </defs>
+  <rect x="0" y="0" width="1280" height="940" fill="#ffffff"/>
+  <text x="640" y="30" text-anchor="middle" font-size="22" font-weight="700" fill="#0f172a">端侧内存系统 · 自顶向下四层架构</text>
+  <text x="640" y="50" text-anchor="middle" font-size="12.5" fill="#64748b">耦合负载 → 独立 Agent OS → 传统 OS 内存管理 → 片上互联（多 IP 竞带宽 + UFS KV 卸载）；标注 N+1 七洞察落点</text>
+
+  <!-- ===== 端云 cloud band (top) ===== -->
+  <rect x="44" y="64" width="946" height="38" rx="9" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="60" y="88" font-size="13.5" font-weight="700" fill="#5b21b6">☁ 云侧大脑（端云协同）：聚合全舰队场景 · 训练并下发「千人千面」冷热策略 · 智能请求仅 ~5% 调云</text>
+  <circle cx="968" cy="83" r="13" class="badge"/><text x="968" y="87" class="bt">7</text>
+  <!-- cloud -> Agent OS connector down the left gutter -->
+  <path d="M26,64 L26,440 L44,440" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arp)"/>
+  <path d="M26,440 L26,102" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arp)"/>
+  <text x="20" y="300" font-size="10.5" fill="#7c3aed" transform="rotate(-90 20 300)" text-anchor="middle">端云⑦：策略下发 ↓ / 智能请求 ↑</text>
+
+  <!-- ===== L1 workload ===== -->
+  <rect x="44" y="116" width="946" height="232" rx="10" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="60" y="138" class="lyr" font-size="15">第 1 层 · 负载层（三类负载耦合运行 · 同争一块内存）</text>
+  <text x="430" y="138" class="sub" font-size="11.5">→ 冷热不再两档，而是多级 + 相位错动</text>
+
+  <!-- hot/cold complexity mini-panel -->
+  <rect x="60" y="148" width="700" height="120" rx="9" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="74" y="166" font-size="12" font-weight="700" fill="#0f172a">冷热复杂度母题：冷热 = Σ 三类负载（≥4 档 · 相位错动）</text>
+  <!-- row1 foreground bursts -->
+  <text x="74" y="190" font-size="11" fill="#2563eb" font-weight="700">前台·突发热</text>
+  <g fill="#2563eb"><rect x="186" y="182" width="16" height="11" rx="2"/><rect x="232" y="182" width="16" height="11" rx="2"/><rect x="300" y="182" width="16" height="11" rx="2"/><rect x="372" y="182" width="16" height="11" rx="2"/><rect x="470" y="182" width="16" height="11" rx="2"/><rect x="556" y="182" width="16" height="11" rx="2"/></g>
+  <!-- row2 companion steady -->
+  <text x="74" y="212" font-size="11" fill="#ea580c" font-weight="700">伴随·稳定温</text>
+  <rect x="186" y="205" width="400" height="10" rx="3" fill="#fb923c"/>
+  <!-- row3 background periodic -->
+  <text x="74" y="234" font-size="11" fill="#dc2626" font-weight="700">后台·长尾复现</text>
+  <line x1="186" y1="234" x2="586" y2="234" stroke="#fecaca" stroke-width="2"/>
+  <g fill="#dc2626"><path d="M210,234 q14,-18 28,0 z"/><path d="M300,234 q14,-18 28,0 z"/><path d="M390,234 q14,-18 28,0 z"/><path d="M480,234 q14,-18 28,0 z"/></g>
+  <!-- row4 sigma overlay -->
+  <text x="74" y="256" font-size="11" fill="#475569" font-weight="700">Σ 耦合实际</text>
+  <rect x="186" y="247" width="400" height="12" rx="2" fill="url(#sigma)" stroke="#94a3b8" stroke-width="0.5"/>
+  <text x="600" y="256" font-size="10.5" fill="#64748b">→ 二分法失效</text>
+
+  <!-- color scale legend -->
+  <rect x="772" y="148" width="172" height="120" rx="9" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="784" y="166" font-size="11.5" font-weight="700" fill="#0f172a">冷热色阶（多级）</text>
+  <g font-size="11" fill="#334155">
+    <rect x="784" y="176" width="20" height="18" fill="#fca5a5"/><text x="812" y="189">热 · DRAM 常驻</text>
+    <rect x="784" y="198" width="20" height="18" fill="#fde68a"/><text x="812" y="211">温 · 压缩内存</text>
+    <rect x="784" y="220" width="20" height="18" fill="#bae6fd"/><text x="812" y="233">凉 · Flash 卸载</text>
+    <rect x="784" y="242" width="20" height="18" fill="#93c5fd"/><text x="812" y="255">冷 · 落盘/休眠</text>
+  </g>
+
+  <!-- workload type boxes -->
+  <rect x="60" y="278" width="206" height="60" rx="8" fill="#ffffff" stroke="#6366f1"/>
+  <text x="74" y="300" class="mlab">前台应用</text><text x="74" y="320" class="sub">前台 app / 单点 LLM 改写 · 短促尖峰</text>
+  <rect x="276" y="278" width="206" height="60" rx="8" fill="#ffffff" stroke="#6366f1"/>
+  <text x="290" y="300" class="mlab">伴随态 AI</text><text x="290" y="320" class="sub">companion / GUI Agent · always-on 温热</text>
+  <circle cx="466" cy="292" r="11" class="badge"/><text x="466" y="296" class="bt">6</text>
+  <rect x="492" y="278" width="252" height="60" rx="8" fill="#ffffff" stroke="#6366f1"/>
+  <text x="506" y="300" class="mlab">后台长程 Agent</text><text x="506" y="320" class="sub">多模态长上下文 →128k · 后台周期回潮</text>
+  <circle cx="728" cy="292" r="11" class="badge"/><text x="728" y="296" class="bt">6</text>
+
+  <!-- traditional app bypass box (top-right) -->
+  <rect x="996" y="150" width="240" height="74" rx="9" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="1010" y="174" class="mlab" font-size="13">传统应用</text>
+  <text x="1010" y="194" class="sub">普通 app（malloc / 缺页）</text>
+  <text x="1010" y="212" class="sub">不经 Agent OS · 直连内核 MM</text>
+  <path d="M1014,224 L1000,238 L1000,558 L990,558" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ar)"/>
+  <text x="995" y="392" font-size="10" fill="#64748b" transform="rotate(-90 995 392)" text-anchor="middle">传统应用旁路 · 直连 kernel MM</text>
+
+  <!-- workload -> Agent OS arrows -->
+  <line x1="163" y1="338" x2="200" y2="384" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/><text x="120" y="366" class="vlab">分发</text>
+  <line x1="379" y1="338" x2="500" y2="384" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/><text x="430" y="362" class="vlab">检索</text>
+  <line x1="618" y1="338" x2="800" y2="384" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/><text x="700" y="360" class="vlab">调度</text>
+
+  <!-- ===== L2 Agent OS ===== -->
+  <rect x="44" y="362" width="946" height="150" rx="10" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="60" y="384" class="lyr" font-size="15">第 2 层 · 独立 Agent OS</text>
+  <text x="262" y="384" class="sub" font-size="11.5">AI / Agent 负载先经此层 —— 面向 AI 的内存自治理</text>
+  <rect x="60" y="396" width="292" height="100" rx="8" fill="#ffffff" stroke="#7c3aed"/>
+  <text x="74" y="420" class="mlab">KV Cache 管理</text><circle cx="332" cy="412" r="11" class="badge"/><text x="332" y="416" class="bt">1</text>
+  <text x="74" y="442" class="sub">分页 KV · Q4 量化 · 持久化跳 prefill</text>
+  <text x="74" y="462" class="sub">DRAM→NVMe→闪存 三级</text>
+  <text x="74" y="482" class="sub">分发 / 回收</text>
+  <rect x="362" y="396" width="292" height="100" rx="8" fill="#ffffff" stroke="#7c3aed"/>
+  <text x="376" y="420" class="mlab">记忆（Memory）管理</text><circle cx="634" cy="412" r="11" class="badge"/><text x="634" y="416" class="bt">6</text>
+  <text x="376" y="442" class="sub">外置分层记忆 STM→MTM→LPM</text>
+  <text x="376" y="462" class="sub">按需检索代替全量重放</text>
+  <text x="376" y="482" class="sub">工作集封顶（7 页）</text>
+  <rect x="664" y="396" width="314" height="100" rx="8" fill="#faf5ff" stroke="#7c3aed" stroke-width="2"/>
+  <text x="678" y="420" class="mlab">冷热治理 / 检索调度</text><circle cx="956" cy="412" r="11" class="badge"/><text x="956" y="416" class="bt">7</text>
+  <text x="678" y="442" class="sub">个性化冷热预测（端侧小脑）</text>
+  <text x="678" y="462" class="sub">分发 / 检索 / 降级</text>
+  <text x="678" y="482" class="sub">承接端云策略，向下驱动分级</text>
+  <!-- intra arrows -->
+  <line x1="362" y1="446" x2="352" y2="446" stroke="#475569" stroke-width="1.6" marker-start="url(#arb)" marker-end="url(#ar)"/>
+  <!-- hotcold motif -> governance dashed -->
+  <path d="M586,253 C640,300 700,340 720,396" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="4 4"/>
+  <text x="638" y="330" class="vlab" font-size="10">冷热信号</text>
+
+  <!-- Agent OS -> kernel MM (sink) -->
+  <line x1="300" y1="496" x2="300" y2="528" stroke="#475569" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="312" y="518" class="vlab">下沉：申请 / 回收 / 降级</text>
+
+  <!-- ===== L3 kernel MM ===== -->
+  <rect x="44" y="528" width="946" height="150" rx="10" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.5"/>
+  <text x="60" y="550" class="lyr" font-size="15">第 3 层 · 传统 OS 内存管理（kernel MM）</text>
+  <text x="430" y="550" class="sub" font-size="11.5">双入口：承接 Agent OS 下沉 + 传统应用直连</text>
+  <rect x="60" y="562" width="214" height="100" rx="8" fill="#ffffff" stroke="#0d9488"/>
+  <text x="74" y="586" class="mlab">THP / mTHP</text><circle cx="254" cy="578" r="11" class="badge"/><text x="254" y="582" class="bt">2</text>
+  <text x="74" y="608" class="sub">多尺寸大页 · 抗碎片</text>
+  <rect x="284" y="562" width="214" height="100" rx="8" fill="#ffffff" stroke="#0d9488"/>
+  <text x="298" y="586" class="mlab">MGLRU</text><circle cx="450" cy="578" r="11" class="badge"/><text x="450" y="582" class="bt">2</text><circle cx="476" cy="578" r="11" class="badge"/><text x="476" y="582" class="bt">4</text>
+  <text x="298" y="608" class="sub">访问感知冷热分代回收</text>
+  <rect x="508" y="562" width="214" height="100" rx="8" fill="#ffffff" stroke="#0d9488"/>
+  <text x="522" y="586" class="mlab">zram / zswap 压缩</text><circle cx="702" cy="578" r="11" class="badge"/><text x="702" y="582" class="bt">4</text>
+  <text x="522" y="608" class="sub">压缩内存 ~2:1 · 冷页下沉</text>
+  <rect x="732" y="562" width="246" height="100" rx="8" fill="#ffffff" stroke="#0d9488"/>
+  <text x="746" y="586" class="mlab">swap · LMKD / PSI</text><circle cx="930" cy="578" r="11" class="badge"/><text x="930" y="582" class="bt">2</text><circle cx="956" cy="578" r="11" class="badge"/><text x="956" y="582" class="bt">4</text>
+  <text x="746" y="608" class="sub">换页落盘 · 压力感知杀进程</text>
+  <!-- KV / cold-page offload swap -> UFS -->
+  <line x1="860" y1="662" x2="860" y2="728" stroke="#0d9488" stroke-width="2" stroke-dasharray="3 3" marker-end="url(#ar)"/>
+  <text x="868" y="690" font-size="10" fill="#0d9488">KV / 冷页落盘</text>
+
+  <!-- kernel MM -> 片上互联 -->
+  <line x1="300" y1="662" x2="300" y2="694" stroke="#475569" stroke-width="2.5" marker-start="url(#arb)" marker-end="url(#ar)"/>
+  <text x="312" y="684" class="vlab">回收 / 落盘 / 取回（映射到物理介质）</text>
+
+  <!-- KV offload depicted via swap·LMKD(L3) -> UFS(L4) short arrow + UFS box labels -->
+
+
+  <!-- ===== L4 on-chip interconnect ===== -->
+  <rect x="44" y="694" width="946" height="158" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="60" y="716" class="lyr" font-size="15">第 4 层 · 片上互联架构</text>
+  <text x="262" y="716" class="sub" font-size="11.5">多 IP 竞争内存带宽 + UFS / Flash 做 KV 卸载</text>
+  <!-- compute IPs -->
+  <rect x="60" y="728" width="290" height="104" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="74" y="752" class="mlab">CPU · GPU · NPU 多 IP</text><circle cx="330" cy="744" r="11" class="badge"/><text x="330" y="748" class="bt">3</text>
+  <g font-size="12" font-weight="700" fill="#7c2d12">
+    <rect x="74" y="762" width="78" height="28" rx="6" fill="#fff" stroke="#ea580c"/><text x="113" y="781" text-anchor="middle">CPU</text>
+    <rect x="160" y="762" width="78" height="28" rx="6" fill="#fff" stroke="#ea580c"/><text x="199" y="781" text-anchor="middle">GPU</text>
+    <rect x="246" y="762" width="92" height="28" rx="6" fill="#fff" stroke="#ea580c"/><text x="292" y="781" text-anchor="middle">NPU</text>
+  </g>
+  <text x="74" y="812" class="sub">异构 IP 并发取数 · 争用同一 LPDDR</text>
+  <text x="74" y="827" font-size="10.5" fill="#dc2626" font-weight="700">→ 多 IP 竞争内存带宽</text>
+  <!-- memory controller / LPDDR -->
+  <rect x="362" y="728" width="320" height="104" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="376" y="752" class="mlab">内存控制器 · 片上总线 · LPDDR5X（热）</text><circle cx="662" cy="744" r="11" class="badge"/><text x="662" y="748" class="bt">3</text>
+  <text x="376" y="776" class="sub">带宽仲裁 / QoS · 主存供给</text>
+  <text x="376" y="796" class="sub">峰值 ~85.6 GB/s · 利用率目标 ~88%</text>
+  <!-- three IPs contend for bandwidth: red arrows originate right of the pills, converge into LPDDR -->
+  <line x1="342" y1="768" x2="360" y2="782" stroke="#dc2626" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="342" y1="782" x2="360" y2="782" stroke="#dc2626" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="342" y1="796" x2="360" y2="782" stroke="#dc2626" stroke-width="2" marker-end="url(#arr)"/>
+  <!-- UFS/NAND -->
+  <rect x="694" y="728" width="284" height="104" rx="8" fill="#fef9c3" stroke="#ca8a04"/>
+  <text x="708" y="752" class="mlab">UFS / 3D NAND（KV 卸载）</text><circle cx="956" cy="744" r="11" class="badge"/><text x="956" y="748" class="bt">1</text>
+  <text x="708" y="776" class="sub">KVSwap 分页落盘</text>
+  <text x="708" y="796" class="sub">KVNAND 闪存内注意力计算</text>
+  <text x="708" y="816" class="sub">每 GB 成本约 DRAM 的 1/5</text>
+  <line x1="682" y1="790" x2="694" y2="790" stroke="#475569" stroke-width="2" marker-start="url(#arb)" marker-end="url(#ar)"/>
+  <text x="640" y="846" class="vlab">卸载 / 取回（冷页·KV 降级落盘）</text>
+
+  <!-- ===== Security cross-cutting bar (right) ===== -->
+  <rect x="1004" y="362" width="232" height="490" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="1120" y="386" text-anchor="middle" class="lyr" font-size="14">安全 / 隔离（横切）</text>
+  <circle cx="1216" cy="378" r="12" class="badge"/><text x="1216" y="382" class="bt">5</text>
+  <rect x="1022" y="404" width="196" height="58" rx="8" fill="#fff" stroke="#dc2626"/>
+  <text x="1120" y="428" text-anchor="middle" font-size="13" font-weight="700" fill="#7f1d1d">ARM MTE 内存标签</text>
+  <text x="1120" y="448" text-anchor="middle" class="sub">低开销抓 UAF / 越界（~1–5%）</text>
+  <rect x="1022" y="474" width="196" height="58" rx="8" fill="#fff" stroke="#dc2626"/>
+  <text x="1120" y="498" text-anchor="middle" font-size="13" font-weight="700" fill="#7f1d1d">CCA / RME · pKVM</text>
+  <text x="1120" y="518" text-anchor="middle" class="sub">端侧机密工作负载隔离</text>
+  <text x="1120" y="566" text-anchor="middle" class="sub">保护：ML 推理 / DRM /</text>
+  <text x="1120" y="584" text-anchor="middle" class="sub">生物识别 / KV 与记忆数据</text>
+  <text x="1120" y="640" text-anchor="middle" class="sub">横切 Agent OS → 内核 MM →</text>
+  <text x="1120" y="658" text-anchor="middle" class="sub">片上互联 的每一层数据面</text>
+  <line x1="1004" y1="446" x2="990" y2="446" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+  <text x="966" y="438" font-size="10" fill="#dc2626" text-anchor="end">保护</text>
+
+  <!-- ===== insight legend footer ===== -->
+  <line x1="44" y1="872" x2="1236" y2="872" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="44" y="894" font-size="12" fill="#475569" font-weight="700">七洞察落点：</text>
+  <text x="150" y="894" font-size="11.5" fill="#0f172a">① KV 分级管理　② 可编程/自适应内存　③ 内存带宽(供给+利用)　④ 端侧分级内存　⑤ 内存安全/机密计算　⑥ Agent 记忆系统　⑦ 端云协同·千人千面</text>
+  <text x="44" y="918" font-size="11" fill="#64748b">读图：AI/Agent 负载先入 Agent OS（KV/记忆/冷热治理），下沉到 kernel MM，再映射到片上互联物理介质；传统应用旁路直连内核；KV 跨层卸载至 UFS；安全横切、端云在顶。</text>
+</svg>
