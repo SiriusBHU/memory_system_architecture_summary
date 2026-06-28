@@ -4,29 +4,29 @@
 
 ## 1. 范围与方法
 
-**领域定义。** 资源受限终端设备（手机、PC、边缘开发板）上大语言模型推理过程中 KV Cache 的内存管理。KV Cache 存储注意力中间状态，其大小随序列长度和批大小线性增长，是长上下文生成阶段的内存消耗主体。
+**领域定义。** 本文关注资源受限终端设备（手机、PC、边缘开发板）上大语言模型推理中 KV Cache 的内存管理。KV Cache 存储注意力计算的中间状态，大小随序列长度和批大小线性增长，是长上下文生成阶段的主要内存开销。
 
-**"原始"与"演进"的含义。** *原始方案*是标准的 DRAM 驻留 KV Cache：完整 FP16/BF16 KV 张量驻留在系统 DRAM 中，按请求分配，会话结束后丢弃。*演进方案*是一组组合技术——量化（Q4/Q8）缓存、NVMe/Flash 持久化存储、NPU/iGPU 异构计算调度、跨 Agent 缓存共享——共同打破了"一个上下文 = 一份 DRAM 拷贝"的假设。
+**"原始"与"演进"的含义。** *原始方案*指标准的 DRAM 驻留 KV Cache：完整 FP16/BF16 KV 张量放在系统 DRAM 中，按请求分配，会话结束后丢弃。*演进方案*是一组组合技术——量化（Q4/Q8）、NVMe/Flash 持久化存储、NPU/iGPU 异构调度、跨 Agent 缓存共享——目标是打破"一个上下文 = 一份 DRAM 拷贝"的限制。
 
-**来源。** 12 个主要来源：6 篇学术论文（SOSP 2025、arxiv 2024–2026），3 份业界资料（Apple MLX、Samsung LPDDR5X），3 个系统级参考（llama.cpp 量化 KV、vLLM PagedAttention、oMLX 双层缓存）。来源类型涵盖学术论文、开源框架文档和厂商工程博客。
+**来源。** 12 个主要来源：6 篇学术论文（SOSP 2025、arxiv 2024–2026），3 份业界资料（Apple MLX、Samsung LPDDR5X），3 个系统级参考（llama.cpp 量化 KV、vLLM PagedAttention、oMLX 双层缓存）。涵盖学术论文、开源框架文档和厂商工程博客。
 
 ## 2. 问题背景
 
-**系统需要做什么。** 在 8–16 GB DRAM 的设备上本地运行多轮 LLM 推理（7B–14B 参数），支持 32K–100K+ token 上下文的 Agent 工作流（会议摘要、文档分析、多步推理）。
+**系统目标。** 在 8–16 GB DRAM 的设备上本地运行多轮 LLM 推理（7B–14B 参数），支持 32K–100K+ token 上下文的 Agent 工作流（会议摘要、文档分析、多步推理）。
 
-**为什么这个领域变得困难。** KV Cache 大小按 `2 × n_layers × n_heads × head_dim × seq_len × dtype_bytes` 缩放。LLaMA3-8B 在 FP16 下 32K 上下文单请求 KV Cache 约 4.3 GB；batch-12 下达到 54 GB [KVSwap]。移动端 DRAM 带宽（LPDDR5X ~70 GB/s）被模型权重、激活和 KV Cache 共享，产生争用。Flash 存储（NVMe ~1.8 GB/s，eMMC ~250 MB/s）比 DRAM 慢 40–280×，但每 GB 成本仅为 DRAM 的 1/5。
+**为什么这件事越来越难。** KV Cache 大小按 `2 × n_layers × n_heads × head_dim × seq_len × dtype_bytes` 增长。LLaMA3-8B 在 FP16 下 32K 上下文单请求 KV Cache 约 4.3 GB；batch-12 下达到 54 GB [KVSwap]。移动端 DRAM 带宽（LPDDR5X ~70 GB/s）被模型权重、激活和 KV Cache 共同占用，存在争用。Flash 存储（NVMe ~1.8 GB/s，eMMC ~250 MB/s）比 DRAM 慢 40–280×，但每 GB 成本只有 DRAM 的 1/5。
 
-**为什么原始方案不再够用。** 端侧多 Agent 应用（4+ 个并发 Agent，各自独立对话历史）需要同时维护的 KV Cache 总量超出物理 DRAM。冷启动重新 prefill 恢复上下文需要 O(n) 计算，在 4K–32K 上下文下增加 15–172 秒延迟 [Q4 Persistent Cache]。
+**为什么原始方案不够了。** 端侧多 Agent 应用（4+ 个并发 Agent，各自有独立对话历史）需要同时维护的 KV Cache 总量超出物理 DRAM。冷启动重新 prefill 恢复上下文的计算量是 O(n)，在 4K–32K 上下文下带来 15–172 秒延迟 [Q4 Persistent Cache]。
 
 ## 3. 具体问题与瓶颈证据
 
 1. **中等上下文长度下 KV Cache 即超出设备 DRAM** — 4B 参数模型在 32K 上下文 batch-12 下 KV Cache 需 54 GB，远超移动设备 8–16 GB 的 DRAM 预算 [KVSwap]。
 
-2. **多 Agent 上下文切换摧毁延迟** — 切换 Agent 时丢弃并重算 KV Cache 在 Gemma 3 12B / M4 Pro 上的冷 TTFT 为 15.7s（4K）至 172.1s（32K），交互式多 Agent 工作流无法使用 [Q4 Persistent Cache]。
+2. **多 Agent 上下文切换的延迟代价** — 切换 Agent 时丢弃并重算 KV Cache，Gemma 3 12B / M4 Pro 上冷 TTFT 为 15.7s（4K）至 172.1s（32K），多 Agent 交互场景无法接受 [Q4 Persistent Cache]。
 
-3. **基于稀疏性的淘汰策略在规模上丧失精度** — 已有 KV Cache 压缩方法（InfiniGen、ShadowKV、Loki）在 32K 上下文 RULER 基准上分别产生 78.7%、52.3%、34.0% 的精度损失，不适合生产使用 [KVSwap]。
+3. **基于稀疏性的淘汰策略精度不够** — 已有 KV Cache 压缩方法（InfiniGen、ShadowKV、Loki）在 32K 上下文 RULER 基准上分别损失 78.7%、52.3%、34.0% 的精度，不能用于生产 [KVSwap]。
 
-4. **统一内存 SoC 上的带宽争用** — 在 CPU、iGPU、NPU 共享系统 DRAM 的异构 SoC 上，内存密集型 GEMV 内核（解码阶段）在与其他工作负载并发执行时严重退化，而计算密集型 GEMM 内核（预填充阶段）可以容忍重叠 [Agent.xpu]。
+4. **统一内存 SoC 上的带宽争用** — 在 CPU、iGPU、NPU 共享系统 DRAM 的异构 SoC 上，访存密集的 GEMV 内核（解码阶段）在与其他负载并发时性能下降严重，而计算密集的 GEMM 内核（预填充阶段）对带宽争用不敏感 [Agent.xpu]。
 
 ### 瓶颈证据
 
@@ -104,23 +104,23 @@
 
 ### 演进方案为什么有效
 
-- **KV Cache 超出设备 DRAM** — Q4 量化将 KV Cache 压缩至 FP16 的 28.1%，同等 DRAM 预算下可容纳 4× 更多 Agent 上下文（8K 上下文下 12 个 vs 3 个，10.2 GB 设备）[Q4 Persistent Cache]。KVSwap 卸载至 NVMe/eMMC，KV Cache DRAM 占用降至 vLLM 的 1/11 [KVSwap]。
+- **KV Cache 超出设备 DRAM** — Q4 量化将 KV Cache 压缩到 FP16 的 28.1%，同等 DRAM 预算下能放 4 倍多的 Agent 上下文（8K 上下文下 12 个 vs 3 个，10.2 GB 设备）[Q4 Persistent Cache]。KVSwap 把 KV Cache 卸载到 NVMe/eMMC，DRAM 占用降到 vLLM 的 1/11 [KVSwap]。
 
-- **多 Agent 上下文切换摧毁延迟** — 持久化 Q4 Cache 消除了重新 prefill，Gemma 3 12B 在 32K 上下文下 TTFT 从 172s 降至 1.8s（94× 提升）[Q4 Persistent Cache]。QKVShare 进一步实现 Agent 间缓存传递，8K 上下文下 397ms vs 1030ms 重新 prefill [QKVShare]。
+- **多 Agent 上下文切换的延迟代价** — 持久化 Q4 Cache 省掉了重新 prefill，Gemma 3 12B 在 32K 上下文下 TTFT 从 172s 降到 1.8s（94 倍）[Q4 Persistent Cache]。QKVShare 支持 Agent 之间传递缓存，8K 上下文下 397ms，对比重新 prefill 的 1030ms [QKVShare]。
 
-- **稀疏淘汰方法精度损失过大** — KVSwap 的全缓存卸载（无淘汰）将 RULER 精度损失控制在 2.6%（NVMe），远优于 InfiniGen 的 78.7%、ShadowKV 的 52.3%、Loki 的 34.0% [KVSwap]。
+- **稀疏淘汰方法精度损失太大** — KVSwap 采用全缓存卸载（不做淘汰），RULER 精度损失只有 2.6%（NVMe），远好于 InfiniGen 的 78.7%、ShadowKV 的 52.3%、Loki 的 34.0% [KVSwap]。
 
-- **统一内存 SoC 带宽争用** — Agent.xpu 的三级带宽压力分发将 prefill（GEMM，计算密集）调度至 NPU、将 decode（GEMV，访存密集）调度至 iGPU，反应式任务延迟降低 4.6× [Agent.xpu]。HeteroInfer 通过 GPU-NPU 异构执行实现 1.34–6.02× 加速 [HeteroInfer/SOSP 2025]。
+- **统一内存 SoC 带宽争用** — Agent.xpu 按带宽压力分三级调度：prefill（GEMM，计算密集）放 NPU、decode（GEMV，访存密集）放 iGPU，反应式任务延迟降低 4.6 倍 [Agent.xpu]。HeteroInfer 用 GPU-NPU 异构执行，加速 1.34–6.02 倍 [HeteroInfer/SOSP 2025]。
 
 ### 尚未解决的问题
 
-- **量化误差在超长上下文下累积** — Q4 KV Cache 在 DeepSeek 模型上困惑度增加 +3.0%；在安全关键应用（医疗、法律）中，即使微小的精度退化也可能不可接受 [Q4 Persistent Cache]。
+- **量化误差在超长上下文下累积** — Q4 KV Cache 在 DeepSeek 模型上困惑度增加 +3.0%；安全关键场景（医疗、法律）中，这个精度退化可能不可接受 [Q4 Persistent Cache]。
 
-- **Flash 延迟仍比 DRAM 慢 40–280×** — NVMe（~1.8 GB/s）和 eMMC（~250 MB/s）为缓存恢复速度设定了硬底线；eMMC 手机的吞吐量比 NVMe 设备差 4.1× [KVSwap]。
+- **Flash 延迟仍比 DRAM 慢 40–280 倍** — NVMe（~1.8 GB/s）和 eMMC（~250 MB/s）给缓存恢复速度画了一条硬线；eMMC 手机的吞吐比 NVMe 设备差 4.1 倍 [KVSwap]。
 
-- **缺乏跨框架缓存可移植性标准 API** — 各框架（llama.cpp、MLX、vLLM）使用私有 KV Cache 格式；持久化缓存无法跨运行时共享。
+- **缺乏跨框架的缓存格式标准** — llama.cpp、MLX、vLLM 各自用私有 KV Cache 格式，持久化缓存无法跨运行时共享。
 
-- **持续 Flash I/O 的功耗预算** — 持续 NVMe/eMMC 读取进行 KV Cache 交换可能与电池设备的散热和功耗约束冲突；尚无关于活跃交换期间持续功耗的公开数据。
+- **持续 Flash I/O 的功耗问题** — 持续用 NVMe/eMMC 做 KV Cache 交换，可能顶到电池设备的散热和功耗上限；目前没有活跃交换期间持续功耗的公开数据。
 
 ## 6. 对比表
 
@@ -137,22 +137,22 @@
 
 ## 7. 一词定性
 
-**分级**（Tiered）— KV Cache 管理从单一 DRAM 层级演进为三级层次结构（DRAM → NVMe → Flash），搭配量化持久化，单 Agent DRAM 占用降低 72%，同等内存预算下可容纳 4× 更多并发 Agent。
+**分级**（Tiered）— KV Cache 管理从单一 DRAM 层级演变为三级结构（DRAM → NVMe → Flash），配合量化持久化，单 Agent DRAM 占用降低 72%，同等内存预算下可放 4 倍多的并发 Agent。
 
 ## 8. 开放问题与注意事项
 
-- **100K+ token 下量化-精度权衡** — 已发表结果上限为 32K 上下文；Q4 持久化缓存在 100K+ token 推理密集型任务（数学、代码）上的表现未知。
-- **持续交换下的 Flash 耐久性** — 消费级 UFS/eMMC Flash 写入耐久度有限（通常 1500–3000 P/E 周期）；持续 KV Cache 交换可能加速存储介质老化。尚无公开的磨损均衡分析。
-- **跨设备可移植性** — 所有基准数据来自特定设备（M4 Pro、Jetson Orin AGX）；搭载 eMMC + 8 GB DRAM 的手机在真实场景下性能可能差距更大。
-- **Agent 记忆一致性** — 当多个 Agent 共享 KV 前缀（如共享系统提示词）时，当前系统不会对持久化 Q4 Cache 中的共享部分去重，浪费存储和带宽。
-- **持久化 KV Cache 安全性** — 序列化到 Flash 的 KV Cache 可能包含敏感对话状态；尚无公开工作涉及持久化缓存文件的加密或安全删除。
-- **与 OS 内存管理的整合** — KV Cache 交换运行在内核页缓存/swap 子系统之外；与 Android LMKD、zram、内存 cgroup 的共存尚未探索。
+- **100K+ token 下量化与精度的关系** — 已有结果上限是 32K 上下文；Q4 持久化缓存在 100K+ token 推理密集型任务（数学、代码）上的表现还不清楚。
+- **持续交换下的 Flash 耐久性** — 消费级 UFS/eMMC Flash 写入耐久度有限（通常 1500–3000 P/E 周期）；持续 KV Cache 交换可能加速介质老化。目前没有公开的磨损均衡分析。
+- **跨设备可移植性** — 所有基准数据来自特定设备（M4 Pro、Jetson Orin AGX）；8 GB DRAM + eMMC 的手机在真实场景下差距可能更大。
+- **Agent 记忆一致性** — 多个 Agent 共享 KV 前缀（如共享系统提示词）时，当前系统不会对持久化 Q4 Cache 中的共享部分做去重，浪费存储和带宽。
+- **持久化 KV Cache 的安全性** — 序列化到 Flash 的 KV Cache 可能包含敏感对话状态；目前没有工作涉及持久化缓存文件的加密或安全删除。
+- **与 OS 内存管理的配合** — KV Cache 交换跑在内核页缓存/swap 子系统之外；和 Android LMKD、zram、内存 cgroup 的共存还没有人探索过。
 
 ## 9. 案例拆解：vLLM PagedAttention 的内部结构
 
-把第 4 节「演进方案」里反复出现的 vLLM PagedAttention 拎出来逐层拆解——它是「KV Cache 管理」这一思路最公开、可验证的真实系统。
+把第 4 节「演进方案」里反复出现的 vLLM PagedAttention 单独拆解——它是「KV Cache 管理」这个方向上最公开、可验证的真实系统。
 
-**核心思想**：把操作系统的**虚拟内存分页**搬到 KV Cache 上。传统做法给每个请求预留一整段连续显存（按 `max_len`），导致 **60–80%** 被内部碎片与过度预留浪费；PagedAttention 把 KV Cache 切成定长块、按需分配、用一张块表做「逻辑→物理」映射，浪费降到 **<4%**（仅末块半满）[vLLM]。
+**核心思想**：把操作系统的**虚拟内存分页**搬到 KV Cache 上。传统做法给每个请求预留一整段连续显存（按 `max_len`），**60–80%** 被内部碎片和过度预留浪费；PagedAttention 把 KV Cache 切成定长块、按需分配、用块表做「逻辑→物理」映射，浪费降到 **<4%**（只有末块可能半满）[vLLM]。
 
 ![vLLM PagedAttention：KV Cache 分页管理结构](assets/pagedattention-arch.svg)
 
@@ -171,12 +171,12 @@
 
 ### 三个关键机制
 
-1. **按需分配** —— 只有生成到新块时才分配物理块，浪费只发生在序列**最后一块**（半满），故 <4% [vLLM]。
-2. **写时复制（COW）共享** —— 并行采样 / beam search 时多序列共享同一前缀的物理块，块表指向同一物理块 + **引用计数**；某序列要写入共享块时才复制。复杂采样省内存最多 **55%**，吞吐提升最多 **2.2×** [vLLM]。
-3. **自动前缀缓存（跨请求复用）** —— 结构最精巧的部分：
-   - **块哈希链**：`hash = H(父块hash, 本块token, 额外id如 LoRA/图像)`；包含父块 ⇒ 只有**整条前缀都相同**时哈希才相同，天然防止「位置错位」误匹配。
-   - **命中**：新请求先 `get_computed_blocks()`，对 prompt 逐块哈希查表；命中的物理块被 touch（引用计数 +1、移出空闲队列防淘汰）。
-   - **淘汰**：空闲块走 **LRU 双向队列**，仅当 `refcount==0` 才可淘汰；请求结束时块**逆序**归还（含更长前缀的末块更早被淘汰，因为长前缀更难被未来命中）。
+1. **按需分配** —— 只有生成到新块时才分配物理块，浪费只出现在序列**最后一块**（半满），所以 <4% [vLLM]。
+2. **写时复制（COW）共享** —— 并行采样 / beam search 时多序列共享同一前缀的物理块，块表指向同一物理块 + **引用计数**；某序列要写入共享块时才复制。复杂采样场景下最多省 **55%** 内存，吞吐提升最多 **2.2×** [vLLM]。
+3. **自动前缀缓存（跨请求复用）** —— 这部分设计最精巧：
+   - **块哈希链**：`hash = H(父块hash, 本块token, 额外id如 LoRA/图像)`；因为包含父块哈希，只有**整条前缀完全相同**时哈希才一致，天然避免位置错位导致的误匹配。
+   - **命中**：新请求先调 `get_computed_blocks()`，对 prompt 逐块哈希查表；命中的物理块被 touch（引用计数 +1、移出空闲队列防淘汰）。
+   - **淘汰**：空闲块走 **LRU 双向队列**，只有 `refcount==0` 才能淘汰；请求结束时块**逆序**归还（包含更长前缀的末块更早被淘汰，因为长前缀被后续请求命中的概率更低）。
 
 ### 实测数字
 
@@ -187,9 +187,9 @@
 | 吞吐 vs HF Transformers | 14–24×（单序列）/ 8.5–15×（3 并行） | [vLLM] |
 | 吞吐 vs HF TGI | 2.2–2.5×（单）/ 3.3–3.5×（3 并行） | [vLLM] |
 
-> 注：上表为 vLLM 原论文的吞吐/显存数字，用于刻画**分页机制本身**的收益；vLLM 面向数据中心 GPU，端侧并非直接套用其吞吐倍数。结构性浪费（60–80%→<4%）是与硬件无关的机制收益，端侧同样成立。
+> 注：上表为 vLLM 原论文的吞吐/显存数字，用于说明**分页机制本身**的收益；vLLM 面向数据中心 GPU，端侧不能直接套用这些吞吐倍数。结构性浪费的改善（60–80%→<4%）跟硬件无关，端侧同样适用。
 >
-> 端侧映射：llama.cpp 的 `llama_kv_cache`（cell + seq_id 集合 + `llama_kv_cache_seq_cp` 共享前缀 + 碎片整理）是同一套思想的移动端实现，对应 MemOS 的 **activation memory** 层 [llama.cpp]。
+> 端侧对应：llama.cpp 的 `llama_kv_cache`（cell + seq_id 集合 + `llama_kv_cache_seq_cp` 共享前缀 + 碎片整理）是同一套思路在移动端的实现，对应 MemOS 的 **activation memory** 层 [llama.cpp]。
 > 本案例（KV/激活层）与上层「记忆系统」案例 MemoryOS（语义/画像层）经 MemOS `MemCube` 同构于同一条记忆层级，二者的结构对照见姊妹篇 [on-device-agent-memory-system](../on-device-agent-memory-system/on-device-agent-memory-system-CN.md) 第 9 节。
 
 ## 10. 参考文献
