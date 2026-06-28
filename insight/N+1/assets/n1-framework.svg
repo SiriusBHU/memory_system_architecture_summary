@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 760" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,Noto Sans CJK SC,sans-serif">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+    <marker id="arb" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto-start-reverse"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1280" height="760" fill="#ffffff"/>
+  <text x="640" y="34" text-anchor="middle" font-size="24" font-weight="700" fill="#0f172a">端侧内存管理系统全景 · N+1 调研的七个洞察</text>
+  <text x="640" y="56" text-anchor="middle" font-size="13" fill="#64748b">从应用/Agent → OS 内核内存管理 → SoC 计算 IP / 内存子系统 / 存储，安全横切其间；云侧大脑做端云协同</text>
+
+  <!-- badge helper style -->
+  <style>
+    .badge{fill:#1e293b}
+    .bt{fill:#fff;font-size:14px;font-weight:700;text-anchor:middle}
+    .lbl{fill:#0f172a;font-weight:700}
+    .sub{fill:#334155;font-size:12.5px}
+    .chip{fill:#ffffff;stroke-width:1}
+  </style>
+
+  <!-- Cloud band (7) -->
+  <rect x="40" y="70" width="1200" height="54" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="60" y="94" class="lbl" font-size="16">☁ 云侧大脑（Cloud）</text>
+  <text x="60" y="113" class="sub">大模型 / 训练器 · 聚合全舰队场景模式 · 学习并下发「千人千面」冷热策略</text>
+  <circle cx="1212" cy="97" r="15" class="badge"/><text x="1212" y="102" class="bt">7</text>
+
+  <!-- vertical bidirectional link cloud<->stack -->
+  <line x1="640" y1="124" x2="640" y2="150" stroke="#475569" stroke-width="2" marker-start="url(#arb)" marker-end="url(#ar)"/>
+  <text x="652" y="142" class="sub" font-size="11.5">策略下发 ↓ / 智能请求 ↑（仅 ~5% 调云）</text>
+
+  <!-- Application / Agent layer -->
+  <rect x="40" y="152" width="912" height="92" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="56" y="174" class="lbl" font-size="15">应用 / Agent 层</text>
+  <rect x="56" y="184" width="430" height="46" rx="8" class="chip" stroke="#2563eb"/>
+  <text x="72" y="205" class="sub" font-weight="700" fill="#1e3a8a">LLM 推理运行时 · KV Cache</text>
+  <text x="72" y="222" class="sub" font-size="11.5">分页 KV · 量化 · 持久化</text>
+  <circle cx="466" cy="200" r="14" class="badge"/><text x="466" y="205" class="bt">1</text>
+  <rect x="506" y="184" width="430" height="46" rx="8" class="chip" stroke="#2563eb"/>
+  <text x="522" y="205" class="sub" font-weight="700" fill="#1e3a8a">Agent 记忆 OS · 外置分层记忆</text>
+  <text x="522" y="222" class="sub" font-size="11.5">STM→MTM→LPM · 检索代替重放</text>
+  <circle cx="916" cy="200" r="14" class="badge"/><text x="916" y="205" class="bt">6</text>
+
+  <!-- OS kernel MM layer -->
+  <rect x="40" y="256" width="912" height="104" rx="10" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.5"/>
+  <text x="56" y="278" class="lbl" font-size="15">OS 内核内存管理（kernel MM）</text>
+  <circle cx="430" cy="271" r="13" class="badge"/><text x="430" y="276" class="bt">2</text>
+  <circle cx="466" cy="271" r="13" class="badge"/><text x="466" y="276" class="bt">4</text>
+  <!-- chips -->
+  <g font-size="12.5" fill="#0f172a">
+    <rect x="56"  y="292" width="120" height="26" rx="6" class="chip" stroke="#0d9488"/><text x="116" y="309" text-anchor="middle">THP / mTHP</text>
+    <rect x="184" y="292" width="96"  height="26" rx="6" class="chip" stroke="#0d9488"/><text x="232" y="309" text-anchor="middle">MGLRU</text>
+    <rect x="288" y="292" width="96"  height="26" rx="6" class="chip" stroke="#0d9488"/><text x="336" y="309" text-anchor="middle">DAMON</text>
+    <rect x="392" y="292" width="120" height="26" rx="6" class="chip" stroke="#0d9488"/><text x="452" y="309" text-anchor="middle">LMKD / PSI</text>
+    <rect x="520" y="292" width="116" height="26" rx="6" class="chip" stroke="#0d9488"/><text x="578" y="309" text-anchor="middle">eBPF hooks</text>
+    <rect x="644" y="292" width="140" height="26" rx="6" class="chip" stroke="#0d9488"/><text x="714" y="309" text-anchor="middle">zram / zswap 压缩</text>
+    <rect x="792" y="292" width="76"  height="26" rx="6" class="chip" stroke="#0d9488"/><text x="830" y="309" text-anchor="middle">swap</text>
+  </g>
+  <text x="56" y="344" class="sub" font-size="11.5">访问感知的冷热分代 · 可编程 / 自适应回收与放置（取代固定一刀切策略）</text>
+
+  <!-- bottom three columns -->
+  <!-- SoC compute IP -->
+  <rect x="40" y="372" width="288" height="150" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="56" y="394" class="lbl" font-size="14">SoC 计算 IP</text>
+  <g font-size="12.5" fill="#7c2d12" font-weight="700">
+    <rect x="56" y="404" width="76" height="30" rx="6" class="chip" stroke="#ea580c"/><text x="94" y="423" text-anchor="middle">CPU</text>
+    <rect x="140" y="404" width="76" height="30" rx="6" class="chip" stroke="#ea580c"/><text x="178" y="423" text-anchor="middle">GPU</text>
+    <rect x="224" y="404" width="76" height="30" rx="6" class="chip" stroke="#ea580c"/><text x="262" y="423" text-anchor="middle">NPU</text>
+  </g>
+  <text x="56" y="456" class="sub" font-size="12">异构协同调度</text>
+  <text x="56" y="474" class="sub" font-size="11.5">预填充→NPU · 解码→GPU</text>
+  <text x="56" y="492" class="sub" font-size="11.5">带宽压力感知 · 核级抢占</text>
+
+  <!-- memory subsystem -->
+  <rect x="338" y="372" width="288" height="150" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="354" y="394" class="lbl" font-size="14">内存子系统</text>
+  <text x="354" y="418" class="sub" font-size="12.5" font-weight="700" fill="#14532d">LPDDR5X 控制器 · 10.7Gbps</text>
+  <rect x="354" y="428" width="120" height="34" rx="6" class="chip" stroke="#16a34a"/><text x="414" y="450" text-anchor="middle" font-size="12.5" fill="#14532d">DRAM（热）</text>
+  <rect x="486" y="428" width="124" height="34" rx="6" class="chip" stroke="#16a34a"/><text x="548" y="450" text-anchor="middle" font-size="12.5" fill="#14532d">压缩内存</text>
+  <text x="354" y="486" class="sub" font-size="11.5">峰值 85.6 GB/s · 32GB 封装</text>
+  <text x="354" y="504" class="sub" font-size="11.5">负载自适应功耗</text>
+
+  <!-- bandwidth link between IP and memory -->
+  <line x1="328" y1="447" x2="338" y2="447" stroke="#475569" stroke-width="2.5" marker-start="url(#arb)" marker-end="url(#ar)"/>
+  <circle cx="333" cy="420" r="13" class="badge"/><text x="333" y="425" class="bt">3</text>
+
+  <!-- storage -->
+  <rect x="636" y="372" width="316" height="150" rx="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="652" y="394" class="lbl" font-size="14">存储（Flash）</text>
+  <rect x="652" y="404" width="130" height="34" rx="6" class="chip" stroke="#ca8a04"/><text x="717" y="426" text-anchor="middle" font-size="12.5" fill="#713f12">UFS / NVMe（温）</text>
+  <rect x="792" y="404" width="144" height="34" rx="6" class="chip" stroke="#ca8a04"/><text x="864" y="426" text-anchor="middle" font-size="12.5" fill="#713f12">3D NAND（冷）</text>
+  <text x="652" y="462" class="sub" font-size="12">KVNAND：闪存内注意力计算</text>
+  <text x="652" y="482" class="sub" font-size="11.5">持久化 KV / swap 落盘</text>
+  <text x="652" y="500" class="sub" font-size="11.5">每 GB 成本约为 DRAM 的 1/5</text>
+  <circle cx="936" cy="388" r="13" class="badge"/><text x="936" y="393" class="bt">1</text>
+
+  <!-- tier arrows (DRAM<->compress<->flash) -->
+  <line x1="626" y1="447" x2="636" y2="447" stroke="#475569" stroke-width="2.5" marker-start="url(#arb)" marker-end="url(#ar)"/>
+  <text x="455" y="538" text-anchor="middle" class="sub" font-size="11.5">分级：DRAM ↔ 压缩内存 ↔ Flash（冷热下沉 / 晋升）</text>
+
+  <!-- security cross-cutting bar -->
+  <rect x="964" y="152" width="276" height="370" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="1102" y="176" text-anchor="middle" class="lbl" font-size="15">安全 / 隔离（横切）</text>
+  <circle cx="1224" cy="168" r="13" class="badge"/><text x="1224" y="173" class="bt">5</text>
+  <rect x="984" y="196" width="236" height="56" rx="8" class="chip" stroke="#dc2626"/>
+  <text x="1102" y="220" text-anchor="middle" font-size="13" font-weight="700" fill="#7f1d1d">ARM MTE · 内存标签</text>
+  <text x="1102" y="240" text-anchor="middle" class="sub" font-size="11.5">低开销抓 UAF / 越界</text>
+  <rect x="984" y="264" width="236" height="56" rx="8" class="chip" stroke="#dc2626"/>
+  <text x="1102" y="288" text-anchor="middle" font-size="13" font-weight="700" fill="#7f1d1d">CCA / RME · pKVM</text>
+  <text x="1102" y="308" text-anchor="middle" class="sub" font-size="11.5">端侧机密工作负载隔离</text>
+  <text x="1102" y="356" text-anchor="middle" class="sub" font-size="11.5">保护：ML 推理 / DRM /</text>
+  <text x="1102" y="374" text-anchor="middle" class="sub" font-size="11.5">生物识别 / KV 与记忆数据</text>
+  <text x="1102" y="470" text-anchor="middle" class="sub" font-size="11.5">贯穿应用 → 内核 → 内存</text>
+  <text x="1102" y="488" text-anchor="middle" class="sub" font-size="11.5">的每一层数据面</text>
+
+  <!-- legend -->
+  <line x1="40" y1="556" x2="1240" y2="556" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="40" y="580" class="lbl" font-size="15">七个洞察（对应上图编号）</text>
+  <g font-size="13">
+    <circle cx="52" cy="606" r="12" class="badge"/><text x="52" y="611" class="bt">1</text>
+    <text x="72" y="611" fill="#0f172a">KV Cache 分级管理：DRAM→NVMe→闪存 + Q4 量化 + 持久化 + KVNAND 闪存内计算</text>
+    <circle cx="52" cy="636" r="12" class="badge"/><text x="52" y="641" class="bt">2</text>
+    <text x="72" y="641" fill="#0f172a">端侧可编程 / 自适应内存：mTHP · DAMON · SWAM · eBPF 钩子（取代固定策略）</text>
+    <circle cx="52" cy="666" r="12" class="badge"/><text x="52" y="671" class="bt">3</text>
+    <text x="72" y="671" fill="#0f172a">内存带宽：LPDDR5X 供给加宽 + CPU/GPU/NPU 异构调度把带宽榨满</text>
+    <circle cx="52" cy="696" r="12" class="badge"/><text x="52" y="701" class="bt">4</text>
+    <text x="72" y="701" fill="#0f172a">端侧分级内存：DRAM ↔ 压缩内存(zram/zswap) ↔ Flash · MGLRU 冷热分代</text>
+    <circle cx="668" cy="606" r="12" class="badge"/><text x="668" y="611" class="bt">5</text>
+    <text x="688" y="611" fill="#0f172a">ARM 内存安全 / 机密计算：MTE 标签 + CCA/pKVM 隔离</text>
+    <circle cx="668" cy="636" r="12" class="badge"/><text x="668" y="641" class="bt">6</text>
+    <text x="688" y="641" fill="#0f172a">Agent 外置分层记忆系统：MemoryOS（STM→MTM→LPM）</text>
+    <circle cx="668" cy="666" r="12" class="badge"/><text x="668" y="671" class="bt">7</text>
+    <text x="688" y="671" fill="#0f172a">端云协同 · 千人千面冷热识别：端侧小脑 + 云侧大脑 + 智能请求</text>
+  </g>
+  <text x="688" y="701" font-size="12" fill="#64748b">注：①④ 同处内存层次的不同抽象；③ 跨「计算 IP↔内存子系统」；⑤ 横切全栈；⑦ 串起端到云。</text>
+</svg>

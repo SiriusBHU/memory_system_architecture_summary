@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 418" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,Noto Sans CJK SC,sans-serif">
+<defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker></defs>
+<rect x="0" y="0" width="1160" height="418" fill="#ffffff"/>
+<text x="580.0" y="34" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">内存带宽架构：窄管+独占  vs  宽管+榨满</text>
+<rect x="20" y="58" width="548" height="346" rx="12" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="592" y="58" width="548" height="346" rx="12" fill="none" stroke="EA580C" stroke-width="1.5" opacity="0.55"/>
+<line x1="572" y1="218.0" x2="592" y2="218.0" stroke="EA580C" stroke-width="3" marker-end="url(#ar2)"/>
+<defs><marker id="ar2" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="EA580C"/></marker></defs>
+<text x="582" y="208.0" text-anchor="middle" font-size="11" font-weight="700" fill="EA580C">演进</text>
+<rect x="24" y="64" width="540" height="32" rx="8" fill="475569"/>
+<text x="294" y="85" text-anchor="middle" font-size="14.5" font-weight="700" fill="#ffffff">原始 — 窄管 + 单加速器独占</text>
+<rect x="44" y="114" width="500" height="66" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<text x="60" y="139" font-size="13.5" font-weight="700" fill="#0f172a">用户 / 后台请求</text>
+<text x="60" y="161" font-size="11" fill="#334155">单次推理，无优先级</text>
+<line x1="294" y1="178" x2="294" y2="208" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="306" y="192" font-size="11" fill="#64748b">分发全部层</text>
+<rect x="44" y="210" width="500" height="66" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<text x="60" y="235" font-size="13.5" font-weight="700" fill="#0f172a">单一加速器（GPU 或 NPU）</text>
+<text x="60" y="257" font-size="11" fill="#334155">其余 IP 闲置</text>
+<line x1="294" y1="274" x2="294" y2="304" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="306" y="288" font-size="11" fill="#64748b">读权重 / KV</text>
+<rect x="44" y="306" width="500" height="66" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<text x="60" y="331" font-size="13.5" font-weight="700" fill="#0f172a">LPDDR5 内存子系统</text>
+<text x="60" y="353" font-size="11" fill="#334155">4ch 6.4Gbps · 峰值 51.2 GB/s · 16GB</text>
+<rect x="596" y="64" width="540" height="32" rx="8" fill="EA580C"/>
+<text x="866" y="85" text-anchor="middle" font-size="14.5" font-weight="700" fill="#ffffff">演进 — 宽管 + 异构协同榨满</text>
+<rect x="616" y="114" width="500" height="66" rx="9" fill="#FFF1E8" stroke="EA580C" stroke-width="2"/>
+<circle cx="632" cy="130" r="9" fill="EA580C"/><text x="632" y="134" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">*</text>
+<text x="648" y="139" font-size="13.5" font-weight="700" fill="#0f172a">reactive + proactive 双流</text>
+<text x="632" y="161" font-size="11" fill="#334155">流感知调度器：优先级队列 + 核级抢占</text>
+<line x1="866" y1="178" x2="866" y2="208" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="878" y="192" font-size="11" fill="#64748b">带宽压力感知分发</text>
+<rect x="616" y="210" width="500" height="66" rx="9" fill="#FFF1E8" stroke="EA580C" stroke-width="2"/>
+<circle cx="632" cy="226" r="9" fill="EA580C"/><text x="632" y="230" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">*</text>
+<text x="648" y="235" font-size="13.5" font-weight="700" fill="#0f172a">CPU · GPU · NPU 异构协同</text>
+<text x="632" y="257" font-size="11" fill="#334155">预填充→NPU · 解码→GPU · 张量分区</text>
+<line x1="866" y1="274" x2="866" y2="304" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="878" y="288" font-size="11" fill="#64748b">零拷贝共享 KV</text>
+<rect x="616" y="306" width="500" height="66" rx="9" fill="#FFF1E8" stroke="EA580C" stroke-width="2"/>
+<circle cx="632" cy="322" r="9" fill="EA580C"/><text x="632" y="326" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">*</text>
+<text x="648" y="331" font-size="13.5" font-weight="700" fill="#0f172a">LPDDR5X 内存子系统</text>
+<text x="632" y="353" font-size="11" fill="#334155">4ch 10.7Gbps · 85.6 GB/s · 32GB · 负载自适应功耗</text>
+<text x="44" y="396" font-size="11.5" fill="#64748b">带宽供给卡 ~51GB/s · 单 IP 仅用满 ~60% · 持续负载热降频</text>
+<text x="616" y="396" font-size="11.5" fill="EA580C" font-weight="600">带宽 +67% · 利用率 60%→88% · reactive 延迟 −4.6×</text>
+</svg>

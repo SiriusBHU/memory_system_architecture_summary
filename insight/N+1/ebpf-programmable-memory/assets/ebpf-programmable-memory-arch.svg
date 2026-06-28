@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 418" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,Noto Sans CJK SC,sans-serif">
+<defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker></defs>
+<rect x="0" y="0" width="1160" height="418" fill="#ffffff"/>
+<text x="580.0" y="34" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">端侧内存策略：固定内建  vs  可编程 / 访问感知</text>
+<rect x="20" y="58" width="548" height="346" rx="12" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="592" y="58" width="548" height="346" rx="12" fill="none" stroke="0D9488" stroke-width="1.5" opacity="0.55"/>
+<line x1="572" y1="218.0" x2="592" y2="218.0" stroke="0D9488" stroke-width="3" marker-end="url(#ar2)"/>
+<defs><marker id="ar2" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="0D9488"/></marker></defs>
+<text x="582" y="208.0" text-anchor="middle" font-size="11" font-weight="700" fill="0D9488">演进</text>
+<rect x="24" y="64" width="540" height="32" rx="8" fill="475569"/>
+<text x="294" y="85" text-anchor="middle" font-size="14.5" font-weight="700" fill="#ffffff">原始 — 固定内建的端侧策略</text>
+<rect x="44" y="114" width="500" height="66" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<text x="60" y="139" font-size="13.5" font-weight="700" fill="#0f172a">App（不分前后台）</text>
+<text x="60" y="161" font-size="11" fill="#334155">无策略输入</text>
+<line x1="294" y1="178" x2="294" y2="208" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="306" y="192" font-size="11" fill="#64748b">缺页 / 压力</text>
+<rect x="44" y="210" width="500" height="66" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<text x="60" y="235" font-size="13.5" font-weight="700" fill="#0f172a">缺页处理 + THP 决策（内核固定）</text>
+<text x="60" y="257" font-size="11" fill="#334155">系统级 always/madvise · khugepaged 贪婪提升 2MB</text>
+<line x1="294" y1="274" x2="294" y2="304" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="306" y="288" font-size="11" fill="#64748b">分配</text>
+<rect x="44" y="306" width="500" height="66" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<text x="60" y="331" font-size="13.5" font-weight="700" fill="#0f172a">回收 / zRAM / 查杀（全局固定）</text>
+<text x="60" y="353" font-size="11" fill="#334155">kswapd 固定水位 · zRAM 一刀切 · LMKD 固定阈值</text>
+<rect x="596" y="64" width="540" height="32" rx="8" fill="0D9488"/>
+<text x="866" y="85" text-anchor="middle" font-size="14.5" font-weight="700" fill="#ffffff">演进 — 可编程 / 访问感知策略</text>
+<rect x="616" y="114" width="500" height="66" rx="9" fill="#E6F6F4" stroke="0D9488" stroke-width="2"/>
+<circle cx="632" cy="130" r="9" fill="0D9488"/><text x="632" y="134" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">*</text>
+<text x="648" y="139" font-size="13.5" font-weight="700" fill="#0f172a">用户态策略管理器</text>
+<text x="632" y="161" font-size="11" fill="#334155">DAMON 采样热度 · 感知前后台 · 下发策略 / 加载 eBPF</text>
+<line x1="866" y1="178" x2="866" y2="208" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="878" y="192" font-size="11" fill="#64748b">下发策略</text>
+<rect x="616" y="210" width="500" height="66" rx="9" fill="#E6F6F4" stroke="0D9488" stroke-width="2"/>
+<circle cx="632" cy="226" r="9" fill="0D9488"/><text x="632" y="230" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">*</text>
+<text x="648" y="235" font-size="13.5" font-weight="700" fill="#0f172a">选页大小器 mTHP / eBPF-mm</text>
+<text x="632" y="257" font-size="11" fill="#334155">按区域成本-收益 4KB/16KB/64KB/2MB · TAO 保留区</text>
+<line x1="866" y1="274" x2="866" y2="304" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="878" y="288" font-size="11" fill="#64748b">裁决</text>
+<rect x="616" y="306" width="500" height="66" rx="9" fill="#E6F6F4" stroke="0D9488" stroke-width="2"/>
+<circle cx="632" cy="322" r="9" fill="0D9488"/><text x="632" y="326" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">*</text>
+<text x="648" y="331" font-size="13.5" font-weight="700" fill="#0f172a">访问感知回收 / 压缩 / 查杀</text>
+<text x="632" y="353" font-size="11" fill="#334155">DAMOS 按热度 · Ariadne 冷热分离 zRAM · SWAM 延后查杀 · AppFlow 预取</text>
+<text x="44" y="396" font-size="11.5" fill="#64748b">策略编译进内核 · 长跑碎片化使大页失效 · 查杀错位</text>
+<text x="616" y="396" font-size="11.5" fill="0D9488" font-weight="600">策略点可编程、随负载自适应（mTHP·DAMON·SWAM·Ariadne·AppFlow）</text>
+</svg>

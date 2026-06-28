@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 514" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,Noto Sans CJK SC,sans-serif">
+<defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker></defs>
+<rect x="0" y="0" width="1160" height="514" fill="#ffffff"/>
+<text x="580.0" y="34" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">分级内存架构：纯 DRAM 单层  vs  DRAM↔压缩内存↔Flash</text>
+<rect x="20" y="58" width="548" height="442" rx="12" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="592" y="58" width="548" height="442" rx="12" fill="none" stroke="16A34A" stroke-width="1.5" opacity="0.55"/>
+<line x1="572" y1="266.0" x2="592" y2="266.0" stroke="16A34A" stroke-width="3" marker-end="url(#ar2)"/>
+<defs><marker id="ar2" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="16A34A"/></marker></defs>
+<text x="582" y="256.0" text-anchor="middle" font-size="11" font-weight="700" fill="16A34A">演进</text>
+<rect x="24" y="64" width="540" height="32" rx="8" fill="475569"/>
+<text x="294" y="85" text-anchor="middle" font-size="14.5" font-weight="700" fill="#ffffff">原始 — 纯 DRAM 单层 + 通用回收</text>
+<rect x="44" y="114" width="500" height="66" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<text x="60" y="139" font-size="13.5" font-weight="700" fill="#0f172a">前台 / 后台应用</text>
+<line x1="294" y1="178" x2="294" y2="208" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="306" y="192" font-size="11" fill="#64748b">分配 / 缺页</text>
+<rect x="44" y="210" width="500" height="66" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<text x="60" y="235" font-size="13.5" font-weight="700" fill="#0f172a">Linux/Android MM</text>
+<text x="60" y="257" font-size="11" fill="#334155">active/inactive 两链表 LRU + kswapd 扫描</text>
+<line x1="294" y1="274" x2="294" y2="304" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="306" y="288" font-size="11" fill="#64748b">回收</text>
+<rect x="44" y="306" width="500" height="66" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<text x="60" y="331" font-size="13.5" font-weight="700" fill="#0f172a">第0层 DRAM（唯一驻留层）</text>
+<text x="60" y="353" font-size="11" fill="#334155">整页未压缩；压力→朴素换 Flash 或 LMK 杀进程</text>
+<rect x="596" y="64" width="540" height="32" rx="8" fill="16A34A"/>
+<text x="866" y="85" text-anchor="middle" font-size="14.5" font-weight="700" fill="#ffffff">演进 — 三级显式分级</text>
+<rect x="616" y="114" width="500" height="66" rx="9" fill="#E7F8EE" stroke="16A34A" stroke-width="2"/>
+<circle cx="632" cy="130" r="9" fill="16A34A"/><text x="632" y="134" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">*</text>
+<text x="648" y="139" font-size="13.5" font-weight="700" fill="#0f172a">访问感知冷热引擎</text>
+<text x="632" y="161" font-size="11" fill="#334155">MGLRU 多代际 + PSI 驱动 LMKD 提前回收</text>
+<line x1="866" y1="178" x2="866" y2="208" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="878" y="192" font-size="11" fill="#64748b">冷热判别</text>
+<rect x="616" y="210" width="500" height="66" rx="9" fill="#E7F8EE" stroke="16A34A" stroke-width="2"/>
+<circle cx="632" cy="226" r="9" fill="16A34A"/><text x="632" y="230" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">*</text>
+<text x="648" y="235" font-size="13.5" font-weight="700" fill="#0f172a">第0层 DRAM · 活跃工作集常驻</text>
+<text x="632" y="257" font-size="11" fill="#334155">命中(热) 常驻</text>
+<line x1="866" y1="274" x2="866" y2="304" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="878" y="288" font-size="11" fill="#64748b">降级(温)</text>
+<rect x="616" y="306" width="500" height="66" rx="9" fill="#E7F8EE" stroke="16A34A" stroke-width="2"/>
+<circle cx="632" cy="322" r="9" fill="16A34A"/><text x="632" y="326" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">*</text>
+<text x="648" y="331" font-size="13.5" font-weight="700" fill="#0f172a">第1层 压缩内存 zram/zswap</text>
+<text x="632" y="353" font-size="11" fill="#334155">RAM 内 ~2:1 · 冷热自适应压缩块</text>
+<line x1="866" y1="370" x2="866" y2="400" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+<text x="878" y="384" font-size="11" fill="#64748b">换出(真冷) / 预取</text>
+<rect x="616" y="402" width="500" height="66" rx="9" fill="#E7F8EE" stroke="16A34A" stroke-width="2"/>
+<circle cx="632" cy="418" r="9" fill="16A34A"/><text x="632" y="422" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">*</text>
+<text x="648" y="427" font-size="13.5" font-weight="700" fill="#0f172a">第2层 Flash/UFS 交换</text>
+<text x="632" y="449" font-size="11" fill="#334155">存储友好批量写回 · 预测式预取</text>
+<text x="44" y="492" font-size="11.5" fill="#64748b">冷热只分两档 · 压力 = 杀后台 = 冷启动（86.6% &gt;1s）</text>
+<text x="616" y="492" font-size="11.5" fill="16A34A" font-weight="600">冷页逐级下沉而非被杀 · 冷启动 2s→690ms · 直接回收 −67.9% · 保活 1.85×</text>
+</svg>
