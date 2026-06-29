@@ -1,11 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 740" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,Noto Sans CJK SC,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 760" font-family="-apple-system,Segoe UI,Roboto,Helvetica,Arial,Noto Sans CJK SC,sans-serif">
   <defs>
     <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
-    <marker id="arb" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto-start-reverse"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
   </defs>
-  <rect x="0" y="0" width="1280" height="740" fill="#ffffff"/>
+  <rect x="0" y="0" width="1280" height="760" fill="#ffffff"/>
   <text x="640" y="34" text-anchor="middle" font-size="24" font-weight="700" fill="#0f172a">SoC 片上互联与多级缓存全景 · N+2 调研的七个洞察</text>
-  <text x="640" y="56" text-anchor="middle" font-size="13" fill="#64748b">计算 IP（CPU/GPU/NPU）→ CMN 一致性网格（AMBA CHI）→ IOMMU / 内存控制器 / CXL → LPDDR DRAM（PIM / PuD）</text>
+  <text x="640" y="54" text-anchor="middle" font-size="13" fill="#64748b">计算 IP（CPU/GPU/NPU/ISP/Media）→ IOMMU → Coherent Fabric / CMN NoC → SLC → 内存控制器 → LPDDR（PIM / PuD）</text>
 
   <style>
     .badge{fill:#1e293b}
@@ -15,172 +14,220 @@
     .chip{fill:#ffffff;stroke-width:1}
   </style>
 
-  <!-- ═══ Row 1: Compute IP Cluster ═══ -->
-  <!-- CPU Cluster -->
-  <rect x="40" y="70" width="270" height="112" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="56" y="92" class="lbl" font-size="15">CPU 集群（Cortex-X / Oryon）</text>
-  <g font-size="12" fill="#1e3a8a">
-    <rect x="56" y="100" width="60" height="24" rx="5" class="chip" stroke="#2563eb"/><text x="86" y="116" text-anchor="middle">L1i</text>
-    <rect x="122" y="100" width="60" height="24" rx="5" class="chip" stroke="#2563eb"/><text x="152" y="116" text-anchor="middle">L1d</text>
-    <rect x="188" y="100" width="106" height="24" rx="5" class="chip" stroke="#2563eb"/><text x="241" y="116" text-anchor="middle">Private L2</text>
+  <!-- ═══ Row 1: Compute IPs (y=64–164, h=100) ═══ -->
+
+  <!-- CPU P-cluster: x=40 w=200 -->
+  <rect x="40" y="64" width="200" height="100" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="56" y="82" class="lbl" font-size="14">P-cluster · 大核</text>
+  <text x="56" y="95" class="sub" font-size="11">4× Cortex-X4 / Oryon</text>
+  <g font-size="11" fill="#1e3a8a">
+    <rect x="56" y="101" width="40" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="76" y="114" text-anchor="middle">L1i</text>
+    <rect x="100" y="101" width="42" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="121" y="114" text-anchor="middle">L1d</text>
+    <rect x="146" y="101" width="82" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="187" y="114" text-anchor="middle">Private L2</text>
   </g>
-  <text x="56" y="148" class="sub" font-size="11.5">MESI 写回 · 64B 缓存行 · PASID</text>
-  <text x="56" y="166" class="sub" font-size="11.5">AArch64 · MMU + TLB</text>
+  <rect x="56" y="123" width="172" height="18" rx="4" class="chip" stroke="#2563eb"/>
+  <text x="142" y="136" text-anchor="middle" font-size="11" fill="#1e3a8a">MMU / TLB</text>
+  <text x="56" y="155" class="sub" font-size="10">MESI 写回 · 64B Line · PASID</text>
 
-  <!-- GPU -->
-  <rect x="322" y="70" width="220" height="112" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="338" y="92" class="lbl" font-size="15">GPU</text>
-  <g font-size="12" fill="#1e3a8a">
-    <rect x="338" y="100" width="86" height="24" rx="5" class="chip" stroke="#2563eb"/><text x="381" y="116" text-anchor="middle">Shared L1</text>
-    <rect x="432" y="100" width="94" height="24" rx="5" class="chip" stroke="#2563eb"/><text x="479" y="116" text-anchor="middle">Scratchpad</text>
+  <!-- CPU E-cluster: x=248 w=200 -->
+  <rect x="248" y="64" width="200" height="100" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="264" y="82" class="lbl" font-size="14">E-cluster · 小核</text>
+  <text x="264" y="95" class="sub" font-size="11">4× Cortex-A720</text>
+  <g font-size="11" fill="#1e3a8a">
+    <rect x="264" y="101" width="40" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="284" y="114" text-anchor="middle">L1i</text>
+    <rect x="308" y="101" width="42" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="329" y="114" text-anchor="middle">L1d</text>
+    <rect x="354" y="101" width="82" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="395" y="114" text-anchor="middle">Private L2</text>
   </g>
-  <text x="338" y="148" class="sub" font-size="11.5">数千线程 · 写不相交区域多</text>
-  <text x="338" y="166" class="sub" font-size="11.5">需 ReqV（自失效）而非 MESI</text>
+  <rect x="264" y="123" width="172" height="18" rx="4" class="chip" stroke="#2563eb"/>
+  <text x="350" y="136" text-anchor="middle" font-size="11" fill="#1e3a8a">MMU / TLB</text>
+  <text x="264" y="155" class="sub" font-size="10">低功耗 · 后台与效率任务</text>
 
-  <!-- NPU / DSP -->
-  <rect x="554" y="70" width="220" height="112" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="570" y="92" class="lbl" font-size="15">NPU / DSP</text>
-  <g font-size="12" fill="#1e3a8a">
-    <rect x="570" y="100" width="86" height="24" rx="5" class="chip" stroke="#2563eb"/><text x="613" y="116" text-anchor="middle">Local Buf</text>
-    <rect x="664" y="100" width="94" height="24" rx="5" class="chip" stroke="#2563eb"/><text x="711" y="116" text-anchor="middle">Weight Mem</text>
+  <!-- GPU: x=456 w=170 -->
+  <rect x="456" y="64" width="170" height="100" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="472" y="82" class="lbl" font-size="14">GPU</text>
+  <text x="472" y="95" class="sub" font-size="11">Shader / ALU 阵列</text>
+  <g font-size="11" fill="#1e3a8a">
+    <rect x="472" y="101" width="58" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="501" y="114" text-anchor="middle">L1/L2</text>
+    <rect x="534" y="101" width="80" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="574" y="114" text-anchor="middle">Scratchpad</text>
   </g>
-  <text x="570" y="148" class="sub" font-size="11.5">推理权重批量预加载</text>
-  <text x="570" y="166" class="sub" font-size="11.5">共享模式与 GPU/CPU 不同</text>
+  <text x="472" y="138" class="sub" font-size="10">数千线程 · 写不相交区域</text>
+  <text x="472" y="151" class="sub" font-size="10">需 ReqV 而非全局无效化</text>
 
-  <!-- Device IP -->
-  <rect x="786" y="70" width="232" height="112" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-  <text x="802" y="92" class="lbl" font-size="15">外设 / 加速器 IP</text>
-  <g font-size="12" fill="#1e3a8a">
-    <rect x="802" y="100" width="100" height="24" rx="5" class="chip" stroke="#2563eb"/><text x="852" y="116" text-anchor="middle">DMA Engine</text>
-    <rect x="910" y="100" width="92" height="24" rx="5" class="chip" stroke="#2563eb"/><text x="956" y="116" text-anchor="middle">ATS / PRI</text>
+  <!-- NPU / DSP: x=634 w=155 -->
+  <rect x="634" y="64" width="155" height="100" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="650" y="82" class="lbl" font-size="14">NPU / DSP</text>
+  <text x="650" y="95" class="sub" font-size="11">MAC 阵列 · 推理加速</text>
+  <g font-size="11" fill="#1e3a8a">
+    <rect x="650" y="101" width="56" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="678" y="114" text-anchor="middle">Local</text>
+    <rect x="710" y="101" width="67" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="744" y="114" text-anchor="middle">Weight</text>
   </g>
-  <text x="802" y="148" class="sub" font-size="11.5">传统锁页：单 GPU 锁 2–6 GB</text>
-  <text x="802" y="166" class="sub" font-size="11.5">bounce buffer 使拷贝翻倍</text>
+  <text x="650" y="138" class="sub" font-size="10">批量预加载权重</text>
 
-  <!-- Chiplet (second die) sketch -->
-  <rect x="1030" y="70" width="210" height="112" rx="10" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <text x="1135" y="92" text-anchor="middle" class="lbl" font-size="14" fill="#581c87">芯粒 B（Chiplet）</text>
-  <text x="1135" y="116" text-anchor="middle" class="sub" font-size="12" fill="#581c87">独立 CPU/加速器</text>
-  <text x="1135" y="136" text-anchor="middle" class="sub" font-size="11.5">不同工艺节点 · 良率更优</text>
-  <text x="1135" y="156" text-anchor="middle" class="sub" font-size="11.5">600mm² 良率~50%</text>
-  <text x="1135" y="172" text-anchor="middle" class="sub" font-size="11.5">→ 2×300mm² 各~70%</text>
-
-  <!-- Arrows down to interconnect -->
-  <line x1="175" y1="182" x2="175" y2="202" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
-  <line x1="432" y1="182" x2="432" y2="202" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
-  <line x1="664" y1="182" x2="664" y2="202" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
-  <line x1="902" y1="182" x2="902" y2="202" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
-  <!-- Chiplet dashed arrow -->
-  <line x1="1135" y1="182" x2="1135" y2="202" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ar)"/>
-
-  <!-- ═══ Row 2: CMN / NoC Interconnect ═══ -->
-  <rect x="40" y="204" width="1200" height="106" rx="10" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5"/>
-  <text x="56" y="228" class="lbl" font-size="16" fill="#581c87">CMN / NoC S3 一致性互联网格（AMBA CHI）</text>
-
-  <!-- LLC + Directory -->
-  <rect x="56" y="238" width="280" height="44" rx="8" class="chip" stroke="#7c3aed"/>
-  <text x="72" y="258" class="sub" font-weight="700" fill="#581c87">LLC Slices + 一致性目录</text>
-  <text x="72" y="274" class="sub" font-size="11.5">Snoop Filter · 缓存行粒度状态追踪</text>
-  <circle cx="318" cy="254" r="13" class="badge"/><text x="318" y="259" class="bt" font-size="13">6</text>
-
-  <!-- CHI C2C -->
-  <rect x="350" y="238" width="270" height="44" rx="8" class="chip" stroke="#7c3aed"/>
-  <text x="366" y="258" class="sub" font-weight="700" fill="#581c87">CHI C2C 跨芯粒一致性端口</text>
-  <text x="366" y="274" class="sub" font-size="11.5">UCIe 物理层 · Realm 安全域扩展</text>
-  <circle cx="602" cy="254" r="13" class="badge"/><text x="602" y="259" class="bt" font-size="13">4</text>
-
-  <!-- FCS -->
-  <rect x="634" y="238" width="280" height="44" rx="8" class="chip" stroke="#7c3aed"/>
-  <text x="650" y="258" class="sub" font-weight="700" fill="#581c87">FCS 细粒度一致性特化</text>
-  <text x="650" y="274" class="sub" font-size="11.5">每条请求独立选 ReqV/ReqO/Req2/ReqS</text>
-  <circle cx="896" cy="254" r="13" class="badge"/><text x="896" y="259" class="bt" font-size="13">6</text>
-
-  <!-- I/O coherent port -->
-  <rect x="928" y="238" width="296" height="44" rx="8" class="chip" stroke="#7c3aed"/>
-  <text x="944" y="258" class="sub" font-weight="700" fill="#581c87">I/O 一致性端口</text>
-  <text x="944" y="274" class="sub" font-size="11.5">连接 IOMMU · CXL 控制器 · 外设 DMA</text>
-
-  <text x="56" y="302" class="sub" font-size="11.5">跨芯粒延迟：桥接 50–100 ns → CHI C2C ~20 ns（降 2.5–5×）· FCS 消除 GPU 场景下 99% 冗余一致性消息</text>
-
-  <!-- Arrows down from interconnect -->
-  <line x1="175" y1="310" x2="175" y2="334" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
-  <line x1="560" y1="310" x2="560" y2="334" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
-  <line x1="1000" y1="310" x2="1000" y2="334" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
-
-  <!-- ═══ Row 3: IOMMU / Memory / CXL ═══ -->
-  <!-- IOMMU / SMMU -->
-  <rect x="40" y="336" width="260" height="148" rx="10" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.5"/>
-  <text x="56" y="360" class="lbl" font-size="14">IOMMU / SMMU v3</text>
-  <circle cx="280" cy="353" r="13" class="badge"/><text x="280" y="358" class="bt" font-size="13">1</text>
-  <g font-size="12.5">
-    <rect x="56" y="370" width="80" height="24" rx="5" class="chip" stroke="#0d9488"/><text x="96" y="386" text-anchor="middle" fill="#134e4a">SVA</text>
-    <rect x="144" y="370" width="80" height="24" rx="5" class="chip" stroke="#0d9488"/><text x="184" y="386" text-anchor="middle" fill="#134e4a">IOPF</text>
-    <rect x="56" y="400" width="170" height="24" rx="5" class="chip" stroke="#0d9488"/><text x="141" y="416" text-anchor="middle" fill="#134e4a">Stall 模型 + PASID</text>
+  <!-- ISP: x=797 w=120 -->
+  <rect x="797" y="64" width="120" height="100" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="813" y="82" class="lbl" font-size="14">ISP</text>
+  <text x="813" y="95" class="sub" font-size="11">图像信号处理</text>
+  <g font-size="11" fill="#1e3a8a">
+    <rect x="813" y="101" width="92" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="859" y="114" text-anchor="middle">Pipeline Buf</text>
   </g>
-  <text x="56" y="444" class="sub" font-size="11.5">设备共享进程虚拟地址</text>
-  <text x="56" y="460" class="sub" font-size="11.5">按需调页取代全程锁定</text>
-  <text x="56" y="476" class="sub" font-size="11.5">锁页 −60~80% · 拷贝 −40~60%</text>
+  <text x="813" y="138" class="sub" font-size="10">Camera 流水线</text>
 
-  <!-- Memory Controller + LPDDR DRAM (PIM + PuD) -->
-  <rect x="314" y="336" width="500" height="148" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
-  <text x="330" y="360" class="lbl" font-size="14">内存控制器 + LPDDR DRAM</text>
+  <!-- Media / DMA: x=925 w=130 -->
+  <rect x="925" y="64" width="130" height="100" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="941" y="82" class="lbl" font-size="14">Media / DMA</text>
+  <text x="941" y="95" class="sub" font-size="11">视频编解码</text>
+  <g font-size="11" fill="#1e3a8a">
+    <rect x="941" y="101" width="102" height="18" rx="4" class="chip" stroke="#2563eb"/><text x="992" y="114" text-anchor="middle">Codec Buffer</text>
+  </g>
+  <text x="941" y="138" class="sub" font-size="10">H.265/AV1 · DMA</text>
 
-  <rect x="330" y="370" width="220" height="42" rx="8" class="chip" stroke="#16a34a"/>
-  <text x="346" y="389" class="sub" font-weight="700" fill="#14532d">LPDDR PIM（近存计算）</text>
-  <text x="346" y="404" class="sub" font-size="11.5">Bank 内 SIMD/MAC · NMC 动态分配</text>
-  <circle cx="534" cy="386" r="13" class="badge"/><text x="534" y="391" class="bt" font-size="13">2</text>
+  <!-- Chiplet B (dashed): x=1063 w=177 -->
+  <rect x="1063" y="64" width="177" height="100" rx="10" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="1152" y="84" text-anchor="middle" class="lbl" font-size="13" fill="#581c87">芯粒 B（Chiplet）</text>
+  <text x="1152" y="100" text-anchor="middle" class="sub" font-size="11" fill="#581c87">独立计算 IP</text>
+  <text x="1152" y="116" text-anchor="middle" class="sub" font-size="11" fill="#581c87">不同工艺节点</text>
+  <text x="1152" y="134" text-anchor="middle" class="sub" font-size="10" fill="#581c87">600mm² 良率~50%</text>
+  <text x="1152" y="148" text-anchor="middle" class="sub" font-size="10" fill="#581c87">→ 2×300mm² 各~70%</text>
 
-  <rect x="564" y="370" width="234" height="42" rx="8" class="chip" stroke="#16a34a"/>
-  <text x="580" y="389" class="sub" font-weight="700" fill="#14532d">PuD 存内计算（Proteus）</text>
-  <text x="580" y="404" class="sub" font-size="11.5">位线电荷共享 · 精度自适应压缩</text>
-  <circle cx="782" cy="386" r="13" class="badge"/><text x="782" y="391" class="bt" font-size="13">7</text>
+  <!-- ═══ Arrows: Compute IPs → IOMMU / NoC ═══ -->
 
-  <text x="330" y="436" class="sub" font-size="11.5">内部全 bank 带宽 409.6 GB/s（外部 51.2 的 8×）</text>
-  <text x="330" y="452" class="sub" font-size="11.5">片内能耗 ~3 pJ/bit vs 片外 ~20 pJ/bit（降 6.7×）</text>
-  <text x="330" y="468" class="sub" font-size="11.5">Proteus 按有效精度动态压缩位宽 + 多阵列并行</text>
-  <text x="330" y="480" class="sub" font-size="11.5">CPU 吞吐基线 88× · GEMV 就地执行</text>
+  <!-- CPU P → direct to NoC (bypasses IOMMU, has own MMU) -->
+  <line x1="140" y1="164" x2="140" y2="253" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="148" y="212" font-size="10" fill="#2563eb" font-style="italic">own MMU</text>
 
-  <!-- CXL Extension -->
-  <rect x="828" y="336" width="412" height="148" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
-  <text x="844" y="360" class="lbl" font-size="14">CXL 扩展（Type-3 内存设备）</text>
+  <!-- CPU E → direct to NoC -->
+  <line x1="348" y1="164" x2="348" y2="253" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="356" y="212" font-size="10" fill="#2563eb" font-style="italic">own MMU</text>
 
-  <rect x="844" y="370" width="184" height="42" rx="8" class="chip" stroke="#ea580c"/>
-  <text x="860" y="389" class="sub" font-weight="700" fill="#7c2d12">CXL.cache 一致性</text>
-  <text x="860" y="404" class="sub" font-size="11.5">64B MESI · Isabelle 形式验证</text>
-  <circle cx="1012" cy="386" r="13" class="badge"/><text x="1012" y="391" class="bt" font-size="13">5</text>
+  <!-- GPU → IOMMU -->
+  <line x1="541" y1="164" x2="541" y2="184" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <!-- NPU → IOMMU -->
+  <line x1="712" y1="164" x2="712" y2="184" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <!-- ISP → IOMMU -->
+  <line x1="857" y1="164" x2="857" y2="184" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <!-- Media → IOMMU -->
+  <line x1="990" y1="164" x2="990" y2="184" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
 
-  <rect x="1042" y="370" width="184" height="42" rx="8" class="chip" stroke="#ea580c"/>
-  <text x="1058" y="389" class="sub" font-weight="700" fill="#7c2d12">NDP 近数据处理</text>
-  <text x="1058" y="404" class="sub" font-size="11.5">位平面重组 · 透明压缩</text>
-  <circle cx="1210" cy="386" r="13" class="badge"/><text x="1210" y="391" class="bt" font-size="13">3</text>
+  <!-- Chiplet → direct to NoC CHI C2C port (dashed) -->
+  <line x1="1152" y1="164" x2="1152" y2="253" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#ar)"/>
+  <text x="1160" y="212" font-size="10" fill="#7c3aed" font-style="italic">CHI C2C</text>
 
-  <text x="844" y="436" class="sub" font-size="11.5">CXL.mem 延迟 ~640 ns · PCIe 5.0 x16 峰值 ~64 GB/s</text>
-  <text x="844" y="452" class="sub" font-size="11.5">描述符延迟比 PCIe DMA 降 85%</text>
-  <text x="844" y="468" class="sub" font-size="11.5">远程原子操作加速最高 40.2×</text>
-  <text x="844" y="480" class="sub" font-size="11.5">百万 token KV 卸载可占链路 85%+</text>
+  <!-- ═══ Row 2: IOMMU / SMMU v3 (y=186–230, h=44, only under non-CPU IPs) ═══ -->
+  <rect x="456" y="186" width="599" height="44" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.5"/>
+  <text x="472" y="204" class="lbl" font-size="13">IOMMU / SMMU v3</text>
+  <circle cx="1036" cy="206" r="12" class="badge"/><text x="1036" y="211" class="bt" font-size="12">1</text>
+  <g font-size="10.5" fill="#134e4a">
+    <rect x="620" y="197" width="44" height="17" rx="4" class="chip" stroke="#0d9488"/><text x="642" y="209" text-anchor="middle">SVA</text>
+    <rect x="668" y="197" width="50" height="17" rx="4" class="chip" stroke="#0d9488"/><text x="693" y="209" text-anchor="middle">IOPF</text>
+    <rect x="722" y="197" width="64" height="17" rx="4" class="chip" stroke="#0d9488"/><text x="754" y="209" text-anchor="middle">ATS/PRI</text>
+    <rect x="790" y="197" width="54" height="17" rx="4" class="chip" stroke="#0d9488"/><text x="817" y="209" text-anchor="middle">PASID</text>
+    <rect x="848" y="197" width="76" height="17" rx="4" class="chip" stroke="#0d9488"/><text x="886" y="209" text-anchor="middle">Stall 模型</text>
+  </g>
+  <text x="472" y="225" class="sub" font-size="10">设备共享进程虚拟地址 · 按需调页取代全程锁页 · 锁页 −60~80% · CPU 拷贝 −40~60%</text>
 
-  <!-- Arrows between bottom boxes -->
-  <line x1="300" y1="410" x2="314" y2="410" stroke="#475569" stroke-width="2" marker-start="url(#arb)" marker-end="url(#ar)"/>
-  <line x1="814" y1="410" x2="828" y2="410" stroke="#475569" stroke-width="2" marker-start="url(#arb)" marker-end="url(#ar)"/>
+  <!-- IOMMU → NoC -->
+  <line x1="756" y1="230" x2="756" y2="253" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- ═══ Row 3: Coherent Fabric / CMN NoC (y=255–333, h=78) ═══ -->
+  <rect x="40" y="255" width="1200" height="78" rx="10" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="56" y="274" class="lbl" font-size="15" fill="#581c87">Coherent Fabric / CMN NoC（AMBA CHI）</text>
+
+  <!-- LLC + Directory / Snoop Filter -->
+  <rect x="56" y="282" width="262" height="36" rx="7" class="chip" stroke="#7c3aed"/>
+  <text x="72" y="298" class="sub" font-weight="700" fill="#581c87" font-size="12">LLC Slices + 目录 / Snoop Filter</text>
+  <text x="72" y="312" class="sub" font-size="10">64B 缓存行 · MESI 状态追踪 · 形式验证</text>
+  <circle cx="300" cy="298" r="11" class="badge"/><text x="300" y="303" class="bt" font-size="11">5</text>
+
+  <!-- FCS 细粒度一致性 -->
+  <rect x="328" y="282" width="256" height="36" rx="7" class="chip" stroke="#7c3aed"/>
+  <text x="344" y="298" class="sub" font-weight="700" fill="#581c87" font-size="12">FCS 细粒度一致性特化</text>
+  <text x="344" y="312" class="sub" font-size="10">每请求选最优: ReqV/ReqO/Req2/ReqS</text>
+  <circle cx="566" cy="298" r="11" class="badge"/><text x="566" y="303" class="bt" font-size="11">6</text>
+
+  <!-- CHI C2C 跨芯粒 (dashed) -->
+  <rect x="594" y="282" width="246" height="36" rx="7" class="chip" stroke="#7c3aed" stroke-dasharray="4,3"/>
+  <text x="610" y="298" class="sub" font-weight="700" fill="#581c87" font-size="12">CHI C2C 跨芯粒一致性端口</text>
+  <text x="610" y="312" class="sub" font-size="10">UCIe 物理层 · Realm 安全域 · ~20 ns</text>
+  <circle cx="822" cy="298" r="11" class="badge"/><text x="822" y="303" class="bt" font-size="11">4</text>
+
+  <!-- I/O 一致性端口 -->
+  <rect x="850" y="282" width="374" height="36" rx="7" class="chip" stroke="#7c3aed"/>
+  <text x="866" y="298" class="sub" font-weight="700" fill="#581c87" font-size="12">I/O 一致性端口</text>
+  <text x="866" y="312" class="sub" font-size="10">连接 IOMMU · 外设 DMA · 加速器一致性接入</text>
+
+  <!-- ═══ Arrow: NoC → SLC ═══ -->
+  <line x1="640" y1="333" x2="640" y2="350" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- ═══ Row 4: System Level Cache (y=352–390, h=38) ═══ -->
+  <rect x="100" y="352" width="1080" height="38" rx="10" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="640" y="376" text-anchor="middle" class="lbl" font-size="14" fill="#312e81">System Level Cache（SLC）· 8–32 MB · CPU / GPU / NPU / ISP / Media 全 IP 共享</text>
+
+  <!-- ═══ Arrow: SLC → MC row (fan-out) ═══ -->
+  <line x1="640" y1="390" x2="640" y2="398" stroke="#475569" stroke-width="1.5"/>
+  <line x1="96" y1="398" x2="952" y2="398" stroke="#475569" stroke-width="1.5"/>
+  <line x1="96" y1="398" x2="96" y2="410" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="182" y1="398" x2="182" y2="410" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="268" y1="398" x2="268" y2="410" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="354" y1="398" x2="354" y2="410" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="952" y1="398" x2="952" y2="410" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- ═══ Row 5: Memory Controllers + MFC (y=412–476, h=64) ═══ -->
+  <rect x="40" y="412" width="1200" height="64" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="56" y="432" class="lbl" font-size="13">内存控制器</text>
+  <g font-size="11.5" fill="#14532d">
+    <rect x="56" y="440" width="76" height="26" rx="5" class="chip" stroke="#16a34a"/><text x="94" y="457" text-anchor="middle">MC 0</text>
+    <rect x="138" y="440" width="76" height="26" rx="5" class="chip" stroke="#16a34a"/><text x="176" y="457" text-anchor="middle">MC 1</text>
+    <rect x="220" y="440" width="76" height="26" rx="5" class="chip" stroke="#16a34a"/><text x="258" y="457" text-anchor="middle">MC 2</text>
+    <rect x="302" y="440" width="76" height="26" rx="5" class="chip" stroke="#16a34a"/><text x="340" y="457" text-anchor="middle">MC 3</text>
+    <text x="394" y="458" font-size="13" fill="#14532d">⋯（×8 通道）</text>
+  </g>
+
+  <!-- MFC / 内存压缩引擎 -->
+  <rect x="640" y="420" width="584" height="48" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="656" y="440" class="lbl" font-size="13" fill="#7c2d12">内存压缩引擎（MFC）· 近数据处理</text>
+  <text x="656" y="458" class="sub" font-size="10.5">带宽压缩 · 位平面重组 · 数据过滤 / 选择性读取 · 透明带宽放大</text>
+  <circle cx="1206" cy="438" r="12" class="badge"/><text x="1206" y="443" class="bt" font-size="12">3</text>
+
+  <!-- ═══ Arrows: MC → DRAM ═══ -->
+  <line x1="200" y1="476" x2="200" y2="494" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="640" y1="476" x2="640" y2="494" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="1080" y1="476" x2="1080" y2="494" stroke="#475569" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- ═══ Row 6: LPDDR5X Unified Memory (y=496–570, h=74) ═══ -->
+  <rect x="40" y="496" width="1200" height="74" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="56" y="516" class="lbl" font-size="15">LPDDR5X / LPDDR5 统一内存</text>
+  <text x="400" y="516" class="sub" font-size="12">8×16-bit = 128-bit · ~68 GB/s · 10.7 Gbps/pin · 统一架构（无独立显存）</text>
+
+  <!-- PIM 子块 -->
+  <rect x="56" y="524" width="380" height="36" rx="6" class="chip" stroke="#16a34a"/>
+  <text x="72" y="540" font-size="12" fill="#14532d" font-weight="700">Bank 级 PIM：SIMD/MAC 计算单元</text>
+  <text x="72" y="554" font-size="10.5" fill="#334155">NMC 动态分配 · 内部带宽 409.6 GB/s（外部 8×）· 能耗 ~3 pJ/bit</text>
+  <circle cx="418" cy="538" r="12" class="badge"/><text x="418" y="543" class="bt" font-size="12">2</text>
+
+  <!-- PuD 子块 -->
+  <rect x="448" y="524" width="420" height="36" rx="6" class="chip" stroke="#16a34a"/>
+  <text x="464" y="540" font-size="12" fill="#14532d" font-weight="700">子阵列级 PuD（Proteus）：位线电荷共享</text>
+  <text x="464" y="554" font-size="10.5" fill="#334155">按有效精度动态压缩位宽 · 多阵列并行 · 吞吐 88× vs CPU</text>
+  <circle cx="850" cy="538" r="12" class="badge"/><text x="850" y="543" class="bt" font-size="12">7</text>
 
   <!-- ═══ Legend ═══ -->
-  <line x1="40" y1="502" x2="1240" y2="502" stroke="#e2e8f0" stroke-width="1.5"/>
-  <text x="40" y="526" class="lbl" font-size="15">七个洞察（对应上图编号）</text>
+  <line x1="40" y1="584" x2="1240" y2="584" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="40" y="606" class="lbl" font-size="15">七个洞察（对应上图编号）</text>
   <g font-size="13">
-    <circle cx="52" cy="552" r="12" class="badge"/><text x="52" y="557" class="bt">1</text>
-    <text x="72" y="557" fill="#0f172a">IOMMU 缺页 + SVA：设备共享虚拟地址，按需调页取代全程锁页（锁页 −60~80%）</text>
-    <circle cx="52" cy="582" r="12" class="badge"/><text x="52" y="587" class="bt">2</text>
-    <text x="72" y="587" fill="#0f172a">LPDDR PIM 近存计算：Bank 内嵌 SIMD/MAC，利用内部 8× 带宽就地执行 GEMV</text>
-    <circle cx="52" cy="612" r="12" class="badge"/><text x="52" y="617" class="bt">3</text>
-    <text x="72" y="617" fill="#0f172a">CXL 近数据处理：位平面重组 + 透明带宽放大，数据跨链路前先压缩</text>
-    <circle cx="52" cy="642" r="12" class="badge"/><text x="52" y="647" class="bt">4</text>
-    <text x="72" y="647" fill="#0f172a">CHI C2C 跨芯粒一致性：UCIe 物理层 + Realm 安全域（延迟 50–100 ns → ~20 ns）</text>
-    <circle cx="668" cy="552" r="12" class="badge"/><text x="668" y="557" class="bt">5</text>
-    <text x="688" y="557" fill="#0f172a">CXL.cache 一致性：64B 粒度硬件一致 + Isabelle 形式验证（描述符延迟 −85%）</text>
-    <circle cx="668" cy="582" r="12" class="badge"/><text x="668" y="587" class="bt">6</text>
-    <text x="688" y="587" fill="#0f172a">细粒度异构一致性特化：FCS 每请求选最优协议（GPU 冗余消息 −99%）</text>
-    <circle cx="668" cy="612" r="12" class="badge"/><text x="668" y="617" class="bt">7</text>
-    <text x="688" y="617" fill="#0f172a">Processing-using-DRAM：Proteus 按有效精度压缩位宽 + 多阵列并行（吞吐 88×）</text>
+    <circle cx="52" cy="630" r="12" class="badge"/><text x="52" y="635" class="bt">1</text>
+    <text x="72" y="635" fill="#0f172a">IOMMU 缺页 + SVA：设备共享虚拟地址，按需调页取代全程锁页（锁页 −60~80%）</text>
+    <circle cx="52" cy="658" r="12" class="badge"/><text x="52" y="663" class="bt">2</text>
+    <text x="72" y="663" fill="#0f172a">LPDDR PIM 近存计算：Bank 内嵌 SIMD/MAC，利用内部 8× 带宽就地执行 GEMV</text>
+    <circle cx="52" cy="686" r="12" class="badge"/><text x="52" y="691" class="bt">3</text>
+    <text x="72" y="691" fill="#0f172a">近数据处理与内存压缩：位平面重组 + 透明带宽放大，数据过链路前先压缩/过滤</text>
+    <circle cx="52" cy="714" r="12" class="badge"/><text x="52" y="719" class="bt">4</text>
+    <text x="72" y="719" fill="#0f172a">CHI C2C 跨芯粒一致性：UCIe 物理层 + Realm 安全域（延迟 50–100 ns → ~20 ns）</text>
+    <circle cx="668" cy="630" r="12" class="badge"/><text x="668" y="635" class="bt">5</text>
+    <text x="688" y="635" fill="#0f172a">缓存一致性协议验证：64B 粒度硬件一致 + Isabelle 形式验证（描述符延迟 −85%）</text>
+    <circle cx="668" cy="658" r="12" class="badge"/><text x="668" y="663" class="bt">6</text>
+    <text x="688" y="663" fill="#0f172a">细粒度异构一致性特化：FCS 每请求选最优协议（GPU 冗余消息 −99%）</text>
+    <circle cx="668" cy="686" r="12" class="badge"/><text x="668" y="691" class="bt">7</text>
+    <text x="688" y="691" fill="#0f172a">Processing-using-DRAM：Proteus 按有效精度压缩位宽 + 多阵列并行（吞吐 88×）</text>
   </g>
-  <text x="52" y="672" font-size="12" fill="#64748b">注：②⑦ 同在 DRAM 内部（PIM 在通道/bank 侧，PuD 在子阵列级位线）；①⑤ 分别解决地址翻译和缓存一致性；④⑥ 共享 CHI 互联骨架。</text>
+  <text x="52" y="742" font-size="12" fill="#64748b">注：②⑦ 同在 DRAM 内部（PIM 在 Bank 侧，PuD 在子阵列级位线）；①⑤ 分别解决地址翻译和缓存一致性；④⑥ 共享 CHI 互联骨架。</text>
 </svg>
