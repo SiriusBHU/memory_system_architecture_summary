@@ -174,6 +174,38 @@ promote when: Heat > τ (= 5)
 
 This mirrors the OS rule where "access frequency + residency + recency" decides whether a page stays resident — **hot memories sediment upward into the persona, cold ones decay over time**.
 
+### A worked example: the life of one memory, and one retrieval hit
+
+The tables above give the structure and the rules, but never walk the action through once. Trace one concrete fact — *"the user is allergic to peanuts"* — through both the **write path (how the mechanism runs)** and the **read path (how matching works)**.
+
+![Life of one memory + one retrieval hit](assets/memory-lifecycle.svg)
+
+*Figure. Left: the write path — one memory sediments bottom-up from a Q&A turn into the permanent persona. Right: the read path — a new query is recalled across three tiers, then merged and generated. Reproduction script: [assets/memory-lifecycle.py](assets/memory-lifecycle.py).*
+
+**Write path: the life of one memory (sedimenting/promoting bottom-up)**
+
+> Day 1, 10:00 — User: "I'm allergic to peanuts, plan next week's meals." Assistant: "Sure, peanuts excluded…"
+
+1. **Pack into a Dialogue Page, push into STM.** The turn is packed into one page `{Q, R, T, meta_chain}` (the smallest unit is one Q&A, not a token) and pushed into STM's 7-page FIFO queue. STM *is* the live working set in the window — it maps to the KV cache, and stays capped at 7 pages no matter how many months of history accrue. Bounded.
+2. **STM full → oldest page evicted into MTM.** When the 8th turn arrives, the oldest page is popped and migrates into MTM. Its vector is compared against each Segment's centroid: **cosine similarity > θ=0.6 merges it into that segment** (here, the "diet/constitution" segment); otherwise it starts a new one.
+3. **Heat accrues → crosses τ=5 → paged up into LPM.** The "diet" segment reaches `Heat = N_visit 2 + pages-in-segment 3 + R_recency 0.99 ≈ 5.99 > τ=5`, triggering promotion. Note `R_recency = exp(−Δt/1e7)` only ranges over 0–1 (time constant ≈116 days), so promotion is really driven by "retrieval count + pages in segment"; recency is just a "goes cold if untouched" decay term. After promotion, "allergic to peanuts" settles into LPM's User KB and survives any churn in STM/MTM.
+
+**Read path: one retrieval hit (three-tier recall, no full replay)**
+
+> Day 30 — User: "Recommend a few dishes for a weekend family dinner."
+
+The query is embedded into a vector, and each tier recalls its own way:
+
+- **STM**: no matching — the most recent 7 pages are carried in wholesale (recent context).
+- **MTM**: two stages — ① query vector × each segment centroid → top-m=5 segments; ② within those 5, query × each page → top-k=5–10 pages. Hits the page "dislikes cilantro."
+- **LPM**: top-10 per category (User KB / Traits / Agent Persona) by semantic match. Hits the "allergic to peanuts" trait.
+
+Generation merges the three-tier recall into the LLM → "(peanut-free, light on cilantro) I recommend ○○, △△." It does not replay the ~9K-token full history, only the few hit pages + a few persona lines — that is where the 70–90% token saving, 91% p95-latency cut, and *higher* accuracy come from.
+
+**The core of "matching," and the two things not to conflate.** Both are cosine similarity at heart, but **θ=0.6 is a write-time threshold** deciding "merge this page into an existing segment or start a new one," while **top-m / top-k are read-time rankings** that narrow "segment first, then page." That is MemoryOS's "cluster by threshold, narrow by ranking."
+
+**Contrast with Mem0 as another take on "matching."** Mem0 has no tiers / FIFO / Heat: on write an LLM extracts facts and issues ADD/UPDATE/DELETE/NOOP against existing memory (allergy info changed → UPDATE, duplicate → NOOP); on read it pulls top-k purely by semantic nearest-neighbor from a single vector store. Same externalized, retrieval-based memory, but MemoryOS is OS-style tiering + heat paging, while Mem0 is a flat vector store + LLM consolidation.
+
 ### Structural isomorphism with the underlying KV cache (joined into one layer by MemOS `MemCube`)
 
 Overlay this memory system with the underlying KV cache management and they are **the same architecture instantiated at different layers** — the latter is dissected in the companion doc [on-device-kv-cache-management](../on-device-kv-cache-management/on-device-kv-cache-management-EN.md), Section 9 (vLLM PagedAttention):
