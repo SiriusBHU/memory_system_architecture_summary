@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="620" viewBox="0 0 980 620" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="980" height="620" fill="#ffffff"/>
+  <text x="490" y="34" text-anchor="middle" font-size="21" font-weight="700" fill="#1f2937">主从多模型内存管理：18 项工作 × 四条技术主线</text>
+  <text x="490" y="56" text-anchor="middle" font-size="12.5" fill="#6b7280">方括号为来源编号；部分工作横跨多条主线（如 PowerInfer-2 / STI / llm.npu / S-LoRA / LLMS / KVNAND），按主要贡献归列。★=最贴近「主控+工具」主从场景</text>
+
+  <!-- Column A: weight swap -->
+  <rect x="20" y="78" width="224" height="34" rx="6" fill="#2563eb"/>
+  <text x="132" y="100" text-anchor="middle" font-size="13.5" font-weight="700" fill="#ffffff">(a) 权重换入换出 / 冷启动</text>
+  <g font-size="12.5">
+    <rect x="20" y="120" width="224" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="32" y="141" fill="#1e3a8a">LLM in a Flash · 稀疏按需 [1]</text>
+    <rect x="20" y="158" width="224" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="32" y="179" fill="#1e3a8a">PowerInfer · 热/冷神经元 [2]</text>
+    <rect x="20" y="196" width="224" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="32" y="217" fill="#1e3a8a">PowerInfer-2 · 手机 47B [3]</text>
+    <rect x="20" y="234" width="224" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="32" y="255" fill="#1e3a8a">STI · 弹性分片 1–5MB [4]</text>
+    <rect x="20" y="272" width="224" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="32" y="293" fill="#1e3a8a">EdgeFlow · 冷启动 4.07× [7]</text>
+    <rect x="20" y="310" width="224" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="32" y="331" fill="#1e3a8a">llm.npu · chunk 共享图 [8]</text>
+    <rect x="20" y="348" width="224" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="32" y="369" fill="#1e3a8a">llama.cpp mmap · 零拷贝 [9]</text>
+    <rect x="20" y="386" width="224" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="32" y="407" fill="#1e3a8a">LLM-aware Cache · 准入 [17]</text>
+  </g>
+
+  <!-- Column B: KV swap -->
+  <rect x="256" y="78" width="224" height="34" rx="6" fill="#d97706"/>
+  <text x="368" y="100" text-anchor="middle" font-size="13.5" font-weight="700" fill="#ffffff">(b) KV Cache 换入换出</text>
+  <g font-size="12.5">
+    <rect x="256" y="120" width="224" height="34" rx="5" fill="#fffbeb" stroke="#fcd34d"/><text x="268" y="141" fill="#92400e">★ Persistent Q4 KV · 136× [12]</text>
+    <rect x="256" y="158" width="224" height="34" rx="5" fill="#fffbeb" stroke="#fcd34d"/><text x="268" y="179" fill="#92400e">LLMS · chunk 换入重算 [10]</text>
+    <rect x="256" y="196" width="224" height="34" rx="5" fill="#fffbeb" stroke="#fcd34d"/><text x="268" y="217" fill="#92400e">DynaKV · 检索式簇换入 [11]</text>
+    <rect x="256" y="234" width="224" height="34" rx="5" fill="#fffbeb" stroke="#fcd34d"/><text x="268" y="255" fill="#92400e">HillInfer · SmartSSD 近存 [15]</text>
+    <rect x="256" y="272" width="224" height="34" rx="5" fill="#fffbeb" stroke="#fcd34d"/><text x="268" y="293" fill="#92400e">Don't Waste Bits · 可变精度 [16]</text>
+    <rect x="256" y="310" width="224" height="34" rx="5" fill="#fffbeb" stroke="#fcd34d"/><text x="268" y="331" fill="#92400e">KVNAND · 就地计算零换出 [13]</text>
+    <rect x="256" y="348" width="224" height="34" rx="5" fill="#fffbeb" stroke="#fcd34d"/><text x="268" y="369" fill="#92400e">DUAL-BLADE · NVMe-direct [14]</text>
+    <rect x="256" y="386" width="224" height="34" rx="5" fill="#fffbeb" stroke="#fcd34d"/><text x="268" y="407" fill="#92400e">S-LoRA · 统一分页 KV×adapter [6]</text>
+  </g>
+
+  <!-- Column C: staggering -->
+  <rect x="492" y="78" width="224" height="34" rx="6" fill="#059669"/>
+  <text x="604" y="100" text-anchor="middle" font-size="13.5" font-weight="700" fill="#ffffff">(c) 内存错峰 / 时分复用</text>
+  <g font-size="12.5">
+    <rect x="492" y="120" width="224" height="34" rx="5" fill="#f0fdf4" stroke="#86efac"/><text x="504" y="141" fill="#065f46">★ 多 Agent 交错调度 [12]</text>
+    <rect x="492" y="158" width="224" height="34" rx="5" fill="#f0fdf4" stroke="#86efac"/><text x="504" y="179" fill="#065f46">PowerInfer-2 · 缓存弹性伸缩 [3]</text>
+    <rect x="492" y="196" width="224" height="34" rx="5" fill="#f0fdf4" stroke="#86efac"/><text x="504" y="217" fill="#065f46">STI · 层级 IO/计算重叠 [4]</text>
+    <rect x="492" y="234" width="224" height="34" rx="5" fill="#f0fdf4" stroke="#86efac"/><text x="504" y="255" fill="#065f46">★ 投机解码 · 小-大模型 [18]</text>
+    <rect x="492" y="272" width="224" height="34" rx="5" fill="#f0fdf4" stroke="#86efac"/><text x="504" y="293" fill="#065f46">llm.npu · 乱序子图填气泡 [8]</text>
+    <rect x="492" y="310" width="224" height="34" rx="5" fill="#f0fdf4" stroke="#86efac"/><text x="504" y="331" fill="#065f46">KVNAND · head-group 流水 [13]</text>
+    <rect x="492" y="348" width="224" height="34" rx="5" fill="#f0fdf4" stroke="#86efac"/><text x="504" y="369" fill="#065f46">LLMS · 固定预算多上下文 [10]</text>
+  </g>
+
+  <!-- Column D: orchestration -->
+  <rect x="728" y="78" width="224" height="34" rx="6" fill="#7c3aed"/>
+  <text x="840" y="100" text-anchor="middle" font-size="13.5" font-weight="700" fill="#ffffff">(d) 多模型 / 多 Agent 编排</text>
+  <g font-size="12.5">
+    <rect x="728" y="120" width="224" height="34" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/><text x="740" y="141" fill="#5b21b6">★ EdgeLoRA · 1000+ adapter [5]</text>
+    <rect x="728" y="158" width="224" height="34" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/><text x="740" y="179" fill="#5b21b6">S-LoRA · 2000 adapter（云侧）[6]</text>
+    <rect x="728" y="196" width="224" height="34" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/><text x="740" y="217" fill="#5b21b6">LLMS · OS 系统服务化 [10]</text>
+    <rect x="728" y="234" width="224" height="34" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/><text x="740" y="255" fill="#5b21b6">llm.npu · 权重去重共享 [8]</text>
+    <rect x="728" y="272" width="224" height="34" rx="5" fill="#f5f3ff" stroke="#c4b5fd"/><text x="740" y="293" fill="#5b21b6">MEI4LLM · 综述/边界 [18]</text>
+  </g>
+
+  <!-- Bottom: verification bar -->
+  <rect x="20" y="440" width="932" height="150" rx="8" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="40" y="466" font-size="14" font-weight="700" fill="#111827">核验状态</text>
+  <g font-size="12.5" fill="#374151">
+    <text x="40" y="490">· 来源：18 篇一手资料（ICLR/SOSP/ASPLOS/MobiSys/MLSys/CVPR/ICDCS + 工程博客 + MDPI），全部逐项核对标题·作者·会议·核心数字。</text>
+    <text x="40" y="512">· 对抗验证：deep-research 工作流产出 127 条带数字的可证伪主张，真实三票裁决累计 250 票，仅 1 张孤立反对票（Apple 行列捆绑的块尺寸数字勘误，机制不受影响）。</text>
+    <text x="40" y="534">· 结论：无一条主张达到 2/3 淘汰线 → 127 条全部存活；训练截止后的 9 篇 2025–2026 论文逐一联网确认在册，0 伪造源。</text>
+    <text x="40" y="562" font-size="12" fill="#6b7280">主线间关系：(a)(b) 是「换什么」——权重可 mmap 近零成本换回、KV 才是真正需落盘的错峰对象；(c) 是「何时换、如何用计算掩盖 I/O」；(d) 是「多模型如何系统化编排驻留」。</text>
+  </g>
+</svg>

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="600" viewBox="0 0 980 600" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <defs>
+    <marker id="arrUp" markerWidth="10" markerHeight="10" refX="5" refY="2" orient="auto"><path d="M0,8 L5,0 L10,8 Z" fill="#059669"/></marker>
+    <marker id="arrDn" markerWidth="10" markerHeight="10" refX="5" refY="8" orient="auto"><path d="M0,2 L5,10 L10,2 Z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="980" height="600" fill="#ffffff"/>
+  <text x="490" y="34" text-anchor="middle" font-size="21" font-weight="700" fill="#1f2937">端侧换入换出的存储层级与加速手段</text>
+  <text x="490" y="56" text-anchor="middle" font-size="13" fill="#6b7280">DRAM 工作集 ↔ Flash/UFS/NVMe 冷层 ↔ 3D NAND 就地计算；左侧为换入加速手段，右侧为换出策略，方括号为来源编号</text>
+
+  <!-- Tier 1: DRAM -->
+  <rect x="330" y="86" width="320" height="92" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="490" y="112" text-anchor="middle" font-size="16" font-weight="700" fill="#1e3a8a">① DRAM 工作集（热，ns 级）</text>
+  <text x="490" y="134" text-anchor="middle" font-size="12.5" fill="#1e40af">常驻：注意力权重 · 热神经元 · 主控 KV 热簇</text>
+  <text x="490" y="153" text-anchor="middle" font-size="12.5" fill="#1e40af">热工具 adapter · 稀疏预测器（仅 1.25% [1]）</text>
+  <text x="490" y="171" text-anchor="middle" font-size="11.5" fill="#3b82f6">带宽高、容量小（手机常 &lt;4GB 可用）</text>
+
+  <!-- Tier 2: Flash -->
+  <rect x="330" y="300" width="320" height="92" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="490" y="326" text-anchor="middle" font-size="16" font-weight="700" fill="#92400e">② Flash / UFS / NVMe 冷层（μs 级）</text>
+  <text x="490" y="348" text-anchor="middle" font-size="12.5" fill="#b45309">冷 FFN 权重 · 冷 adapter · KV 落盘（Q4）</text>
+  <text x="490" y="367" text-anchor="middle" font-size="12.5" fill="#b45309">检索式 KV 簇 · 权重文件（mmap 页缓存）</text>
+  <text x="490" y="385" text-anchor="middle" font-size="11.5" fill="#d97706">容量大、成本低（$0.72/GB vs LPDDR5 $4.62 [13]）</text>
+
+  <!-- Tier 3: In-flash -->
+  <rect x="330" y="486" width="320" height="82" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="490" y="512" text-anchor="middle" font-size="16" font-weight="700" fill="#5b21b6">③ 3D NAND 就地计算（in-flash）</text>
+  <text x="490" y="534" text-anchor="middle" font-size="12.5" fill="#6d28d9">权重+KV 就地做 GEMV，NPU 只算非线性</text>
+  <text x="490" y="553" text-anchor="middle" font-size="12" fill="#7c3aed">「零换出」：取消 flash↔DRAM 搬运路径 [13]</text>
+
+  <!-- Up arrow (换入) between tier2 and tier1, left of center -->
+  <line x1="410" y1="300" x2="410" y2="180" stroke="#059669" stroke-width="2.4" marker-end="url(#arrUp)"/>
+  <!-- Down arrow (换出) right of center -->
+  <line x1="570" y1="178" x2="570" y2="298" stroke="#b45309" stroke-width="2.4" marker-end="url(#arrDn)"/>
+  <text x="392" y="244" text-anchor="end" font-size="13" font-weight="700" fill="#059669">换入 ↑</text>
+  <text x="588" y="244" text-anchor="start" font-size="13" font-weight="700" fill="#b45309">↓ 换出</text>
+
+  <!-- In-flash connector -->
+  <line x1="490" y1="392" x2="490" y2="486" stroke="#7c3aed" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="500" y="442" font-size="11.5" fill="#7c3aed">把计算搬到数据处</text>
+
+  <!-- Left panel: 换入加速手段 -->
+  <rect x="26" y="150" width="286" height="180" rx="7" fill="#f0fdf4" stroke="#059669" stroke-width="1.4"/>
+  <text x="40" y="172" font-size="13.5" font-weight="700" fill="#065f46">换入加速手段</text>
+  <g font-size="12" fill="#14532d">
+    <text x="40" y="194">· mmap 零拷贝映射（热加载 100×）[9]</text>
+    <text x="40" y="214">· 稀疏按需加载（每 token 13.4→0.2GB）[1][3]</text>
+    <text x="40" y="234">· NPU 感知量化 + SIMD 解包 [7]</text>
+    <text x="40" y="254">· KV reload 跳过 prefill（TTFT 136×）[12]</text>
+    <text x="40" y="274">· 检索式簇换入（只换相关 KV）[11]</text>
+    <text x="40" y="294">· io_uring-direct 绕内核栈（I/O −98%）[14]</text>
+    <text x="40" y="314">· 预取 + 计算重叠隐藏延迟 [6][3][4]</text>
+  </g>
+
+  <!-- Right panel: 换出策略 -->
+  <rect x="668" y="150" width="286" height="180" rx="7" fill="#fffbeb" stroke="#d97706" stroke-width="1.4"/>
+  <text x="682" y="172" font-size="13.5" font-weight="700" fill="#92400e">换出策略</text>
+  <g font-size="12" fill="#78350f">
+    <text x="682" y="194">· 主控 KV → Q4 落盘（非重算）[12]</text>
+    <text x="682" y="214">· 权重 mmap 释放可写页、保映射 [9]</text>
+    <text x="682" y="234">· 神经元/adapter LRU 逐出 [3][5]</text>
+    <text x="682" y="254">· 容忍度感知 chunk 压缩换出 [10]</text>
+    <text x="682" y="274">· 可变精度 {2,4,8,16}bit 压 KV [16]</text>
+    <text x="682" y="294">· 近存算分只回传分数 [15]</text>
+    <text x="682" y="314">· 提前换出（ahead-of-time）[10]</text>
+  </g>
+
+  <!-- Bottom caveat -->
+  <text x="490" y="590" text-anchor="middle" font-size="11.8" fill="#6b7280">代价对照：解码为访存受限，权重换入换出可占推理时延 90% [18]；KV 重算 4K 上下文需 22.92s，故「换出而非丢弃」是关键 [10]</text>
+</svg>

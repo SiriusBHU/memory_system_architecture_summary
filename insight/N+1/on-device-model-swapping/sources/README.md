@@ -1,0 +1,459 @@
+# 来源与已验证主张索引（127 条）
+
+> 每条主张均经标题/作者/会议/核心数字核对；2025–2026 的 9 篇联网确认在册。
+> 对抗验证累计 250 票真实裁决，仅 1 张孤立反对票，无一条主张达到 2/3 淘汰线 → **0 伪造源、127 条全部存活**。
+>
+> **唯一勘误**：Apple *LLM in a Flash* [1] 的「行列捆绑」条目里，块尺寸不是「d_model×d_model → 2d_model×2d_model」，而是逐神经元向量拼接的「d_model → 2·d_model」（正文 §2.2 已修正）。机制正确，仅该数字表述有误。
+
+## Apple (ICLR 2024)  （Apple (ICLR 2024) 2023）
+https://arxiv.org/abs/2312.11514
+
+- **该方法可在DRAM容量仅为模型一半的设备上运行LLM推理，即支持运行两倍于可用DRAM大小的模型**
+  - 数字：支持运行最大为可用DRAM两倍大小的模型；OPT 6.7B常驻DRAM仅占模型52.1%（注意力权重32.3%+嵌入3%+预测器1.25%+FFN 15.5%）
+  - 机制：参数常驻flash，仅按需将当前token需要的部分权重换入DRAM；DRAM中只固定保留注意力权重、嵌入和稀疏预测器，FFN权重按需从flash加载再释放
+- **利用FFN层的高稀疏性，每个token只需从flash加载极少量激活神经元的权重**
+  - 数字：OPT 6.7B的FFN稀疏度97%，Falcon 7B为95%，Llama2(FATReLU)为90%；每token从flash加载数据量从naive的13.4GB降到约0.2GB
+  - 机制：ReLU后大部分中间激活为零，通过低秩(low-rank)稀疏预测器预判哪些FFN神经元会被激活，只加载对应up/down投影的行列权重，跳过非激活神经元
+- **低秩稀疏预测器以很低的误判率预测激活神经元，从而只换入必要权重**
+  - 数字：OPT 6.7B预测器约5%假阴性、7%假阳性；预测器仅占DRAM 1.25%
+  - 机制：在DRAM中常驻一个小型低秩预测网络，前向时先跑预测器判断FFN激活模式，再据此选择性从flash加载权重，用极小内存换取大幅IO削减
+- **滑动窗口(windowing)复用最近若干token已激活的神经元，只增量加载/删除权重，进一步降低每token加载量**
+  - 数字：窗口k=4~5；OPT 6.7B每token加载的FFN神经元从无窗口的10%降到2.4%，Falcon 7B降到3.1%
+  - 机制：维护最近k个token激活神经元的滑动窗口，新token只需加载窗口内新出现(incremental)的神经元并删除滑出窗口的神经元，避免重复从flash读取已在DRAM中的权重
+- **行列捆绑(row-column bundling)将up投影列与down投影行连续存储，使每次flash读取的数据块更大以匹配顺序读吞吐**
+  - 数字：数据块尺寸翻倍（从 d_model×d_model 到 2d_model×2d_model）
+  - 机制：把同一神经元对应的up-projection列与down-projection行捆绑存放为连续内存块，把随机小读转为大块顺序读，利用flash顺序访问吞吐远高于随机访问的特性
+- **相较naive按需加载，端到端推理延迟大幅下降（CPU约4-5倍、GPU约20-25倍）**
+  - 数字：OPT 6.7B: I/O延迟从2196ms/token降到105ms(约21x)；端到端CPU 669ms vs 3182ms(4.7x)、Metal GPU 565ms(4.2x)、NVIDIA GPU 84ms vs 2218ms(26.4x)；Falcon 7B CPU 706ms vs 3095ms(约4.4x)
+  - 机制：稀疏预测+滑动窗口减少换入数据量，行列捆绑提升顺序读吞吐，并用推理成本模型联合优化传输量与块大小；I/O与计算重叠
+- **系统显式建立flash推理成本模型，联合优化两个方向：减少传输总量与增大连续读块**
+  - 数字：无量化数字（成本模型为方法框架）
+  - 机制：面向flash读特性(随机小读慢、顺序大块读快)构建代价模型，将稀疏加载、窗口复用、行列捆绑三种手段作为可调参数联合求解最优换入策略
+
+## PowerInfer-2  （上海交大 IPADS 2024）
+https://arxiv.org/html/2406.06282v2
+
+- **PowerInfer-2 在手机上首次可服务超出 DRAM 容量的 47B 模型（TurboSparse-Mixtral），通过把 50% 的 FFN 权重放在 UFS 闪存并按需换入，相比 llama.cpp 解码速度提升约一个数量级**
+  - 数字：OnePlus 12 上解码达 9.96 tokens/s（50% FFN offload），相比 llama.cpp 提升 25.4×、相比 LLM in a Flash 提升 3.94×
+  - 机制：FFN 权重常驻闪存，运行时按稀疏激活预测结果从 UFS 4.0 按 4KB 随机读换入到 DRAM 神经元缓存，仅加载被激活的神经元簇权重参与 GPU/NPU 计算
+- **利用 FFN 稀疏激活，解码时每 token 仅需加载约 10% 的神经元，47B 模型每 token 实际只激活约 3B 参数，大幅降低需换入的权重量**
+  - 数字：解码阶段约 10% 神经元被激活；47B 参数中每 token 仅约 3B 被激活
+  - 机制：在线激活预测器（Pred 阶段）先判定哪些神经元将被激活，只对被激活神经元簇发起闪存 I/O 与计算，跳过其余权重
+- **神经元簇级计算-I/O 流水线把闪存读取延迟隐藏在计算之下，避免矩阵级流水线的等待气泡**
+  - 数字：五级流水线（Pred/GIO/GC/UDIO/UDC）；4-bit 模型用两次独立 4KB 读取而非单次 8KB 读取，因双 4KB 随机读带宽更高
+  - 机制：将矩阵按神经元簇细分，一部分神经元在 DRAM 计算的同时并行从 UFS 换入下一批被激活神经元，跨矩阵边界重叠 I/O 与算子执行
+- **分段神经元缓存对不同权重采用差异化驻留策略：注意力权重全程预加载常驻，FFN 神经元用 LRU 动态换出热点**
+  - 数字：LRU 双队列（active/inactive），缓存占用达 90% 阈值触发换出；平均缓存未命中率 3.5%，P99 达 18.9%（导致 P99 解码延迟比均值慢 40.9%）
+  - 机制：神经元缓存分区管理，注意力权重固定驻留 DRAM，FFN 用活跃/非活跃双队列 LRU 按热度换入换出，超阈值时驱逐冷神经元
+- **通过把 50% FFN 权重卸载到闪存，可在几乎不损失速度的前提下显著降低 7B 模型的 DRAM 占用**
+  - 数字：TurboSparse-Mistral-7B 节省约 1.5GB 内存（约 40%，从约 4GB 降到约 2.5GB），速度仍与 llama.cpp/MLC-LLM 相当
+  - 机制：利用稀疏激活将不常用 FFN 权重驻留 UFS，仅在激活时换入，DRAM 仅保留热点神经元与注意力权重
+- **解码吞吐随可用缓存/内存容量近似线性扩展，可按设备内存预算灵活调节换入换出比例（内存错峰）**
+  - 数字：TurboSparse-Mixtral-47B 在 OnePlus 12：7GB 可用内存时 2.13 tokens/s（400MB 缓存=FFN 权重的 1.8%），19GB 时达 11.68 tokens/s，缓存大小与速度在 18GB 阈值前近似线性
+  - 机制：缓存容量可配置，内存充裕时多驻留神经元减少闪存 I/O，内存紧张时缩小缓存增大换入比例，在容量与速度间权衡
+- **手机闪存 I/O 存在多核争用与块大小敏感性，PowerInfer-2 据此定制读取策略以最大化换入带宽**
+  - 数字：4KB 随机读大核 3.3GHz 达 1076 MB/s、小核 761 MB/s；多核并发反而使性能下降最多 40%（单 UFS 命令队列争用）；4KB 随机读在 128MB 范围内可达 1 GB/s，超过 8KB/12KB 块
+  - 机制：针对 UFS 单命令队列特性，用绑定大核的单/双 4KB 随机读取而非大块或多核并发读，最大化权重换入的有效带宽
+- **预填充阶段瓶颈从 I/O 转为计算，因批量输入使几乎全部神经元被激活，需要不同于解码的调度策略**
+  - 数字：batch=128 时神经元激活概率达 99.99%；128-token 提示下计算耗时是顺序 I/O 的 2.83×，512-token 时扩大到 4×；预填充相比 LLM in a Flash 快 6.95×、相比 llama.cpp 快 9.36×（128 token）
+  - 机制：预填充时批量激活导致稀疏性消失，转为 NPU 计算受限（int4 需反量化为 fp16），采用与解码不同的全神经元加载与 NPU 计算路径
+
+## PowerInfer  （SOSP 2024 / 上海交大 IPADS 2023）
+https://arxiv.org/abs/2312.12456
+
+- **在单张消费级 RTX 4090 上,PowerInfer 相比 llama.cpp 实现最高 11.69x 的推理生成速度提升。**
+  - 数字：最高 11.69x 加速(平均约 13.20 tokens/s)
+  - 机制：GPU-CPU 混合执行:利用 LLM 激活稀疏性,把频繁激活的神经元预载到 GPU、冷神经元放 CPU 计算,减少每步需要搬运的权重量。
+- **OPT-30B 在单张 RTX 4090 上的 token 生成速率可达 A100 服务器 GPU 的 82%。**
+  - 数字：达到 A100 的 82% 生成速率
+  - 机制：热神经元常驻 GPU 消除冗余 CPU-GPU 传输,使消费级显存有限的设备逼近数据中心 GPU 的吞吐。
+- **LLM 神经元激活服从幂律分布:一小撮热神经元在几乎所有输入上被持续激活,其余大多数冷神经元随输入变化。**
+  - 数字：少数热神经元恒定激活(无精确百分比,论文给出幂律分布)
+  - 机制：离线剖析各输入下的神经元激活频率,统计出稳定高频激活的子集作为热神经元集合。
+- **PowerInfer 通过将热神经元预载 GPU、冷神经元留 CPU,显著降低 GPU 显存占用与 CPU-GPU 数据传输量。**
+  - 数字：显著降低 GPU 显存需求与 PCIe 传输(混合放置)
+  - 机制：基于离线剖析的神经元级放置策略,把权重按激活热度切分到 GPU/CPU 两侧,避免整模型驻留显存。
+- **PowerInfer 用自适应预测器在线预测每步实际会激活的神经元,只计算被预测激活的部分。**
+  - 数字：无量化数字(自适应预测器 + 神经元感知稀疏算子)
+  - 机制：运行时轻量预测器判定当前输入下哪些神经元将被激活,配合神经元感知稀疏算子跳过未激活权重的加载与计算。
+- **PowerInfer 可在单张 RTX 4090 上运行 OPT-175B 等超出显存容量的大模型。**
+  - 数字：单卡 RTX 4090 运行 OPT-175B(远超 24GB 显存)
+  - 机制：通过稀疏激活与 GPU/CPU 混合放置,使常驻显存的仅为热神经元子集,模型总规模可远大于物理显存。
+
+## STI (Speedy Transformer Inference)  （ASPLOS 2023 / University of Virginia 2022）
+https://arxiv.org/abs/2207.05022
+
+- **STI 把常驻内存的参数开销降到 1-5MB，比'整模型常驻内存'方案低 1-2 个数量级，且精度下降不超过 0.1 个百分点。**
+  - 数字：参数内存 1-5MB，比常驻内存低 1-2 个数量级；精度损失 ≤0.1 个百分点
+  - 机制：把模型按层再切成 M 个分片，每片预压缩成 K 个比特宽度版本（K=2..6）存于 flash，共 N×M×K 个分片版本；运行时只组装并常驻一个子模型（n 层、每层 m 片、各片选一档比特宽度），其余按需从 flash 流式载入，而非把整模型（如 DistilBERT 170MB）全部保存在内存。
+- **相比已有的分层加载/执行流水线，STI 的弹性流水线把推理精度提升 5.9-54.1 个百分点。**
+  - 数字：精度提升 5.9-54.1 个百分点
+  - 机制：两阶段规划器：先按目标延迟选出能算得完的子模型（n×m），再按各层计算时延设置'层级累积 IO 预算（AIB）'，并把预载缓冲区容量当作额外 IO 预算分配到各层；随后按分片重要性把更高比特宽度优先分给重要分片，从而在同样 IO/计算预算下最大化精度、最小化流水线气泡。
+- **端侧直接做'分层加载与计算重叠'的流水线对 NLP 基本无效，因为 IO 与计算时延严重不对称——DistilBERT 单层加载需 339ms、计算仅需 95ms。**
+  - 数字：单层加载 339ms vs 计算 95ms（约 3.6× 偏斜）；朴素流水线下计算 >72% 时间在空转
+  - 机制：根因是 Transformer 注意力模块算术强度低，加上移动端能效优化的 flash 限制了参数从存储流入内存的速率，导致朴素 layer-wise 流水线充满气泡、计算大部分时间停等 IO。
+- **整模型常驻内存虽能立即启动执行，但会把单个 app 的内存足迹放大数倍到数百 MB，远超移动 app 通常 <100MB 的足迹，导致易被系统回收、只能撑几次推理。**
+  - 数字：常驻模型占数百 MB（BERT >400MB，DistilBERT ~170-200MB），而 app 足迹常 <100MB
+  - 机制：整模型常驻使内存足迹相对同类 app 显著偏大，成为移动内存管理（low-memory killer 类机制）的高优先回收目标，因此常驻方案只能维持少量推理便被回收。
+- **STI 维护一个小的'预载缓冲区'，只装模型底层（靠近输入）的分片，用来无停顿地引导流水线启动，避免冷启动 IO 阻塞。**
+  - 数字：预载缓冲区大小 |S| 可调（评测用如 |S|=1MB 量级），随可用内存自适应
+  - 机制：缓冲区只保存底层分片，执行一开始即可从缓冲区取数计算，同时后续层的分片在计算过程中并行流式载入；规划器把 |S| 当作 bonus IO 预算，联合调度预载与按需加载，使 IO 与计算联合调优以填满气泡。
+- **STI 以'层'为 IO/计算调度粒度：一层的多个分片作为一个 IO 作业加载、解压后作为一个计算作业执行，不同层的 IO 与计算作业相互重叠；不用更细的按分片粒度以免让 IO/GPU 带宽利用率下降。**
+  - 数字：无量化数字（粒度设计：层级 IO/compute 作业重叠）
+  - 机制：按层批量发起 IO（多个分片合并为一个 IO 作业）并批量计算，避免过细粒度（逐分片 load/execute）带来的 IO 与 GPU 带宽利用不足；层间作业重叠以隐藏 IO。
+- **分片量化把每个分片的 FP32 权重矩阵改存 K-bit 索引（基于聚类/离群点码本），使文件大小缩小 32/K 倍，并降低 IO/计算偏斜、支持弹性 IO。**
+  - 数字：文件大小缩小 32/K 倍（K=2..6）；示例 N=M=12 时共 N×M×K 个分片版本
+  - 机制：对 N×M 个分片各生成 K 个比特宽度版本，权重矩阵存 K-bit 索引而非原始 FP32；不同比特宽度让规划器可按重要性调整每片 IO 量，减小 IO/计算偏斜，实现弹性 IO 带宽分配。
+
+## EdgeLoRA  （MobiSys 2025 2025）
+https://arxiv.org/html/2507.01438v1
+
+- **EdgeLoRA 在单个端侧设备（Jetson Orin AGX）上可同时托管超过 1000 个 LoRA adapter，而基线 llama.cpp 上限仅约 50 个**
+  - 数字：1000+ adapters vs llama.cpp 约 50 个（20 倍量级）
+  - 机制：异构内存管理：把每个 adapter 权重视为可换入换出的对象，用 LRU cache（std::list + unordered_set）保留高频 adapter，配合预分配固定大小内存块池（std::stack<shared_ptr<adapter>>）；缓存满时逐出 LRU adapter 并把内存块归还池中，新 adapter 请求时从空闲块分配，避免运行时动态分配开销
+- **adapter 权重从 20 个扩到 1000 个时吞吐几乎不下降，换入换出开销被有效隐藏**
+  - 数字：吞吐稳定在约 0.42-0.45 req/s（20→1000 adapters）
+  - 机制：预分配内存池消除运行时 malloc/free；逐出的 adapter 内存块被复用，换入新 adapter 时只做块级复用而非重新分配，从而把权重换入换出的延迟摊薄
+- **EdgeLoRA 相对 llama.cpp 基线取得 2-4 倍吞吐提升**
+  - 数字：2-4× 吞吐；例如 S1@AGX 20 adapters 下 0.45 req/s vs 0.11 req/s
+  - 机制：Batch LoRA 推理采用 gather-scatter：base 模型对全部请求统一批处理 W×[x0..xn]，再按 adapter ID 分组成 u-batch 并行计算 [B0A0x0..BnAnxn]，同 adapter 的请求合并为单次矩阵乘走优化 GPU 例程，最后 scatter 回原位
+- **自适应 adapter 选择的额外延迟约等于一次 prompt 解码时间，可在 1000 adapter 规模下把首 token 延迟维持在亚秒级**
+  - 数字：Jetson Nano 首 token 延迟 0.51-0.58 秒（20-1000 adapters）
+  - 机制：多标签分类路由器（LlamaModel 上加线性层 + BCEWithLogitsLoss）为每个 adapter 打置信分，取 top-k 后优先选择已在内存 cache 中的 adapter，只有全部未命中时才换入最高分 adapter，从而尽量避免换入操作
+- **adapter 调用服从幂律分布，约 10% 的 adapter 占约 80% 的调用概率，为 LRU 缓存换入换出提供依据**
+  - 数字：10% adapter 占约 80% 调用；缓存命中率 H = h_cache/h_total
+  - 机制：利用负载的时间局部性用 LRU 缓存热点 adapter，冷 adapter 逐出到内存池；这一分布假设是异构内存分层（cache 层 + pool 层）设计成立的前提
+- **请求槽（slot）数量决定并行度，增加 slot 可在同一设备上对多请求做时分复用以提升吞吐**
+  - 数字：Jetson Nano 上 slot 从 1 增到 20，吞吐从 0.07 提升到 0.43 req/s
+  - 机制：每个 slot 走 Adapter Selection→Prompt Processing→Generation 的状态机，多 slot 让不同请求/不同 adapter 在 base 模型上错峰共享 GPU 与内存，维持中间状态并行推进
+- **在 6 秒首 token 截止的 SLO 下，EdgeLoRA 跨规模保持接近满分的达标率，同时能耗低于基线**
+  - 数字：SLO 达标率 98.67-100%；功耗如 S1@AGX 28.04W vs 32.16W、S2@Nano 8.67W vs 10.27W
+  - 机制：更高吞吐缩短单请求计算时间，配合缓存命中减少换入，降低单请求平均能耗并保证延迟 SLO
+
+## S-LoRA  （MLSys 2024 / UC Berkeley Sky Computing 2023）
+https://arxiv.org/abs/2311.03285
+
+- **S-LoRA 将全部 LoRA adapter 权重常驻主机(host/CPU)内存，仅按需将当前运行 batch 用到的 adapter 换入 GPU 显存，从而在单/多 GPU 上并发服务多达约 2000 个 adapter。**
+  - 数字：单卡/多卡可并发服务约 2000 个 LoRA adapter；服务 adapter 数量提升数个数量级
+  - 机制：主从式分层内存：主模型(base)权重常驻 GPU，海量 adapter 权重存于主存作为“冷”副本，运行时按 batch 实际使用情况把选中的 adapter 权重动态 fetch 到 GPU；未使用的 adapter 不占显存。
+- **S-LoRA 用一个统一内存池(Unified Paging)同时管理动态变化的 adapter 权重(不同 rank)与 KV Cache 张量(不同序列长度)，以页粒度存放来消除内存碎片。**
+  - 数字：无显式量化数字(定性: 显著降低碎片、提升显存利用率)；页粒度为长度 H 的向量
+  - 机制：统一内存池以“每页对应一个长度 H 的向量”的分页方式交错存放异构大小的 KV Cache 与 adapter 权重，把两类动态张量放进同一物理池，避免为各自预留固定区块造成的内部/外部碎片。
+- **S-LoRA 采用预取(prefetch)机制，在执行当前解码 batch 的同时，根据等待队列预测下一 batch 所需的 adapter 并提前从主存加载到 GPU，使 I/O 搬运与计算重叠。**
+  - 数字：无显式量化数字(定性: 隐藏 adapter 换入延迟)
+  - 机制：基于当前 waiting queue 预测下一 batch 会用到哪些 adapter，在当前 batch 计算期间异步把这些 adapter 权重从 host 预取到显存，用计算时间掩盖换入 I/O。
+- **S-LoRA 用自定义 CUDA 核(MBGMM 用于 prefill、MBGMV 用于 decode)对不同 rank、不同序列长度的 adapter 做异构批处理，直接在非连续内存布局上计算，免去 padding 开销。**
+  - 数字：无显式量化数字(避免 padding 带来的算力浪费)
+  - 机制：Multi-size Batched Gather Matrix-Matrix / Matrix-Vector 核直接从非连续存放的 adapter 权重中 gather 并计算，支持一个 batch 内混合不同 adapter 与不同 rank，无需把 adapter 合并进 base 权重或补齐到统一形状。
+- **S-LoRA 的新型张量并行策略把 LoRA 附加通信控制在很小的中间张量上，并将大张量通信与 base 模型通信融合，使多卡下 adapter 的额外通信开销远小于 base。**
+  - 数字：LoRA 额外通信约 5(N-1)Br/N，base 模型通信约 2(N-1)Bh/N，其中 r≪h(N 为设备数、B batch、h 隐维、r adapter 秩)
+  - 机制：针对 LoRA 的 low-rank 结构调度并行:仅对小的秩为 r 的中间张量做通信，把大张量的通信与 base 模型 all-reduce 融合，利用 r≪h 使附加通信量相对基座可忽略。
+- **在同等硬件上,S-LoRA 相比基线显著提升吞吐:较 vLLM(为多 adapter 复制多份的朴素做法)最高约 4 倍,较 HuggingFace PEFT 最高约 30 倍。**
+  - 数字：较 vLLM 最高 ~4×,较 HuggingFace PEFT 最高 ~30× 吞吐提升
+  - 机制：综合统一分页(省显存装下更多 adapter+更大 batch)、异构批处理核(免 padding)、预取重叠(隐藏换入)三者,使单卡可同时服务大量 adapter 并保持高批处理吞吐,而基线需为每个 adapter 单独/合并部署。
+
+## EdgeFlow  （arXiv (mobile LLM systems) 2026）
+https://arxiv.org/pdf/2604.09083
+
+- **移动端 LLM 冷启动的根因是设备内存装不下海量模型参数导致模型被换出后重新加载，且加载延迟远超普通 App**
+  - 数字：llm.npu 在 Llama3-8B、128 输入 token 下冷启动 TTFT 高达 9.1 秒（原始未优化路径达 51.2 秒），比常规移动应用冷启动高一个数量级
+  - 机制：移动 OS 无法长期把大模型参数保留在有限内存中，冷启动时需从 flash 重新加载全部权重；llm.npu 原始流程 51.2s 中，materialization（离线存图）降到 10.5s，overlap（图加载与 prefill 重叠）再降到 9.1s，但仍不可接受（用户耐心阈值 7s）
+- **靠预取整模型驻留内存来消除冷启动的方案内存代价过高，EdgeFlow 转而压缩换入数据量本身**
+  - 数字：要把 TTFT 压到可接受区间需预取并常驻约 4GB 数据，占高端测试机总内存的 25%
+  - 机制：EdgeFlow 不预留内存，而是用自适应量化削减需从 flash 换入的权重字节数，缓解 flash 带宽瓶颈，从而在不牺牲内存的前提下降低纯冷启动延迟
+- **NPU 感知自适应量化按输出通道重要性分配 1-8 bit，在 NPU 约束下用贪心算法达到精度/带宽最优**
+  - 数字：贪心分配复杂度 O(C·logC)，通道位宽范围 1-8bit，平均位宽受 flash 带宽预算约束；相比 INT4 平均提升精度 35.6%，相比 INT8 精度仅降 6.6%
+  - 机制：定义相对误差 RE（原权重与反量化权重的余弦距离，近似为 E[E²]/(2E[W²])，可用均方统计快速估计），用最大堆按 RE 增益贪心逐比特分配，兼顾 NPU 只支持每输出通道对称均匀量化的约束；配合 NPU-aware smoothing 把激活方差静态转移到权重
+- **SIMD 友好打包格式在保持紧凑存储（无读放大）的同时大幅降低变精度权重解包开销**
+  - 数字：解包平均仅需 0.48 条 SIMD 指令/权重；相比 INT4/INT8 混合格式加载加速 1.42×；相比 K-Quant 格式解包时间降低 6.17×、端到端延迟平均降低 3.05×，额外解包开销<0.65s
+  - 机制：把每个权重分解为 1/2/4-bit 的 weightlet 基元使其按字节对齐，按 stripe 交错布局（步长 8/B），R-bit SIMD 寄存器可并行处理 R/8 个 weightlet；解包分 Mask/Align/Merge 三步用 SIMD_AND/SHIFT/OR 完成，每通道位宽存为紧凑 INT3 元数据
+- **协同细粒度流水线用算子级动态调度+任务窃取消除 CPU/NPU 冷启动 prefill 阶段的流水线气泡**
+  - 数字：位置引导优先级使 NPU 气泡率降低 82.2%、延迟再降 5.2%；CPU 任务窃取（阈值设为 5）使执行时间再降 11.3%、CPU 气泡率降 61.6%；长 prompt 数据集下 TTFT 平均降 12.7%。基线 llm.npu 静态调度气泡率高达 91%，NPU 执行时间平均比 CPU 长 2.1×，CPU 空闲达 65%
+  - 机制：在单算子（matmul、LayerNorm）粒度做初始放置（INT8 matmul 放 NPU，其余 FP16 放 CPU），运行时按 prompt 位置给算子赋优先级打破拓扑序平局，CPU 空闲且 NPU 队列超阈值时主动窃取 NPU 队首任务
+- **EdgeFlow 端到端将冷启动 TTFT 相对多个 SOTA 框架显著降低且精度可比**
+  - 数字：相比 llama.cpp/MNN/llm.npu 分别加速最高 4.24×/2.53×/1.63×（4bit）、3.92×/2.28×/1.47×（7bit），整体最高 4.07×；长 prompt 下相对 llm.npu 加速 1.37×-1.41×；默认 5bit 配置在可比精度下大幅提升 TTFT
+  - 机制：三大机制协同：自适应量化减少换入字节，SIMD 打包降低解包，细粒度流水线重叠计算；位宽越低（4bit）换入越少加速越大
+- **EdgeFlow 通过 CPU/NPU 共享同一份计算图权重，把冷启动内存占用压到接近理想值**
+  - 数字：Mistral-7B/512token 冷启动稳态内存约 6.9GB（模型 INT8+KV Cache 的理想和），而 llm.npu 因 CPU/NPU 各维护独立计算图达约 8GB；EdgeFlow 同时总能耗降 12.9%（尽管平均功耗高 17.6%）
+  - 机制：EdgeFlow 让计算图中的权重在 CPU 与 NPU 间共享，避免 llm.npu 那样为两处理器各存一份图；能耗降低源于减少了冗余 flash 数据加载和更短冷启动时间
+
+## llm.npu  （ASPLOS 2025 / 北邮 Xu et al. 2024）
+https://arxiv.org/pdf/2407.05858
+
+- **Chunk-sharing graph 通过在不同 chunk 间共享与 prompt 长度无关的权重算子（如 FFN），把同时加载多张预建 chunk graph 的内存开销降低至多 4 倍。**
+  - 数字：内存开销最多降低 4x（否则多 chunk graph 比 LLM 权重本身还多占 2-4x 内存）
+  - 机制：把 LLM 算子分为静态算子(Linear/LayerNorm，只依赖 chunk 长度、可跨 chunk 共享)与动态算子(Attention，依赖 chunk 序列、需各自构建)；静态子图只构建一次、多 chunk 复用权重缓冲，动态子图按需构建，避免为每个变长 prompt 重复加载整套权重。
+- **在 Qwen1.5-1.8B 上，144 个子图中有 120 个可被跨 chunk 共享，把 prompt 长度 1024、chunk 长度 256 时的内存占用降低最多 75%（约 7.2GB）。**
+  - 数字：120/144 子图共享，内存降低最多 75%（约 7.2GB）
+  - 机制：chunk-sharing graph 让不含权重的动态算子(Attention)按 chunk 维度动态选择，含权重的静态子图共享同一份权重缓冲，消除为每个 chunk 各存一份完整图的内存冗余。
+- **Shadow outlier execution 只把少数「热通道」outlier 权重常驻 CPU 内存，其余按需从磁盘换入，把 shadow 执行额外的内存开销降低 34.3%。**
+  - 数字：内存开销降低 34.3%；outlier 仅占 0.1%-0.3% 通道；<3% 通道贡献 >80% outlier
+  - 机制：activation outlier 极稀疏且集中在固定「热通道」；系统只在 CPU 内存保留热通道对应的 MatMul 权重，冷通道 outlier 权重放磁盘、命中时(罕见)按需换入，且换入可与 NPU 上原算子执行 overlap 隐藏延迟。
+- **Shadow outlier execution 为在 CPU 上并行执行 outlier，需要为每个 MatMul 权重在 CPU 内存额外保留一份拷贝，使内存占用最多增加约 2 倍。**
+  - 数字：内存占用最多约增加 2x（almost 2 times）
+  - 机制：移动 SoC 虽为统一内存芯片，但 CPU 与 NPU 使用相互隔离的地址空间，因此 outlier 的浮点 MatMul 权重必须在 CPU 侧复制一份，才能与 NPU 的整数 MatMul 并行。
+- **剪除 top 85% 最不重要层的 activation outlier 后，可完全消除 CPU 与 NPU 之间部分和(partial sum)的同步开销，且精度损失 <1%。**
+  - 数字：剪除 85% 不重要层 outlier；同步开销原本占端到端延迟 29.7%、能耗 20.1%（Qwen1.5-1.8B）
+  - 机制：以 outlier 与量化 scale 的比值衡量各层 outlier 重要性，离线 profiling 后剪除靠近中间、影响小的层的 outlier，从而免去这些层 CPU(浮点 outlier)与 NPU(整数 MatMul)结果做浮点求和同步。
+- **Out-of-order subgraph execution 把 CPU/GPU 浮点算子造成的 NPU 执行气泡率从朴素 overlap 的 37% 降到 0.7%。**
+  - 数字：关键路径气泡率 37% → 0.7%
+  - 机制：在 chunk 与 subgraph 两级打破原 prompt 的 chunk 顺序，允许任意 input-ready 子图乱序执行(如第三 chunk 的 C3-Graph1 在 C2-Graph1 完成后即执行)；用微秒级在线启发式调度，优先选择对减少 NPU stall 影响最大的子图填补 CPU/GPU 浮点算子留下的气泡。
+- **llm.npu 相比竞品基线在 prompt 长度 1024 时 CPU 快 7.3-18.4x、GPU 快 1.3-43.6x，能耗降低 1.9-59.5x，精度损失 <1%。**
+  - 数字：CPU 7.3-18.4x、GPU 1.3-43.6x 加速；能耗降 1.9-59.5x；精度损失 <1%
+  - 机制：综合 chunk-sharing graph(减图构建)、shadow outlier execution(NPU 整数 MatMul + CPU 浮点 outlier 并行)、out-of-order subgraph(填补气泡)，把 prefill 主体压到 NPU 整数算力上执行。
+- **llm.npu 是首个在 COTS 移动 NPU 上对 billion-sized 模型实现 >1000 tokens/sec prefill 的系统，端到端(prefill+decode)相比基线加速 1.4-32.8x。**
+  - 数字：>1000 tokens/sec prefill；端到端 1.4-32.8x；整体 prefill 22.4x、能耗 30.7x
+  - 机制：针对 prefill 占端到端延迟 88.3%-98.8%(CPU)、54.2%-91.7%(GPU) 的瓶颈，用 W8A8 per-tensor 量化 + NPU 整数加速，把长上下文(1168-1835 tokens) prefill 从 compute-bound 转到高吞吐 NPU。
+
+## llama.cpp mmap() weight loader (Justine Tunney et al., 2023-04)  （Justine Tunney(llama.cpp/ggml 贡献者工程博客) 2023）
+https://justine.lol/mmap
+
+- **用 mmap() 替换 C++ 标准 I/O 加载权重后，LLaMA 加载速度提升约 100 倍且内存占用减半。**
+  - 数字：加载快 100x，内存占用降至原来的 1/2
+  - 机制：mmap() 把磁盘上的权重直接映射到目标内存地址（要求磁盘布局与运行时内存布局一致），避免了 read()+memcpy 的整份拷贝；无需复制页即可让权重可用。
+- **用 MAP_SHARED 映射只读权重后，同一台机器上多个独立 llama.cpp 进程可同时运行并共享同一份权重内存。**
+  - 数字：单台 Mac 上 4 个独立进程/聊天机器人并行（无量化内存节省数字，但共享后不重复占用）
+  - 机制：只读权重用 MAP_SHARED 映射（与加载可执行程序相同的技术），多个进程映射同一文件时物理页由内核页缓存共享，不为每进程复制。
+- **mmap 避免拷贝页后，加载一个 20GB 模型所需 RAM 从约 40GB 降到约 20GB（另需约 8GB 非权重内存）。**
+  - 数字：20GB 模型：40GB → 20GB（+约8GB 其他）；可安全加载 2x 更大的模型
+  - 机制：旧路径把权重从文件缓存复制到进程私有内存，复制内存与内核文件缓存争抢，触发缓存驱逐；mmap 让权重页与文件缓存是同一份，消除双份占用。
+- **加载改进是分摊成本：首次（重启后）从磁盘加载仍慢，之后每次加载因页缓存命中而快，直到内存压力驱逐文件缓存。**
+  - 数字：Linux 约 100x、Windows/MacOS 约 10x 的加载提升（仅对缓存已热的后续加载）
+  - 机制：mmap 依赖内核页缓存：冷启动需 demand paging 从磁盘读入；热缓存下重复启动直接映射已缓存页，token 近乎瞬时产出；缓存被驱逐后退化。
+- **最初把 mmap 藏在自定义 std::ifstream 里、read() 改为 memcpy 的方案只带来约 18% 的加载延迟改善，远低于真正零拷贝方案。**
+  - 数字：std::ifstream+memcpy 方案：约 18% 加载延迟改善（对比最终 100x）
+  - 机制：该方案仍做一次 memcpy 拷贝，未消除复制；真正收益来自完全不拷贝、让磁盘布局等于内存布局，从而直接映射。
+- **内存降低后可在受限端侧设备上运行更大模型，例如 4-bit 量化的 LLaMA-30B 约 20GB，可在 32GB RAM 的 PC 上舒适运行，13B 可跑在旧安卓手机上。**
+  - 数字：LLaMA-30B 4-bit 量化约 20GB / 32GB RAM PC；LLaMA-13B 跑在旧 Android 手机
+  - 机制：mmap 免拷贝叠加 4-bit 量化，把权重物理内存需求压到设备可承受范围，使端侧设备无需两倍 RAM 即可承载模型。
+- **权重可直接映射的前提是磁盘上的张量布局必须与运行时内存布局完全一致，否则需要重排张量与序列化 STL 结构。**
+  - 数字：无量化数字（旧加载路径含 200k+ 行张量搬移日志，如 moving 0x640 bytes ...）
+  - 机制：旧 C++ 加载在读入后 reshape 张量并填充 STL 容器；为实现可映射文件需重新设计文件格式，使磁盘布局=内存布局，免去加载期搬移。
+
+## LLMS (LLM-as-a-Service on Mobile Devices)  （arXiv (北京大学等) 2024）
+https://arxiv.org/pdf/2403.11805
+
+- **相比传统 App 级内存管理(LMK)或整体磁盘换入换出，LLMS 把 LLM 上下文切换延迟降低最多 2 个数量级；相比 SOTA chunk 化 KV Cache 系统 vLLM(静态 8-bit 量化)，最多 20×、平均 9.7× 降低切换延迟，且 6 数据集上无可察觉精度损失。**
+  - 数字：vs LMK/整体换出：最多 2 个数量级；vs vLLM(8-bit)：最多 20×、平均 9.7× 切换延迟降低；6 数据集无精度损失
+  - 机制：把 KV Cache 沿 token 维切成 chunk(各层同 token 数为一个内存块)，chunk 独立压缩、独立换入换出；三技术协同(容忍度感知压缩+换入重算流水线+LCTRU 生命周期管理)在紧内存预算下最小化上下文切换开销
+- **容忍度感知压缩按 chunk 的信息密度(基于 attention 分数，被更多 token 关注的 chunk 信息量更高)差异化决定压缩率，在满足 OS 配置的全局平均压缩比下，比对所有 chunk 统一静态量化的方法多获得约 2× 压缩比且精度几乎无损。**
+  - 数字：同精度下压缩比比静态量化高约 2×；对比静态激进量化：4-bit/2-bit 全量化精度损失最高达 59%/99%
+  - 机制：以 attention 分数衡量每个 chunk 的信息密度，对信息量低的 chunk 更激进量化(2-bit)、对信息量高的 chunk 保守量化(8-bit)，chunk 级压缩比取自 {8/8,4/8,2/8}，全局压缩比 50%
+- **在移动设备上重算(recompute)一段 LLM 上下文的代价远高于一次解码，使得‘杀掉上下文再重算’不可行：MI14 上重算 Llama2-7B 的 4k 上下文需 22.92 秒(能耗 94.51 J，约等于看 1 分钟 YouTube)，而解码单个 token 仅 0.05 秒。**
+  - 数字：重算 4k 上下文 22.92 s / 94.51 J；解码单 token 0.05 s（MI14, Llama2-7B）
+  - 机制：KV Cache 作为中间激活可从 prompt 文本重算恢复，但重算需走一遍完整 prefill，代价随上下文长度线性放大；LLMS 因此优先换入换出+重算流水线而非纯重算
+- **单份 LLM 权重共享给所有 App(LLMaaS 只在内存保留一份权重)是必要的，因为按需加载权重的 I/O 会淹没生成过程：MI14 上加载 4-bit LLaMA-7B 权重耗时 4.76 秒，等于生成 95 个 token 的时间。**
+  - 数字：加载 4-bit LLaMA-7B 权重 4.76 s ≈ 生成 95 token；单个 4k Llama2-7B 上下文占用 >2GB(约为权重的 4 倍)
+  - 机制：OS 把权重常驻内存并作为系统服务共享，避免每 App 各持一份权重导致的内存爆炸与反复换入换出；权重静态、上下文(KV Cache)随活跃上下文数与窗口长度线性增长成为真正瓶颈
+- **换入-重算流水线通过对独立 chunk 同时用重算与 I/O 两条路径并发恢复到内存，充分利用硬件；chunk 生命周期管理用 LCTRU(最难压缩且最近使用)队列决定驱逐优先级，把换出提前(ahead-of-time)以隐藏切换时的内存回收时间。**
+  - 数字：无量化数字(机制性主张；单项贡献量化见消融)
+  - 机制：对交错(interleaved)的 chunk 在线重构位置编码与 causal mask 以支持乱序重算；LCTRU 优先换出‘重且最久未用’的 chunk 以利用时间局部性与重算流水线；callLLM 期间锁定上下文内存防止系统抖动
+- **消融显示三项技术均有非平凡贡献：Llama2、8 个活跃上下文、Markov 切换模式下，完整 LLMS 平均切换 0.27 秒；去掉 chunk 生命周期管理升至 0.62 秒，去掉容忍度感知压缩升至 0.42 秒，去掉换入-重算流水线升至 1.62 秒。**
+  - 数字：完整 0.27 s；-生命周期管理 0.62 s；-容忍度压缩 0.42 s；-换入重算流水线 1.62 s（Llama2/8上下文/Markov）
+  - 机制：换入-重算流水线贡献最大(1.62→0.27，约 6×)，其次 chunk 生命周期管理(0.62→0.27)，再次容忍度感知压缩(0.42→0.27)
+- **给定延迟约束下 LLMS 支持的并发活跃上下文数显著多于基线：10ms 约束、1/2/3GB 内存预算下分别支持 4.32/10.72/16.32 个活跃上下文(比基线高 1.99×/2.48×/2.85×)；25ms 约束下支持 9.28/19.34/27.38 个(高 4.16×/3.62×/3.57×)。**
+  - 数字：10ms：4.32/10.72/16.32 上下文(1.99×/2.48×/2.85×)；25ms：9.28/19.34/27.38 上下文(4.16×/3.62×/3.57×)；256–4096 最大长度下多 2.24×–3.73× 上下文
+  - 机制：chunk 级压缩降低每上下文足迹 + 提前换出/换入重算隐藏切换开销，使同一 DRAM 预算内可时分复用给更多活跃上下文
+- **LLMS 作为系统服务对 LLM 推理本身的性能影响可忽略(<5%)，且在高低不同服务调用频率(Poisson/请求间隔)下切换延迟稳定；chunk 大小存在最优值，实验取 16 token。**
+  - 数字：对推理性能影响 <5%；chunk 最优=16 token(过大冗余重算、过小无法打满磁盘带宽)
+  - 机制：上下文内存管理与推理解耦、异步 I/O 线程与计算线程流水;chunk 粒度在 token 级利用率与 I/O 带宽间取平衡
+
+## DynaKV  （arXiv 2025）
+https://arxiv.org/abs/2511.07427
+
+- **在 32K 序列长度下端侧 KV Cache 体积已逼近甚至超过模型权重本身，构成端侧长序列解码的内存瓶颈动机**
+  - 数字：Llama3.2-1B：KVCache 1.1GB 达权重 1.2GB 的 91.7%；Llama3.2-3B：KVCache 3.8GB 达权重 3.2GB 的 118.8%
+  - 机制：KV Cache 随序列长度线性增长，GQA 也无法阻止其体积在长序列下与权重同量级，端侧有限 DRAM 无法全驻留，必须分层到闪存
+- **DynaKV 将 KV Cache 虚拟化到 DRAM 与闪存两级存储，用检索式（簇级 top-k）方式仅换入相关簇，实现端到端加速**
+  - 数字：端到端延迟平均加速 1.47×（对 SOTA），较 naive 无簇基线 2.00×；精度平均提升 1.38×；能耗降低 1.57×
+  - 机制：把 KV 分簇存于闪存，解码时按查询检索少量相关簇换入 DRAM 计算注意力，基于 llama.cpp + io_uring 异步传输，CPU 后端
+- **迁移无关的簇自适应分裂通过延迟分裂策略，在解码分布漂移时分裂簇而不引入额外闪存传输**
+  - 数字：I/O 传输量最多降低 2.32×；新条目在内存缓冲（可缓冲至 16 条）直到簇被检索入 DRAM 时才分裂
+  - 机制：以簇内方差为有效性指标，超过 head-specific 阈值触发分裂；对驻留闪存的簇推迟分裂，仅当其被检索入 DRAM 时才就地分裂，避免为分裂而额外读写闪存
+- **以连续性为中心的闪存布局通过相关性放置（簇内连续、频繁共检索簇对相邻）提升闪存有效带宽**
+  - 数字：平均连续访问长度从严格顺序的 7.9 条提升到 25.3/40.8 条（最大 68 条）；有效带宽较无簇 2.10×、较 PQCache 1.83×、较 ClusterKV 1.56×
+  - 机制：利用簇内相关性把簇内条目连续存放，利用簇间相关性用邻接矩阵记录共检索频率、把常共同检索的簇对相邻放置，将随机 I/O 转为连续 I/O
+- **双头（dual-head）簇布局为相关簇对分配专用闪存池、两簇从两端向内增长，使追加和分裂无需数据置换**
+  - 数字：相比 naive 逐簇布局数据搬移量减少超过 10^4 倍，存储开销极小
+  - 机制：每个相关簇对占用一段专用闪存空间，两个簇背靠背从相反两端向中间增长，为追加新条目和簇分裂预留空间，避免更新时整体重排
+- **内存高效缓存设计用双流水线虚拟化 DRAM+闪存空间并采用簇对齐替换策略隐藏 I/O 延迟**
+  - 数字：缓存内存占用降低 2.22×（层级粒度）；相比标准 LRU 命中率提升带来 1.12× 加速
+  - 机制：流水线1把簇代表传输与 QKV 投影计算重叠、流水线2在当前层计算时预取下一层 KV；替换策略优先保留小簇（边际收益高）和近期更新簇（短期相关性强），替代条目级 LRU
+- **DynaKV 性能随序列长度近线性扩展且在多款真实手机与多模型上验证**
+  - 数字：序列长度 1K-16K 近线性扩展；测试机含骁龙 8 Elite/Gen3/Gen2/8+Gen1（UFS 4.0/3.1）；模型 Qwen2.5-1.5B/3.1B、Llama3.2-1.2B/3.2B、Mistral-7.8B；新增 17 个算子、5500+ 行 C++
+  - 机制：基于 llama.cpp CPU 后端、Linux io_uring 异步传输、多线程 K-Means 聚类，在 GQA 模型上做簇级检索换入换出
+
+## agent-memory (Persistent Q4 KV Cache)  （arXiv 2026）
+https://arxiv.org/pdf/2603.04428v1
+
+- **将每个 agent 的 KV cache 以 4-bit 量化格式持久化到磁盘并在恢复时直接重载入注意力层，可消除重新预填充所需的 O(n) 计算，把首 token 时延最多降低 136×。**
+  - 数字：TTFT 降低最高 136×（Gemma 4K–32K 为 22–136×；DeepSeek 11–76×；Llama 24–111×@4K–16K，1K 时 3–10×）；Gemma 4K 冷启动 15.7s → 暖启动 577ms
+  - 机制：KV cache 以 uint32 打包 + bfloat16 scale/bias 的 safetensors 格式落盘；agent 被换出时不重算，恢复时通过 mx.load() 直接重载，用 I/O 受限的 cache reload 替换 compute 受限的 prefill
+- **Q4（4-bit）量化的 KV cache 相比 FP16 每 token 内存占用降为 0.281 倍，使同一固定内存的设备能容纳约 4× 更多的 agent 上下文。**
+  - 数字：Q4/FP16 = (1+8/g)/4 = 0.281（g=64），即 72% 内存节省；M4 Pro 10.2GB 预算下 8K 上下文 FP16 只能放 3 个 agent，Q4 可放 12 个；4K 时 6 vs 24
+  - 机制：每元素打包为 4bit，每 64 元素组附加一个 bfloat16 scale 和 bias，per-layer hdn(1+8/g) 字节；mlx-lm 的 quantized_scaled_dot_product_attention 直接在 Q4 张量上做注意力，无需反量化整块
+- **由于多 agent 工作流天然交错（一个 agent 解码时下一个正在加载），约 500ms 的磁盘 cache 重载时延可隐藏在前一个 agent 的 decode 阶段之后，实现内存的时分复用。**
+  - 数字：暖重载 ~500ms 隐藏在前一 agent decode 之后；Gemma 4K 暖 577ms、热 719ms；32K 时因 cache 文件超 3GB 磁盘 I/O 反超（热 1264ms vs 暖 1819ms）
+  - 机制：ConcurrentScheduler 在 agent 间交替：prefill 分块（默认 512 token）并交错 decode 步；block pool 在内存与磁盘间分页 cache，agent 看到的是无界虚拟内存的注意力状态
+- **基于固定大小 block（256 token）按 agent ID 分区的 block pool 提供 per-agent 隔离的持久化 cache，可在服务器重启、模型换入换出、并发推理下不损坏或混淆 cache 状态。**
+  - 数字：block 大小 256 token；服务器重启后 cache 仍在磁盘存活、TTFT 保持暖 cache 水平（Gemma 4K 431ms）；对比 vllm-mlx 的 FP16 prefix cache 重启即全部丢失回退冷 prefill
+  - 机制：每 agent cache 由 AgentBlock（layer→KVBlock 列表）构成，safetensors 独立可寻址；block pool 在数据结构层强制命名空间隔离，ModelCacheSpec 抽象出层数/KV 头数/头维等参数做到模型无关
+- **Q4 量化持久 cache 在多 agent 内存压力下仍可用，而 FP16 prefix cache 会因累积状态超出 cache 预算被逐出，在 8K 以上开始失败、16K 完全失败。**
+  - 数字：vllm-mlx FP16 在 4K 起 prefix cache 因逐出而失败，16K 完全无输出（OOM）；agent-memory Q4 在同 token 量仅占 ~2.9GB，所有上下文（最高 32K）均完成；4K 暖 Q4 290ms 反快于 FP16 348ms（读 4× 小文件抵过反量化开销）
+  - 机制：FP16 KV 每 token ~128KB（Llama 8B），N agent × C token 线性增长撑爆 9.6GB 预算；Q4 同 token 仅占 1/4，落盘持久化使暖 cache 跨重启/逐出/内存压力存活
+- **跨阶段上下文注入把 KV cache 当作跨会话阶段累积的持久工作内存，多阶段 agent 工作流后期阶段重载比重新预填充快，随阶段数增加收益增长。**
+  - 数字：5 阶段囚徒困境场景 Phase 5 重载比 re-prefill 快 1.9×（Gemma）/1.3×（DeepSeek）；总墙钟时间降 23%（Gemma 72.9s→56.1s）/17%（DeepSeek）；Wikipedia 路由 warm/cold 加速 24.2×（Gemma）
+  - 机制：结构化 prompt 模板强制单调 cache 扩展——每阶段只追加不替换，故缓存前缀始终 EXTEND-match 命中；字符级原始 prompt 比对（EXACT/EXTEND/DIVERGE，50% 前缀阈值）避免 BPE tokenization 上下文相关导致的 token-ID 匹配失效
+- **批量量化推理让两个 agent 的 decode 步在单次 Metal kernel 分派中作为合并 batch 张量执行，以每 agent 吞吐小幅下降换取 Agent B 立即开始生成。**
+  - 数字：batch=2 达 22.6 SysTPS 但每 agent 11.2 TPS，相比 batch=1 的 13.2 每 agent 下降约 15%；DeepSeek 4K 暖 batch=2 达 52.6 SysTPS（每 agent 26.3）
+  - 机制：BatchQuantizedKVCache 的 merge（左填充+堆叠）/update_and_fetch/extract 三操作；因 MLX 非线程安全（单调度线程 + mlx_io_lock 的 RLock），采用时间片协作而非真并行，GPU 在单前向 pass 处理合并 batch
+- **Q4 量化 KV cache 对模型输出质量的影响在测量噪声范围内，未因换出换入的量化持久化引入明显精度损失。**
+  - 数字：perplexity 变化：Gemma −0.7%（测量噪声内）、Llama +2.8%、DeepSeek +3.0%，与既有 Q4 量化文献一致
+  - 机制：KV cache 全程保持 Q4 格式（磁盘/内存/注意力三处一致），attention 直接在量化张量上计算，避免多次量化-反量化累积误差
+
+## arXiv  （arXiv 2025）
+https://arxiv.org/pdf/2512.03608
+
+- **KVNAND 将模型权重与 KV Cache 全部存放并就地计算于 compute-enabled 3D NAND flash 中，实现完全无 DRAM 的端侧 LLM 推理，其解码吞吐相对 DRAM 版 IFC 设计取得 1.98×/1.94×/2.05× 的几何平均加速（128/1K/10K token 上下文）。**
+  - 数字：1.98×/1.94×/2.05× 几何平均解码加速（128/1K/10K token）；相对 SoTA DRAM-based IFC 最高 2.3× 加速（10K）
+  - 机制：IFC（in-flash computing）不仅覆盖权重相关 GEMV，还扩展到 KV 相关 GEMV（Logit/Attend），把所有 memory-bound 算子（QKV 生成、Logit、Attend、O 投影、FFN 的 FC）下放到 flash 的逻辑 die 就地执行；NPU 只负责 Softmax/RoPE/Norm 等非线性算子，从而彻底消除权重与 KV 在 flash↔DRAM/NPU 间的数据搬运。
+- **在 100K token 长上下文下，KVNAND-D 相对 naive KV-in-flash 基线（Base-2）取得 5.2×/6.8×/4.0×/2.5×/2.1× 的解码提速（OPT-30B/LLaMA2-7B/LLaMA3.1-8B/LLaMA3.1-70B/Mixtral-8×7B），且完全解决了 DRAM 基线（Base-1）在 100K 出现的 OOM 失败。**
+  - 数字：100K 上下文提速 5.2×/6.8×/4.0×/2.5×/2.1×；Base-1 在 100K 全部 OOM，KVNAND 无 OOM
+  - 机制：把 KV Cache 存入大容量 flash（3D NAND 单 die 16GB，约 1/5 于 DRAM 成本），并用访问感知的 block 分配与页级映射规避 flash 高延迟；naive 替换 DRAM 会因 flash 内部 μs 级 program/read 延迟（vs DRAM ns 级）严重掉速，KVNAND 通过对齐 flash page 粒度与 KV 访问模式来消除该惩罚。
+- **KVNAND 相对 DRAM-based IFC 减少 69% 的内存（KV 存储）成本，8 通道 8-die（4+4）配置下权重+KV 的 flash 成本约 92.16 美元，而用 LPDDR5 存放等量 KV 需 295.68 美元（2× 以上）。**
+  - 数字：内存成本降低 69%；flash $92.16 vs LPDDR5 $295.68（>2×）；SLC-mode flash $0.72/GB vs LPDDR5 $4.62/GB
+  - 机制：以 SLC-mode 3D NAND flash（YTMC 128-layer TLC 转 SLC，$0.52/GB 原料，计入 1.22× 面积与 2× hybrid-bonding I/O 开销及 58% 良率后 $0.72/GB）替代昂贵 LPDDR5 DRAM 来承载 KV Cache 与权重，逻辑 die 复用 flash 外围电路，增量面积 <3%/die。
+- **KVNAND-D 采用 Group1(权重+QKV/O/FC)/Group2(KV Cache+Logit/Attend) 的离散 die 分组与 head-group 流水并行，使 QKV 生成与 self-attention 在 G1/G2 两组 IFC die 上解耦流水执行，隐藏执行延迟；消融显示 HG 并行使 10K 上下文延迟最低降至基线的 82.4%。**
+  - 数字：HG 并行使延迟最低降至 82.4%（10K 上下文，去除 dataflow 优化的基线归一化）
+  - 机制：以 head group（HG=1 个 KV 对+其关联 Q heads，如 LLaMA3-8B h=32/k=8 → 每 HG 含 1 KV 对+4 Q heads）为流水粒度，G1 die 完成一个 HG 的 QKV 生成（步骤❶权重读+❷GEMV）后立即启动下一 HG，同时 G2 die 对已生成 HG 执行 self-attention GEMV，实现权重读、KV 写回与 attention 计算的时间重叠。
+- **KVNAND 提出页级 KV Cache 映射方案，将同一 layer/head 的 KV 连续写入 flash page，对齐 flash 的 page 级访问粒度；在 100K token 下使 MHA-30B 模型花在 flash 读上的注意力延迟占比降至仅 1.9%（相对无映射设计）。**
+  - 数字：100K 上下文下注意力 flash 读延迟占比降至 1.9%（MHA-30B，vs 无映射）
+  - 机制：无优化时 KV 按生成顺序写入，单个 page 混杂不同 layer/head 数据，而 attention 只需同一 layer/head 的多 token KV，导致空间局部性差、页读放大；映射方案借助片上 KV buffer 把同 head-group 的 KV 累积满一页再写回 flash（HP 生成使每 plane buffer 需求降低 k 倍），提高页命中率、减少冗余页读。
+- **KVNAND 通过 head-parallel KV 生成与权重/KV die 分离，显著降低 flash 读扰动（read-disturbance）导致的可靠性压力：KVNAND-C 头并行使单 block 最大页读计数降低约 128×，KVNAND-D 权重/KV die 分离进一步实现约 2560× 的 PGRD（累计页读）降低。**
+  - 数字：KVNAND-C ~128× 页读降低；KVNAND-D ~2560× PGRD 降低；65B 模型 3 tokens/s 连续 5 年约 143TB KV 写入，仅约 1K P/E cycles（远低于 SLC 100K 预算）
+  - 机制：KV 熵在 flash 中被每个后续解码步反复读取，读次数正比于输出长度，naive 设计单 block 页读可达 4×10^6 超过 10^6 扰动上限；头并行让一次 KV 读服务多个 Q head（GQA h/k 复用），权重与 KV 分置不同 die 避免权重页读叠加，再配合周期性 reclaim 与 FTL 迁移平衡磨损。
+- **现代 3D NAND 的 per-die 外部带宽已快速逼近 DRAM，从 3.6 GB/s(ONFI 5.2) 提升到 4.8 GB/s，接近 LPDDR5X DRAM 的 8 GB/s；KVNAND 正是利用 flash 更高的内部带宽（Lincoln 架构 32 GB/s 内部读带宽）来承载 memory-bound 的 KV 与权重算子。**
+  - 数字：NAND per-die 外部带宽 4.8 GB/s（vs DRAM 8 GB/s）；flash 内部读带宽 32 GB/s；NPU 配置 32 TOPS BF16/4.60W + 5MB KV buffer
+  - 机制：单批自回归解码算术强度极低（≈1 OPS/Byte FP16），decode 阶段 GEMV 为 memory-bound，data movement 占 decode 延迟 >90%；IFC 把算子放到 flash 逻辑 die，用 flash 内部高带宽替代受限的外部 I/O 带宽，避免把大批 KV 搬到 NPU。
+- **KVNAND 在能效上相对 DRAM-based IFC 取得 1.17×/1.32× 几何平均能效提升（10K/30K token）；10K 下相对 Base-1 能耗降至 0.75×(LLaMA2-7B)/0.98×(LLaMA3.1-70B)，100K 下相对 Base-2 进一步降至 0.46×/0.83×。**
+  - 数字：1.17×/1.32× 能效提升（10K/30K）；能耗 0.75×~0.98×（10K vs Base-1）；0.46×~0.83×（100K vs Base-2）
+  - 机制：IFC 就地计算消除了 KV Cache 数据的重复搬运（flash 访问能耗 4.9 pJ/bit 外部接口、3 pJ/bit 内部读，DRAM 7.0 pJ/bit），GQA 模型因 KV head 数少进一步减少长上下文搬运能耗，flash 写能耗则通过多 token 累积后一次写回被摊薄。
+
+## DUAL-BLADE  （arXiv 2026）
+https://arxiv.org/pdf/2604.26557
+
+- **DUAL-BLADE 相比基线 FlexLLMGen 将端到端预填充延迟最多降低 33.1%、解码延迟最多降低 42.4%，同时把 SSD 利用率最多提升到 2.2 倍。**
+  - 数字：Prefill 延迟 -33.1%、Decode 延迟 -42.4%（SSD A/OPT-6.7B）；SSD B 上 prefill -25.4%、decode -11.7~57.8%；SSD 利用率最高 2.2×
+  - 机制：双路径 KV 驻留：将各隐藏层 KV 张量按可用 page-cache 预算用旋钮 X∈[0,Bpc] 划分为 Group1（page-cache 路径）与 Group2（NVMe-direct 路径），既避免 decode 阶段的 page-cache thrashing 又避免 prefill 阶段的 write stall。
+- **在受限主机内存下，朴素 mmap/page-cache 卸载会在 2–7GB 区间发生 page-cache thrashing，命中率从 42% 断崖式跌到 <1%。**
+  - 数字：命中率 42% → <1%；thrashing 区间 2–7GB；decode 占端到端 82–89%，其中磁盘 I/O 占 decode 的 56–69%
+  - 机制：decode 的自回归重复读取不断增长的 KV 工作集，当 page-cache 小于工作集（8.57–9.11GB）时 LRU 触发级联驱逐，被读张量互相驱逐后需重读，暴露磁盘 I/O 为主瓶颈。OPT-6.7B、512-token prompt、32-token 生成、batch 32。
+- **NVMe-direct 路径通过 io_uring_cmd 绕过内核存储栈，把 256KB decode-write 的单张量 I/O 延迟降低超过 98%。**
+  - 数字：decode-write 单张量延迟 4.91ms → 0.06ms（SSD A，>98% 降低），两块 SSD 均如此；tail 延迟对比见 Table I
+  - 机制：kernel-bypass 通道用设备原生 NVMe 命令（io_uring_cmd/可扩展至 SPDK）绕过 VFS/文件系统/block 层；256KB 写作为单条 NVMe 命令直接跑满设备（100% busy），消除了基线中主导延迟的软件栈开销。
+- **NVMe-direct 路径显著提高设备利用率与实测吞吐：预填充写利用率提升 2.2×，解码读吞吐相对基线提升 120%（2.20×）。**
+  - 数字：SSD A prefill-write busy 44.79%→100%（2.2×），decode-read 吞吐 +120%（2.20×）；SSD B prefill-write +43%、decode-read +88%（1.88×）
+  - 机制：顺序 LBA 放置（sequential-LBA placement）把 Group2 张量映射到连续逻辑块地址区间，保持 NVMe 控制器看到的干净顺序流，减少 FTL/控制器调度开销，用单线程即可饱和 SSD 顺序带宽。
+- **顺序 LBA 放置使写放大因子（WAF）接近 1，GC 开销可忽略。**
+  - 数字：WAF ≈ 1；GC 开销 negligible（Fig.13 LBA 全程严格顺序）
+  - 机制：KV 工作负载天然为大顺序写（prefill）+大顺序读（decode）、无覆盖写、张量不并发共享；NVMe-direct 把应用级顺序性无失真下传到设备 LBA，TRIM/DSM 在上下文拆卸时快速回收连续 LBA 区间避免碎片化。
+- **自适应流水线并行（overlap-cross 交错启动）通过重叠 GPU DMA 与存储 I/O 进一步降低解码延迟。**
+  - 数字：SSD A 额外降 7–9%，SSD B 额外降 3–5%；overlap-cross 把 Group1 吞吐从 11.93GB/s 提升到 13.13GB/s（α=0.5）
+  - 机制：多 copy-thread 下动态在 overlap-intra（同硬件路径内并行）与 overlap-cross（跨 NVMe 读与 GPU DMA 交错，尾线程错峰启动）间选优；因单 copy-thread 已能饱和 SSD 顺序带宽，overlap-cross 用独立硬件资源隐藏尾部 I/O 延迟。
+- **在四个后台数据整理（data wrangling）长上下文任务上 DUAL-BLADE 相对基线降低推理延迟，最优达 0.85×。**
+  - 数字：DI:Buy 降到 0.85×；EM/Walmart-Amazon 0.89×；ED:Hospital 因 KV(1.58GB) 可完全放入 page-cache 故 1.00× 持平；4GB 主机内存限制、batch 32、OPT-6.7B
+  - 机制：长上下文（200–744 token）、短输出（3–10 token）使 KV Cache 超出 page-cache，双路径把溢出张量路由到 NVMe-direct，同时对小 KV 场景退化为纯 page-cache 无损。
+
+## HillInfer  （arXiv 2026）
+https://arxiv.org/pdf/2602.18750
+
+- **HillInfer 在商用 AIPC 上相较 SOTA 基线实现最高 8.56× 端到端推理加速，且不损失生成质量。**
+  - 数字：加速比 4.21~8.56×；端到端延迟降低 76.25%~88.32%；准确率与 Full Cache 基线相当（COPA/RTE/PIQA/OpenBookQA 曲线基本重合）
+  - 机制：把 KV token 重要性评估下沉到 SmartSSD 板载 FPGA 做近数据处理（NDP），仅回传轻量重要性分数向量而非原始 KV 数据，消除标准 SSD 卸载中 KV 反复过 PCIe 的 I/O 抖动；上下文越长加速越显著
+- **标准 SSD 卸载方案下，长上下文动态驱逐会触发严重的主机-存储 KV 乒乓抖动，占比高达 KV 总量的 20%~50%。**
+  - 数字：OPT-6.7B/PG-19 剖析：平均 20%~50% 的 KV 在 host DRAM 与 SmartSSD 之间反复迁移；12K 上下文下仅搬运 20%~30% KV 做 token 评估的传输就可超 2000ms
+  - 机制：token 重要性是查询相关（query-dependent）的，第 t 步被驱逐到 SSD 的 KV 在 t+1 步可能又变关键，naive 存储管理策略导致频繁 ping-pong；测得 SmartSSD 侧带宽仅约 3.2 GB/s（PCIe 3.0）远低于 CPU 侧约 31.5 GB/s
+- **双向热/冷缓存池 BKP 通过时序感知 pinning 与频率感知跟踪，把高命中 token 固定在 CPU DRAM 热池，抑制跨设备抖动。**
+  - 数字：静态锁定最近 α·N 步的 KV 于热池，α 典型取 10%~20%；剖析显示新生成 token（时序局部性）与少量'注意力沉降'token（稳定高命中率）主导访问；缓存命中表仅 2N 字节，相对 KV 足迹可忽略
+  - 机制：热池=CPU DRAM（Hot Pool），冷池=SmartSSD NAND（Cold Pool）；三机制：时序感知 pinning 锁定近期 token、频率感知跟踪保留全局 top-α 关键 token、后台双向升降（冷池 token 突破 top-α 阈值即提升、热池最低秩等量降级）
+- **自适应预取流水线 APP 用解析式延迟模型动态求解 CPU 热池与 SmartSSD 冷池的容量比 β，实现 I/O-计算完美重叠、掩盖异构落后者效应。**
+  - 数字：β = M_c/M_s ≈ B_c·f_c(B_s+α·f_s) / (B_s·f_s(B_c+α·f_c))，约束 M_c ≤ M_0（主机内存上界）；令 CPU 路径延迟 T_CPU 与 SmartSSD 路径延迟 T_SmartSSD 相等；批大小 10 时延迟稳定在 25s 以内，而 H2O-like/Prefetch 基线超 50s
+  - 机制：多核 CPU（约 40.32 TFLOPS）与 SmartSSD FPGA（约 0.8 TFLOPS）算力/带宽悬殊，naive 划分工作负载会使快处理器空转等待；APP 按两设备处理吞吐 f_c/f_s 与 PCIe 带宽 B_c/B_s 解析地分配 KV 评估量，并加经验偏斜校正
+- **CSD 评估配置 CEC 剥离 softmax、只在 FPGA 上算原始 Q·K^T 内积并用 INT8/INT4 非对称精度算分，绕开弱 FPGA 的算力/逻辑瓶颈而不损精度。**
+  - 数字：SmartSSD FPGA 为 Xilinx KU15P（约 0.8 TFLOPS、约 3.2 GB/s）；只把 1×d 的 Query 钉在 FPGA BRAM、流式处理 N×d 的 Key 矩阵；评估阶段动态把 FP16 Key 降为 INT8/INT4，选出 top-K 索引后仍取回原始未压缩 FP16 KV 送 GPU，故最终精度无损
+  - 机制：利用'驱逐只需对 token 排序、softmax 单调'的观察，去掉指数/除法等超越函数，仅保留全展开加法树的点积；HIE 把评估结果打包成 2n 半精度（4n 字节）Score Block 流式回传，传输延迟可被计算完全掩盖
+- **SmartSSD 的板载 P2P DRAM 缓冲使 KV 卸载完全绕过主机 CPU 与外部 PCIe 总线，让计算存储容量随设备数线性扩展。**
+  - 数字：NAND 与 FPGA 间经共享板载 DRAM 走内部 Peer-to-Peer（P2P）传输，走标准 PCIe/U.2 形态即插即用；对比：Llama-2-13B 32K 上下文原生 KV 需约 240GB，INT2(KIVI) 压缩后仍约 96GB，远超商用 PC 的 24GB VRAM+64GB DRAM
+  - 机制：SmartSSD 内部 PCIe 交换机在存储侧本地编排数据流，主机只经标准 I/O 接口管理设备；纯软件量化只能常数倍缩减（约 25%~60%）、KV 仍随上下文线性增长，无法根治内存墙
+
+## Don't Waste Bits! (Adaptive KV-Cache Quantization)  （arXiv 2026）
+https://arxiv.org/html/2604.04722v1
+
+- **按 token 重要性对每个 token 的 KV 表示分配 {2,4,8,16} 位可变精度，可在几乎不损精度的前提下降低解码延迟。**
+  - 数字：SmolLM-1.7B 上延迟降低 26.5%（2.15→1.58 ms/token）；SmolLM-360M(HellaSwag) 降低 17.75%；精度与 FP16 差距 ≤0.30 个点。
+  - 机制：token-wise 自适应精度分配：低重要性 token 用低位宽存 KV，高重要性 token 保留高精度，逼近信息论率失真下界 b*(x)=f(I(x))。
+- **用一个轻量 MLP 控制器从 token 级特征在线预测每个 token 的精度类别，开销可忽略。**
+  - 数字：控制器为 3 层 MLP、128 隐藏维、每 token 4 维特征（熵、稀有度、注意力方差、置信度）；推理开销 <1%。
+  - 机制：从前向传播中提取 token 级显著性特征（下一 token 分布熵、平滑自信息稀有度、注意力方差、置信度）→ 控制器输出精度类的软预测，无需改动模型架构。
+- **自适应量化在相同或更低延迟下优于静态 4-bit 量化和基于规则的动态策略。**
+  - 数字：SmolLM-360M(HellaSwag)：本方法 41.20% 精度/2.41 ms/token；静态 4-bit 33.60%/2.93 ms；规则动态 29.90%/3.21 ms。
+  - 机制：数据驱动控制器跨模型规模与数据集泛化，胜过手工启发式；对不同 token 匹配不同位宽而非一刀切均匀量化。
+- **控制器以多分量损失联合优化分类精度、延迟成本与质量保持，从而在精度-效率前沿上可微调优。**
+  - 数字：损失 L=α·L_ce+β·L_lat+γ·L_qual；延迟项按各精度类成本 c_k 加权；采用分层 80/20 训练-验证划分保持类别平衡。无独立加速比数字。
+  - 机制：对精度类的软预测使延迟成本与质量惩罚可微，端到端训练出精度-效率权衡的分配策略。
+- **自适应 KV 位宽分配的期望位宽显著低于均匀 16-bit，逼近 token 熵定义的下界，减少‘浪费的比特’。**
+  - 数字：期望位宽 E[b]_adaptive=Σp(x)·f_θ(x)；浪费量 W=E[b]−H(X)；相对均匀 16-bit 分配下降。无单一压缩比数字。
+  - 机制：借鉴 Huffman 编码变长最优性：常见/低影响 token 少给比特，信息量大的 token 保高精度，使平均位宽接近熵 H(X)。
+
+## LLM-aware buffer cache policy (host OS buffer-cache scheme for on-device LLM weight files; Kim/Lee/Bahn, Ewha Univ., Mathematics 2025)  （Mathematics (MDPI) 2025）
+https://doi.org/10.3390/math13223689
+
+- **在权重循环主导的端侧负载上,LLM-aware 策略的缓存命中率远高于通用 LRU,LRU 对单条长循环几乎无法获得循环级命中。**
+  - 数字：Text Embedder/Text Classification 上 LRU 在所有缓存尺寸下命中率恒定停在约 0.02,而 LLM-aware 随缓存增大升至约 0.38/0.34;AI Translate 上 LLM-aware 在约 2000 块缓存达约 0.8,LRU 在约 1700 块前恒为 0.1 才突跳
+  - 机制：在线把文件块序列分为 SEQ(一次性顺序扫描)/LOOP(权重循环)/HOT(常驻热集)三类;SEQ 最低优先级、有空位才机会性缓存,LOOP 从最小块号起 pin 到容量、短周期循环优先全 pin,HOT 保留专用区用 LRU 管理。LRU 会在循环块被复用前将其换出(循环 Belady 反常),导致零循环命中
+- **给出免 I/O 停顿的循环权重最小缓存尺寸模型,把循环大小、存储带宽、每 token 取数时限三者关联。**
+  - 数字：S ≥ max{0, ⌊N − BW×T⌋};默认 T=0.1s(由实测 Galaxy S22 上 8–12 tokens/s 即 80–125 ms/token 推得),块粒度 4KB,±20–30% 的 T 波动对预测性能影响可忽略
+  - 机制：S 为保留热集后可分给循环的缓存容量,N 为循环块数,BW 为持续存储带宽(块/秒),T 为非常驻块必须取回以避免停顿的允许时延;不满足则推理延迟正比于覆盖缺口
+- **按该模型推导 smartwatch 档硬件仅能承载极小权重循环,主流 LLM 无法本地运行。**
+  - 数字：64MB 缓存 + eMMC 有效约 100 MB/s + T=0.1s → 可持续循环 N≈(64−4)+(100×0.1)=70 MB;AI Notes(约 60MB 循环)、AI Translate(约 2MB 循环)可容纳,权重>500MB 的 SOTA LLM 不可行;热集(tokenizer/index)<4MB 须全保留
+  - 机制：将设备实测带宽与缓存预算代入公式(1),eMMC 5.x 标称 200–300 MB/s 但热/功耗下有效仅约 100 MB/s
+- **smartphone 档(UFS 4.0)可持续更大权重循环,支撑到 1–3B 参数模型。**
+  - 数字：6–8GB 主存中 512MB–1GB 可作缓冲缓存,256–512MB 专给循环数据,UFS 4.0 持续读 ≥1GB/s,T=0.1s → 可持续循环约 356–612 MB,对应 1–3 十亿参数模型
+  - 机制：公式(1)取 S=256–512MB、BW≥1GB/s;更大模型因循环距离长+大量顺序扫描发生抖动,须远端/边缘辅助
+- **该缓存策略每次访问及每块元数据均为 O(1) 开销,并在多数负载上以更低开销胜过机器学习型 LeCaR。**
+  - 数字：每访问 O(1)(邻接检查+集合成员查询+类别更新),换出 O(1),每块序列仅存起止块号+类别共几字节;AI Translate 上显著优于 LeCaR,Text Embedder/Text Classification 上整体更高且更稳定
+  - 机制：换出直接取 LRU 尾或最高块号,无需逐元素比较;LeCaR 用 LRU/LFU 双专家在线 regret 最小化训练,带来额外开销与命中率波动
+- **端到端取数延迟受存储带宽支配至约 500 MB/s,之后增益可忽略;而单长循环负载改为对缓存尺寸敏感。**
+  - 数字：实验设主存带宽 20 GB/s、基础时延 2µs、每 I/O 建立时延 50µs、持续读 100/200/500/1000 MB/s;AI Notes/Text Embedder/Text Classification 在约 500 MB/s 后带宽增益饱和,AI Translate 对缓存尺寸高度敏感(低带宽下随缓存增大延迟骤降)
+  - 机制：把数据取数延迟建模为缓存尺寸与存储带宽的函数;大单循环负载受带宽约束,小循环负载受缓存约束
+- **端侧 LLM 的文件 I/O 可分解为三种固定模式,与远端推理 app 截然不同;权重的主机缓冲缓存稳定,而 GPU 内 KV cache 对 prompt/会话敏感。**
+  - 数字：热集(tokenizer/metadata/index)<4MB;4KB 块粒度 strace 于 Galaxy S22/Android 14;端侧四 app 均现权重循环,远端四 app(Copilot/Perplexity/Claude/Gemini)以顺序访问为主、无循环;权重循环块被建议长驻,一次性扫描应尽快换出以免污染缓存
+  - 机制：文件块轨迹分析归纳三模式:初始化一次性顺序扫描、常驻小热集、权重文件循环;缓冲缓存主要由所选模型决定而稳定,KV cache 随 prompt 长度/会话变化
+- **端侧移动场景几乎不并发运行多个时延敏感 app,OS 由前台 app 独占缓冲缓存,故策略只做 app 内仲裁而非多租户共享。**
+  - 数字：无量化数字(定性:前台 app 主导,OS 需要时回收其他 app 内存)
+  - 机制：移动 OS 优先前台 app 并回收后台内存,缓冲缓存实际被前台 app 独占;策略聚焦 SEQ/LOOP/HOT 的 app 内分区仲裁,不考虑多租户资源共享
+
+## MEI4LLM (Mobile Edge Intelligence for Large Language Models: A Contemporary Survey)  （arXiv 2024）
+https://arxiv.org/pdf/2407.18921
+
+- **LLM 自回归解码的主要时延与能耗来自从内存/磁盘加载模型参数，参数换入换出可占推理时延的高达 90%。**
+  - 数字：参数加载最高占推理时延 90%
+  - 机制：解码为访存受限（memory-bound）过程：每次推理需动态释放已算参数、再从磁盘加载新参数进内存；计算相对廉价，瓶颈在权重搬运。
+- **投机解码（speculative decoding）可在保持生成质量的前提下将每 token 生成时延与能耗减半。**
+  - 数字：每 token 时延与能耗各降约 50%
+  - 机制：轻量小模型先并行生成候选序列，强大 LLM 一次前向验证整段候选，将原本每 token 一次的大模型权重加载（占约 90% 时延）摊薄到一次验证，减少大模型访存次数。
+- **不均匀权重量化可将 LLM 绝大多数权重从 FP16 降到 INT3/INT4，只对约 1% 关键权重保留 FP16，几乎不损精度。**
+  - 数字：约 99% 权重降至 INT3/INT4，约 1% 关键权重保留 FP16
+  - 机制：按权重对最终推理结果的贡献度分级，仅对显著（异常/关键）权重维持高精度，其余低精度存储，显著压缩驻留内存与加载体积。
+- **KV Cache 可通过合并高相似度的 key/value 将显存占用维持在固定预算内。**
+  - 数字：无量化数字（将 KV 内存控制在固定预算）
+  - 机制：MiniCache、Scissorhands 等方法识别并合并高相似度的 KV 表项、或按重要性淘汰，使 KV Cache 内存随序列增长时保持在设定上限。
+- **在小米 11 上用 llama.cpp 跑 INT4 量化的 13B LLM，能耗约 56 J/token，3000mAh/3.7V 电池仅够生成约 700 token。**
+  - 数字：约 56 J/token；单次充电约 700 token
+  - 机制：端侧算力/带宽受限下，13B 模型即便 INT4 量化，逐 token 的权重加载与计算仍带来极高单位能耗，电池容量成为硬约束。
+- **训练时用 Adam 优化器所需内存约为推理所需内存的 12 倍。**
+  - 数字：训练内存 ≈ 推理内存的 12 倍
+  - 机制：Adam 需为每个参数额外存储一/二阶动量与梯度、以及优化器状态，叠加激活值，使显存占用远超仅需权重+激活的推理。
+- **端-边分割推理（split inference）所需上行速率随模型架构从 80 Mbps 变化到 12 Gbps。**
+  - 数字：上行速率 80 Mbps ~ 12 Gbps（自动驾驶另需 10 ms 端到端时延）
+  - 机制：按 3GPP 需求，将神经网络在设备与边缘服务器间切分，切点处的中间激活需经无线上行传输，其数据率取决于切点特征图大小与模型结构。

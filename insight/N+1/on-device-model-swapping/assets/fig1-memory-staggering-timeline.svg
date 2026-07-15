@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="980" height="560" fill="#ffffff"/>
+  <text x="490" y="34" text-anchor="middle" font-size="21" font-weight="700" fill="#1f2937">主控–工具模型的内存错峰生命周期（DRAM 占用随时间）</text>
+  <text x="490" y="56" text-anchor="middle" font-size="13" fill="#6b7280">主控换出时把 KV 以 Q4 落盘、权重靠 mmap 保留映射；用工具的加载+执行时间掩盖主控换出 I/O，使峰值始终压在 DRAM 预算之下</text>
+
+  <!-- Y axis -->
+  <line x1="90" y1="90" x2="90" y2="360" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="72" y="230" text-anchor="middle" font-size="13" fill="#6b7280" transform="rotate(-90 72 230)">DRAM 占用 →</text>
+  <!-- X axis -->
+  <line x1="90" y1="360" x2="912" y2="360" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="905" y="382" text-anchor="end" font-size="13" fill="#6b7280">时间 →</text>
+
+  <!-- Budget ceiling -->
+  <line x1="90" y1="204" x2="912" y2="204" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="7 4"/>
+  <text x="908" y="199" text-anchor="end" font-size="12.5" font-weight="600" fill="#2563eb">DRAM 预算上限</text>
+  <!-- Naive all-resident peak -->
+  <line x1="90" y1="120" x2="912" y2="120" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="3 4"/>
+  <text x="98" y="115" text-anchor="start" font-size="12" fill="#dc2626">若全部常驻叠加（主控+工具≈200）→ 越界 OOM</text>
+
+  <!-- Phase separators + labels -->
+  <!-- 5 phases, each 162 wide from x=90 -->
+  <g font-size="12.5" fill="#374151">
+    <line x1="252" y1="90" x2="252" y2="360" stroke="#e5e7eb" stroke-width="1"/>
+    <line x1="414" y1="90" x2="414" y2="360" stroke="#e5e7eb" stroke-width="1"/>
+    <line x1="576" y1="90" x2="576" y2="360" stroke="#e5e7eb" stroke-width="1"/>
+    <line x1="738" y1="90" x2="738" y2="360" stroke="#e5e7eb" stroke-width="1"/>
+  </g>
+
+  <!-- Bars: baseline y=360, scale 1 unit = 1.2px, y(v)=360 - v*1.2 -->
+  <!-- Segments per phase: master_weight (red), master_KV (orange), tool (green). Bar width 96, centered in 162-wide phase -->
+
+  <!-- P0 t0: master resident, inference. mw=60, mkv=50 -->
+  <!-- center x = 90+81=171 -> bar 123..219 -->
+  <rect x="123" y="288" width="96" height="72" fill="#fecaca" stroke="#dc2626" stroke-width="1.2"/>
+  <rect x="123" y="228" width="96" height="60" fill="#fed7aa" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="171" y="325" text-anchor="middle" font-size="11.5" fill="#7f1d1d">主控权重 60</text>
+  <text x="171" y="262" text-anchor="middle" font-size="11.5" fill="#7c2d12">主控KV 50</text>
+
+  <!-- P1 t1: tool call issued, master KV Q4 offloading. mw=60, mkv=14, tool_load=20 -->
+  <!-- center x = 252+81=333 -> bar 285..381 -->
+  <rect x="285" y="288" width="96" height="72" fill="#fecaca" stroke="#dc2626" stroke-width="1.2"/>
+  <rect x="285" y="271" width="96" height="17" fill="#fed7aa" stroke="#ea580c" stroke-width="1.2"/>
+  <rect x="285" y="247" width="96" height="24" fill="#bbf7d0" stroke="#059669" stroke-width="1.2"/>
+  <text x="333" y="329" text-anchor="middle" font-size="11.5" fill="#7f1d1d">权重 60</text>
+  <text x="333" y="284" text-anchor="middle" font-size="10.5" fill="#7c2d12">KV14(Q4)</text>
+  <text x="333" y="263" text-anchor="middle" font-size="10.5" fill="#065f46">工具加载</text>
+
+  <!-- P2 t2: tool executing, master mostly evicted. mw=25(mmap pinned), mkv=0, tool=90 -->
+  <!-- center x = 414+81=495 -> bar 447..543 -->
+  <rect x="447" y="330" width="96" height="30" fill="#fecaca" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <rect x="447" y="222" width="96" height="108" fill="#bbf7d0" stroke="#059669" stroke-width="1.2"/>
+  <text x="495" y="350" text-anchor="middle" font-size="10.5" fill="#7f1d1d">主控 mmap 驻页25</text>
+  <text x="495" y="280" text-anchor="middle" font-size="12" fill="#065f46">工具模型执行 90</text>
+
+  <!-- P3 t3: tool returning, master KV reloading. mw=60, mkv=35(reloading), tool=25 -->
+  <!-- center x = 576+81=657 -> bar 609..705 -->
+  <rect x="609" y="288" width="96" height="72" fill="#fecaca" stroke="#dc2626" stroke-width="1.2"/>
+  <rect x="609" y="246" width="96" height="42" fill="#fed7aa" stroke="#ea580c" stroke-width="1.2"/>
+  <rect x="609" y="216" width="96" height="30" fill="#d1fae5" stroke="#059669" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="657" y="329" text-anchor="middle" font-size="11.5" fill="#7f1d1d">权重 60</text>
+  <text x="657" y="271" text-anchor="middle" font-size="10.5" fill="#7c2d12">KV reload</text>
+  <text x="657" y="235" text-anchor="middle" font-size="10" fill="#065f46">工具退出</text>
+
+  <!-- P4 t4: master resumes. mw=60, mkv=50 -->
+  <!-- center x = 738+81=819 -> bar 771..867 -->
+  <rect x="771" y="288" width="96" height="72" fill="#fecaca" stroke="#dc2626" stroke-width="1.2"/>
+  <rect x="771" y="228" width="96" height="60" fill="#fed7aa" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="819" y="325" text-anchor="middle" font-size="11.5" fill="#7f1d1d">主控权重 60</text>
+  <text x="819" y="262" text-anchor="middle" font-size="11.5" fill="#7c2d12">主控KV 50</text>
+
+  <!-- Phase captions under axis -->
+  <g font-size="12" fill="#111827" font-weight="600" text-anchor="middle">
+    <text x="171" y="404">① 主控推理</text>
+    <text x="333" y="404">② 发起工具调用</text>
+    <text x="495" y="404">③ 工具加载+执行</text>
+    <text x="657" y="404">④ 工具返回</text>
+    <text x="819" y="404">⑤ 主控换回续算</text>
+  </g>
+  <g font-size="10.8" fill="#6b7280" text-anchor="middle">
+    <text x="171" y="422">主控常驻</text>
+    <text x="333" y="422">主控KV→Q4落盘</text>
+    <text x="333" y="437">[12]</text>
+    <text x="495" y="422">权重 mmap 释放可写页</text>
+    <text x="495" y="437">工具执行掩盖换出 I/O [9][12]</text>
+    <text x="657" y="422">reload 跳过 prefill</text>
+    <text x="657" y="437">TTFT 最高 136× [12]</text>
+    <text x="819" y="422">峰值≈120 &lt; 预算</text>
+  </g>
+
+  <!-- Legend -->
+  <g font-size="12" fill="#374151">
+    <rect x="120" y="470" width="16" height="13" fill="#fecaca" stroke="#dc2626"/>
+    <text x="142" y="481">主控权重（mmap 只读共享，可保留映射快速换回）</text>
+    <rect x="120" y="492" width="16" height="13" fill="#fed7aa" stroke="#ea580c"/>
+    <text x="142" y="503">主控 KV Cache（对话/任务状态；换出对象，Q4 落盘而非重算）</text>
+    <rect x="560" y="470" width="16" height="13" fill="#bbf7d0" stroke="#059669"/>
+    <text x="582" y="481">工具模型（按需换入，执行期占满 DRAM）</text>
+    <line x1="560" y1="499" x2="576" y2="499" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="7 4"/>
+    <text x="582" y="503">DRAM 预算上限；错峰使峰值恒低于此线</text>
+  </g>
+
+  <!-- Key insight footnote -->
+  <text x="490" y="536" text-anchor="middle" font-size="12.5" font-style="italic" fill="#374151">核心：真正在 DRAM 上错峰的是「主控 KV」与「冷工具」，主控权重靠 mmap 共享几乎零成本换回；换出/换入被工具执行时间掩盖。</text>
+</svg>
