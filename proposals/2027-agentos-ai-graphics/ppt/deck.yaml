@@ -1,0 +1,6065 @@
+# 2027 立项：面向终端的 Agent OS 与 AI+图形（由 deck-p1a / p2 / p3 / p1b 合并）
+style: default
+pages:
+  # 1 封面
+  - template: common.cover-basic
+    data:
+      title: 面向终端的Agent OS与AI+图形
+      subtitle: 2027立项评审：下一代终端软件系统
+      presenter: 立项组
+      date: 2026年11月
+
+  # 2 目录
+  - template: common.agenda-list
+    data:
+      title: 目录
+      title_suffix: 本次立项汇报
+      takeaway: 先讲为什么现在做，再讲做什么、怎么做、要什么
+      items:
+        - { num: "01", name: 洞察, note: 端侧Agent的门槛转向内存，业界无人统一治理模型内存 }
+        - { num: "02", name: 问题, note: 叠加场景下，当代系统的回收、换入和模型内存都撑不住 }
+        - { num: "03", name: 架构与关键技术, note: 模型内存一等公民，KT1至KT3加仿真平台，以及G1至G4 }
+        - { num: "04", name: 技术难点与做法, note: 逐项说明难在哪、怎么破、关键突破是什么 }
+        - { num: "05", name: 交付节奏与诉求, note: 2027年分季度交付，说明风险并提出立项诉求 }
+
+  # 3 核心判断
+  - template: common.summary-kpi
+    data:
+      title: 为什么现在立项
+      title_suffix: 内存成为端侧Agent的第一约束
+      takeaway: 门槛在内存，加内存走不通，只能靠系统挖出可用内存
+      kpis:
+        - { value: 12GB, label: 端侧Agent内存门槛, note: Gemini Intelligence与iOS 27最强端侧模型均要求 }
+        - { value: 近翻倍, label: 移动DRAM合约价, note: 2026年上半年；TrendForce判断2027年不会明显回落 }
+        - { value: 86.6%, label: GB级应用冷启动超1秒, note: AppFlow，Pixel 7/8 }
+        - { value: 0%, label: 专家缓存命中率, note: iPhone上512MiB LRU缓存（预印本） }
+      notes:
+        - 加内存的路走不通：移动DRAM合约价2026Q2接近翻倍，回收成了唯一杠杆，系统必须自己挖出更多可用内存。
+        - Agent叠加在应用之上：12GB机型常驻模型1–6GB后，留给应用的内存约2.5–7.5GB（估算），冷启动、切换卡顿和后台被杀一起恶化。
+        - 业界没有人统一治理模型内存：Apple把20B MoE放闪存按需调入（二手报道，待核实），阶跃只有叙事，没有公开的统一记账、回收和共享机制。
+        - 我们的位置：模型内存成为系统的一等公民，三项关键技术加仿真平台，AI+图形做体验线；最大共同风险是缺少真机基线。
+
+  # 4 第一部分
+  - template: common.section-basic
+    data:
+      num: "01"
+      title: 洞察
+      subtitle: 业界最新发展趋势
+
+  # 5 竞争格局
+  - template: competition.overview-landscape
+    data:
+      title: Agent OS竞争格局
+      title_suffix: 商业形态六类玩家
+      takeaway: 真正做手机OS加端侧模型的只有阶跃，其余在云端或跟随
+      players:
+        - name: 阶跃 Step AOS
+          position: 手机、自研OS、端侧模型一体
+          strength: Step Edge四款端侧模型加自研NPU推理引擎，2026-07亮相，3999元起
+          weakness: 体量小，生态靠合作；参数量与常驻内存未公开，无量化指标
+        - name: Grok/OpenAI
+          position: 云端常驻Agent
+          strength: Grok Bot、dot各配云端电脑，抬高用户对全天候、主动Agent的预期
+          weakness: 无端侧部分，隐私、离线不可用；官方页面未能读取，待核实
+        - name: Apple
+          position: 端侧稀疏大模型加PCC
+          strength: 软硬件垂直；据报20B MoE放闪存，每次调入1–4B（二手，待核实）
+          weakness: 最强能力被锁在12GB机型
+        - name: Google
+          position: OS内置，按内存分层准入
+          strength: AICore统一接口，端云回落机制成熟
+          weakness: 要求12GB以上，存量机被排除；Nano 4 Full据报常驻约5.9GB（单一来源）
+        - name: 华为
+          position: 系统能力Skill化
+          strength: 系统级调用面最广，2100多项系统能力
+          weakness: 端侧模型规格和资源数据都不公开
+        - name: 字节 / 努比亚
+          position: 豆包手机助手，GUI自动化
+          strength: 不需要应用适配，2026-09已量产
+          weakness: 依赖系统特权，要与风控博弈；我们不做GUI Agent
+      insight: 没有任何一家公开统一记账、回收模型内存的机制，这是我们可以占据的位置
+
+  # 6 商业形态趋势
+  - template: trend.trend-points
+    data:
+      title: Agent OS商业形态趋势
+      title_suffix: 四条主线
+      takeaway: 内存是第一约束，主阵地仍是现有OS内核
+      trends:
+        - name: 12GB成分水岭
+          evidence: Gemini Intelligence要求12GB以上（2026-05）；iOS 27最强端侧模型要求12GB；Pixel 11全系12GB起；STEPX Neo 16GB
+          impact: 端侧Agent的门槛从算力转为内存，内存供给是第一约束，支撑总体构想
+        - name: 稀疏权重加闪存分层
+          evidence: Apple据报20B MoE、调入1–4B（二手）；Gemini Nano 4基于PLE稀疏；Meta MobileMoE峰值内存低约30%
+          impact: 支撑KT2专家缓存和KT3闪存映射加载
+        - name: 应用能力工具化
+          evidence: Step AOS用MCP暴露系统功能块；HMAF 2.0把系统能力Skill化；豆包用SAEP声明协议
+          impact: Agent频繁拉起应用，带来冷启动、.so页争用、后台被杀，支撑KT1
+        - name: 云端常驻与整机重构
+          evidence: Grok Bot、dot、Meta Muse在云端；STEPX Neo 3999元、荣耀Robot Phone 9999元，出货规模小；OpenAI硬件推迟
+          impact: 2027年可落地的差异化在内核层内存与IO；S1以云端Agent为对照基准
+
+  # 7 基础能力洞察
+  - template: trend.trend-points
+    data:
+      title: Agent OS基础能力洞察
+      title_suffix: 零件有，手机侧组合是空白
+      takeaway: 上游零件已有，手机侧的组合与实测还没人做
+      trends:
+        - name: 硬件采样起步，证冷难
+          evidence: openEuler有19个SPE补丁（无性能数据）；DAMON硬件采样RFC v2（2026-09）；作者指出采样证明热、证明不了冷
+          impact: SPE作为DAMON硬件源对接；KT1-b/c共用「SPE证热、页表证冷」模型
+        - name: MoE换入命中率脆
+          evidence: EStream预填充TTFT加速2.25–27.57倍；iPhone上512MiB的LRU命中率0%，576MiB为38.58%（均为预印本）
+          impact: 命中率对容量和负载极敏感，手机侧无公认基线，是可以占的位置
+        - name: NPU零拷贝无方案
+          evidence: mmap加页对齐已成共识；NPU侧文件映射、零拷贝没有公开方案；UFS 5.0顺序读达10.8GB/s（2027年起量产）
+          impact: KT3差异化空间最大
+        - name: 手机侧仿真器空白
+          evidence: Vidur、LLMServingSim 2.0等全部面向数据中心GPU/TPU；未找到面向手机SoC的公开LLM仿真器
+          impact: 自研仿真平台S1/S2本身就是立项理由
+
+  # 8 AI+图形洞察
+  - template: trend.trend-points
+    data:
+      title: AI+图形洞察
+      title_suffix: 硬件窗口已打开，落点在系统层
+      takeaway: 单点能力已被证明，差异化在系统层
+      trends:
+        - name: G1 3DGS上手机
+          evidence: Mobile-GS在骁龙8 Gen 3稳态74FPS、0.83W，量化版3DGS仅3FPS、5.89W；PocketGS训练255秒
+          impact: 差异化放在采集到渲染全链路的热稳态能效，而不是单点帧率
+        - name: G3 神经渲染进GPU
+          evidence: Arm Mali G2-Ultra NX、Apple A19 Pro的GPU内置神经加速器；骁龙称游戏省电最高40%（厂商口径）
+          impact: 硬件多样、API未统一，对游戏透明的系统级方案是我们能掌控的部分
+        - name: G2 萌宠只在App里
+          evidence: 七家手机厂商都未找到官方萌宠；陪伴App前10%拿走89%收入；AI类App年留存21.1%
+          impact: 落点是系统层常驻低功耗渲染；能提升留存是待验证的假设
+        - name: G4 生成式UI三形态
+          evidence: Google A2UI（公开预览）、MCP Apps、Gemini动态视图；Apple只有@Generable；鸿蒙采用A2UI仅为报道（待核实）
+          impact: 声明式加组件目录加流式增量最适合原生渲染，受限WebView兜底
+
+  # 9 第二部分
+  - template: common.section-basic
+    data:
+      num: "02"
+      title: 问题
+      subtitle: 未来的终端场景，为什么现在满足不了
+
+  # 10 Agent 叠加场景
+  - template: workload.requirement-matrix
+    data:
+      title: Agent叠加场景需求
+      title_suffix: 负载特征到系统需求
+      takeaway: 叠加场景下冷启动、切换和KV是最先吃紧的三项
+      workload: 12GB机型：系统3–4GB，模型1–6GB，应用约2.5–7.5GB（估算）
+      items:
+        - feature: S-B Agent调应用
+          value: 依次或经MCP调起多个应用
+          requirement: 叠加场景冷启动相对无Agent基线劣化不超过10%，切回后热启动比例不低于80%（建议，待校准）
+        - feature: S-A 用应用时唤起
+          value: 刷视频、地图时唤起Agent
+          requirement: Agent首token热不超1秒、冷不超3秒；唤起后3秒掉帧增量不超1个百分点；前台应用被杀0次
+        - feature: S-C 长对话长任务
+          value: 8K–64K，32K时KV4.5GiB
+          requirement: 长上下文首token劣化不超过2倍；KV占用有上限并随内存压力回收（KV估算依据公开config）
+        - feature: S-D 稀疏大模型
+          value: 35B级MoE的Q4权重约14–21GB
+          requirement: 12–16GB机型靠分层驻留运行；以解码tokens/s、TTFT、峰值常驻内存度量；命中率0%时上限约5 tokens/s（估算）
+        - feature: S-E 端云切换与并行
+          value: 弱网回落端侧；单Agent并行调用工具
+          requirement: 切换额外时延不超过500ms；多工具任务时延降20–40%（建议）
+
+  # 11 Agent OS 瓶颈
+  - template: solution.problem-arch-callouts
+    data:
+      title: Agent OS瓶颈：DRAM涨价冻结容量，回收与换入撑不住
+      title_suffix: 模型内存游离在治理之外
+      diagram: diagram-bottleneck.png
+      left_cards:
+        - kind: problem
+          num: ①
+          size: 2.2
+          problem: 容量被冻结：DRAM合约价Q2近翻倍
+          measure_pre: 加内存走不通，
+          measure_key: 回收成唯一杠杆
+        - kind: problem
+          num: ②
+          size: 2.2
+          problem: 回收锁争用：kswapd等rmap锁超300ms
+          measure_pre: 共享库页争用，
+          measure_key: KT1-a去全局锁
+        - kind: tech
+          size: 2.4
+          name: per-VMA lock
+          meta: （2023 Linux 6.4/6.5）
+          desc: 缺页只拿VMA锁，6.5起覆盖页缓存命中的文件缺页
+          desc_note: I/O型缺页待核实
+        - kind: problem
+          num: ③
+          size: 2.2
+          problem: 换入无冷热无预取：切回前台大量缺页
+          measure_pre: 解压在关键路径，
+          measure_key: KT1-b/c冷热预取
+        - kind: tech
+          size: 2.4
+          name: Ariadne
+          meta: （2025 HPCA，Pixel 7）
+          desc: 软件热信号分级，重启时延降50%
+          desc_note: 仅用软件信号
+      right_cards:
+        - kind: problem
+          num: ④
+          size: 2.8
+          problem: KV被钉住：KV、dma-buf、NPU缓冲在LRU之外
+          measure_pre: 易提前触发lmkd，
+          measure_key: KT2-B KV块可回收
+        - kind: tech
+          size: 2.2
+          name: KIVI
+          meta: （2024 ICML）
+          desc: 2-bit KV量化，峰值内存降2.6倍
+          desc_note: Agent轨迹精度未验证
+        - kind: problem
+          num: ⑤
+          size: 2.8
+          problem: MoE命中率脆弱：iPhone上512MiB的LRU命中率0%，每token约1.1GB IO
+          measure_pre: 命中率决定能否用，
+          measure_key: KT2-A自适应缓存
+        - kind: tech
+          size: 2.2
+          name: EStream
+          meta: （2026 预印本）
+          desc: 骁龙手机上预填充TTFT加速2.25–27.57倍
+          desc_note: 无公认基线
+      bottom_num: ⑥
+      bottom_problem: NPU路径多份拷贝、长期钉住，回收不了
+      bottom_cards:
+        - kind: tech
+          size: 1.6
+          name: ExecuTorch
+          meta: （页对齐数据段 RFC）
+          desc: .pte页对齐便于mmap；权重共享还在RFC阶段
+        - kind: tech
+          size: 1.6
+          name: T-MAN
+          meta: （2025-11 预印本）
+          desc: NPU上统一查表，只保留一份权重
+
+  # 12 AI+图形 场景与瓶颈
+  - template: workload.requirement-matrix
+    data:
+      title: AI+图形场景与瓶颈
+      title_suffix: 瓶颈数据对应体验指标
+      takeaway: 手机侧全链路缺公开基线，指标均待真机校准
+      workload: G1–G4四类体验场景（目标值为建议，待校准）
+      items:
+        - feature: G1 3DGS渲染
+          value: 量化版稳态3FPS、5.89W
+          requirement: 稳态60FPS以上，渲染功耗1.5W以内；PLY约250MB，单场景压到10–25MB
+        - feature: G3 神经超分插帧
+          value: MetalFX插帧约18ms/帧
+          requirement: 120Hz帧预算8.3ms，插帧压到4ms内；同画质功耗降20–40%（插帧数据来自开发者论坛，非官方）
+        - feature: G2 常驻AI萌宠
+          value: 常驻功耗内存无公开数据
+          requirement: 静止态额外功耗接近零；常驻内存100–150MB（估算）；前台冷启动无可测影响
+        - feature: G4 生成式UI
+          value: 3000token、30token/s约100秒
+          requirement: 必须边生成边渲染；首个可见元素尽早出现，流式不掉帧，越权用例100%拦截（耗时为假设值）
+
+  # 13 第三部分
+  - template: common.section-basic
+    data:
+      num: "03"
+      title: 架构与关键技术
+      subtitle: 模型内存成为系统的一等公民
+
+  # 14 Agent OS 总体架构
+  - template: solution.solution-arch-overview
+    data:
+      title: Agent OS总体架构
+      title_suffix: 模型内存一等公民
+      takeaway: 统一记账、可回收、可共享，不加DRAM撑起Agent与应用叠加
+      challenges:
+        - { name: 模型内存游离, detail: 权重、KV、NPU缓冲分属不同账，回收收不走 }
+        - { name: 非模型内存不足, detail: 容量被冻结，冷启动受.so页争用和锁拖累 }
+        - { name: 加载驻留低效, detail: 多份拷贝、长期钉住、IO打不满，命中率不稳 }
+      principles:
+        - { name: 统一记账, detail: 权重、专家、KV、NPU缓冲同一本账 }
+        - { name: 可回收, detail: 权重是干净文件页，KV块可压缩换出 }
+        - { name: 可共享, detail: 同一份权重按内容多方共用 }
+      arch:
+        partitions:
+          - name: KT1 智慧化内存管理
+            layers:
+              - name: 感知
+                modules:
+                  - { name: SPE冷热识别, highlight: true }
+                  - { name: 页表冷证据 }
+              - name: 匿名页
+                modules:
+                  - { name: 预取, highlight: true }
+                  - { name: 换出, highlight: true }
+              - name: 文件页
+                modules:
+                  - { name: 锁优化, highlight: true }
+          - name: KT2 Agent 内存组件
+            layers:
+              - name: 权重
+                modules:
+                  - { name: 稀疏权重分层, highlight: true }
+                  - { name: 热度模型, highlight: true }
+              - name: KV
+                modules:
+                  - { name: KV块池, highlight: true }
+                  - { name: 压缩换出, highlight: true }
+                  - { name: 前缀复用, highlight: true }
+          - name: KT3 模型翻译组件
+            layers:
+              - name: 布局
+                modules:
+                  - { name: 页对齐布局 }
+              - name: 加载
+                modules:
+                  - { name: 大块预读 }
+                  - { name: 权重内容共享, highlight: true }
+              - name: 映射
+                modules:
+                  - { name: NPU零拷贝映射, highlight: true }
+        shared:
+          - name: 共享层
+            modules:
+              - { name: 统一模型内存记账, highlight: true }
+              - { name: 预算账本, highlight: true }
+              - { name: 冷热模型, highlight: true }
+              - { name: IO调度队列, highlight: true }
+          - name: 内核基座
+            modules:
+              - { name: 缺页/rmap }
+              - { name: LRU }
+              - { name: DAMON }
+              - { name: memcg }
+              - { name: zram }
+              - { name: IOMMU }
+      key_techs:
+        - name: KT1 智慧化内存管理
+          points:
+            - SPE证热、页表证冷，预取与换出同源
+            - 冷启动降15–30%，切回降20–40%（建议）
+        - name: KT2 Agent内存组件
+          points:
+            - 专家缓存与KV块纳入统一记账
+            - 命中率较LRU高30%，KV压缩2.5倍（建议）
+        - name: KT3 模型翻译组件
+          points:
+            - 页对齐布局，文件页经IOMMU给NPU
+            - 冷加载达UFS理论值60–70%，零额外拷贝
+        - name: 仿真平台 S1/S2
+          points:
+            - S1云转端评估，S2单Agent并行化
+            - 仿真误差在10%内，先建真机基线（建议）
+
+  # 15 AI+图形架构
+  - template: solution.solution-arch-overview
+    data:
+      title: AI+图形架构
+      title_suffix: 预算驱动的系统级体验
+      takeaway: 热稳态下稳态60FPS以上，游戏同画质功耗降20–40%（建议）
+      challenges:
+        - { name: 热稳态能效, detail: 量化版3DGS仅3FPS、5.89W，游戏易降频 }
+        - { name: 帧预算内推理, detail: 插帧约18ms对8.3ms预算，界面要边生成边渲 }
+        - { name: 碎片化, detail: 加速器四家各一套，格式与UI协议未统一 }
+      principles:
+        - { name: 预算驱动, detail: 温度与帧预算定画质档位 }
+        - { name: 系统层优先, detail: 常驻渲染、对游戏透明 }
+        - { name: 跟随标准, detail: 不做私有格式 }
+      arch:
+        partitions:
+          - name: 3D与游戏（G1、G3）
+            layers:
+              - name: 3DGS
+                modules:
+                  - { name: 采集生成, highlight: true }
+                  - { name: SPZ压缩加载 }
+                  - { name: 免排序渲染, highlight: true }
+              - name: 后处理
+                modules:
+                  - { name: 神经超分, highlight: true }
+                  - { name: 神经插帧, highlight: true }
+                  - { name: 降噪 }
+          - name: 陪伴与交互（G2、G4）
+            layers:
+              - name: 萌宠
+                modules:
+                  - { name: 行为状态机, highlight: true }
+                  - { name: 分级渲染, highlight: true }
+                  - { name: 记忆 }
+              - name: 生成UI
+                modules:
+                  - { name: 流式解析 }
+                  - { name: 增量渲染, highlight: true }
+                  - { name: Web兜底 }
+        shared:
+          - name: 共享层
+            modules:
+              - { name: 帧与温度预算调度器, highlight: true }
+              - { name: 神经图形算子抽象层, highlight: true }
+              - { name: 合成层常驻渲染服务, highlight: true }
+          - name: 硬件
+            modules:
+              - { name: GPU神经加速器 }
+              - { name: NPU }
+              - { name: 显示管线 }
+      key_techs:
+        - name: G1 3DGS热稳态能效
+          points:
+            - 温度预算驱动LOD，免排序渲染
+            - 稳态60FPS以上，功耗1.5W内（建议）
+        - name: G2 常驻低功耗萌宠
+          points:
+            - 静止零帧、微动、互动三级渲染
+            - 静止态近零功耗，常驻100–150MB（估算）
+        - name: G3 神经超分与插帧
+          points:
+            - 系统光流加UI遮罩，后端抽象层
+            - 同画质功耗降20–40%，插帧4ms内（建议）
+        - name: G4 生成式UI渲染
+          points:
+            - 声明式JSON为主，受限WebView兜底
+            - 流式不掉帧，越权用例100%拦截
+
+  # 16 第四部分
+  - template: common.section-basic
+    data:
+      num: "04"
+      title: 关键技术难点与做法
+      subtitle: 难在哪、怎么破、关键突破
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: 叠加场景.so文件页锁优化：
+      title_suffix: 去全局锁加关键页软保护，冷启动降15%～30%
+      challenges:
+      - name: 锁竞争拖慢缺页
+        text: 多进程缺页，rmap锁等待超300ms。
+      - name: 冷启动慢
+        text: GB级应用86.6%冷启动超1秒。
+      - name: 保护与回收冲突
+        text: 预加载使冷启动次数反增30%
+      goal: 叠加场景（Agent常驻，内存余量<20%）下降低锁竞争与文件页逐出，
+      goal_highlight: 冷启动-15%～-30%
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0
+          - 207.8
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 0
+          - 346
+          - 640
+          - 62
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8
+          - 36.0
+          - 187
+          - 59.5
+          fill: highlight_blue
+          kind: rounded
+          text: '冷启动.so访问画像
+
+            各应用各版本'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8
+          - 111.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '缺页trace
+
+            共享库多进程缺页'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 187.0
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: rmap锁等待时间
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 262.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: PSI与内存余量
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224
+          - 36.0
+          - 187
+          - 59.5
+          fill: primary
+          kind: rounded
+          text: '关键.so页集合
+
+            按启动画像生成'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 224
+          - 111.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: 'memcg+全局双重预算
+
+            与KT1-c共用账本'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224
+          - 187.0
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: 回收跳过与旋转策略
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 262.5
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: 大folio开关
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 36.0
+          - 192
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '关键页软保护
+
+            降回收优先级，不mlock'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440
+          - 111.5
+          - 192
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '补全VMA锁覆盖
+
+            I/O型文件缺页'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 187.0
+          - 192
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: 'rmap trylock批处理
+
+            热.so页批量跳过'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 262.5
+          - 192
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: 'contpte对齐大folio
+
+            失败退回小页'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 冷启动时延
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 166.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: major fault次数
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 324.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: rmap锁等待
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 482.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 关键页refault率
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 218
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 256.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 256.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        texts:
+        - box:
+          - 8.0
+          - 3
+          - 191.6
+          - 26
+          text: 感知：缺页与画像
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 224.1
+          - 3
+          - 191.6
+          - 26
+          text: 决策：页集合与预算
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 440.2
+          - 3
+          - 195.8
+          - 26
+          text: 执行：锁与保护
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 8
+          - 348
+          - 120
+          - 22
+          text: 反馈
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 110
+          - 348
+          - 524
+          - 22
+          text: 异常自动撤销保护
+          style: caption
+          align: right
+          valign: middle
+          color: accent
+          bold: true
+        arrows:
+        - points:
+          - - 101.5
+            - 95.5
+          - - 101.5
+            - 111.5
+        - points:
+          - - 317.5
+            - 95.5
+          - - 317.5
+            - 111.5
+        - points:
+          - - 195
+            - 65.75
+          - - 224
+            - 65.75
+        - points:
+          - - 195
+            - 216.75
+          - - 224
+            - 216.75
+        - points:
+          - - 195
+            - 292.25
+          - - 224
+            - 292.25
+        - points:
+          - - 411
+            - 65.75
+          - - 440
+            - 65.75
+        - points:
+          - - 411
+            - 216.75
+          - - 416
+            - 216.75
+          - - 416
+            - 141.25
+          - - 440
+            - 141.25
+        - points:
+          - - 411
+            - 216.75
+          - - 440
+            - 216.75
+        - points:
+          - - 411
+            - 292.25
+          - - 440
+            - 292.25
+        - points:
+          - - 536
+            - 330
+          - - 536
+            - 346
+        - points:
+          - - 101
+            - 346
+          - - 101
+            - 330
+          color: accent
+      difficulties:
+      - name: 文件缺页与回收去全局锁
+        size: 4.92
+        points:
+        - name: 难点
+          text: 缺页拿folio锁、等I/O，回收拿i_mmap锁，共享库被几十个进程映射
+        - name: 缺页提速
+          text: 补全I/O型文件缺页的VMA锁覆盖，避开mmap_lock
+        - name: 回收降阻
+          text: 热.so页trylock批量跳过，不阻塞kswapd，
+          highlight: 共享库页脱离全局锁
+      - name: 软保护与回收的平衡
+        size: 4.27
+        points:
+        - name: 难点
+          text: 保护多了匿名页换出腾不出空间；单独预加载使冷启动次数增30%
+        - name: 画像保护
+          text: 按启动画像生成关键.so页集合，软保护不用mlock
+        - name: 统一预算
+          text: 受memcg与全局上限约束，与匿名页换出共账本，
+          highlight: 有预算的软保护
+      - name: 大folio与碎片的权衡
+        size: 3.62
+        points:
+        - name: 难点
+          text: 大folio减缺页与TLB缺失，但要连续物理内存，手机碎片严重
+        - name: 热段大页
+          text: 仅对关键.so热段请求contpte对齐的folio
+        - name: 优雅降级
+          text: 分配失败退回小页，
+          highlight: 热段大页冷段小页
+      milestones:
+      - date: 2027.03.31
+        deliverable: '冷启动与锁等待
+
+          基线、原型'
+      - date: 2027.06.30
+        deliverable: '锁路径优化与软保护
+
+          合入内部版本'
+      - date: 2027.09.30
+        deliverable: 随版本商用
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: SPE匿名页冷热识别与预取：
+      title_suffix: 自适应稀疏采样加恢复集预取，切回时延降20%～40%
+      challenges:
+      - name: 换入无预取
+        text: zram按需换入，切回前台大批缺页。
+      - name: 热信号不准
+        text: 扫描开销与精度互斥，MGLRU多未启用。
+      - name: 采样可用性未知
+        text: 手机SPE是否放开无公开资料
+      goal: 用硬件访问采样识别匿名热页，切回前台前预取，提升叠加场景流畅度，
+      goal_highlight: 切回时延-20%～-40%
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0
+          - 207.8
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 0
+          - 346
+          - 640
+          - 62
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8
+          - 36.0
+          - 187
+          - 59.5
+          fill: highlight_blue
+          kind: rounded
+          text: 'arm_spe_pmu采样
+
+            地址、延迟、data source'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8
+          - 111.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '延迟阈值与data source
+
+            过滤，只留DRAM样本'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 187.0
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '映射物理页号
+
+            每memcg热页集合+时间戳'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 262.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '冷证据：Accessed位
+
+            DAMON、代龄'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224
+          - 36.0
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '三态判定
+
+            热 / 冷候选 / 未知'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 111.5
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '采样间隔与开关
+
+            按PSI和前台状态'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 187.0
+          - 187
+          - 59.5
+          fill: primary
+          kind: rounded
+          text: '恢复集选择
+
+            切后台时记最近热页'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 224
+          - 262.5
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '预取触发
+
+            应用切换、唤起事件'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 36.0
+          - 192
+          - 59.5
+          fill: highlight_blue
+          kind: rounded
+          text: '热 / 冷标签
+
+            交KT1-c换出使用'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 440
+          - 111.5
+          - 192
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '批量解压换入zram页
+
+            可用大folio换入'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 187.0
+          - 192
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '恢复集页在LRU中提前
+
+            避免刚换入就被回收'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440
+          - 262.5
+          - 192
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '预取量封顶
+
+            内存余量不足自动减量'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 预取命中率
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 166.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 预取浪费率
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 324.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 重启时延
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 482.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 采样CPU占用与功耗
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 2
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 2
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 2
+          - 256.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 256.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 256.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        texts:
+        - box:
+          - 8.0
+          - 3
+          - 191.6
+          - 26
+          text: 感知：SPE采样
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 224.1
+          - 3
+          - 191.6
+          - 26
+          text: 决策：三态与恢复集
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 440.2
+          - 3
+          - 195.8
+          - 26
+          text: 执行：批量预取换入
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 8
+          - 348
+          - 120
+          - 22
+          text: 反馈
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        arrows:
+        - points:
+          - - 101.5
+            - 95.5
+          - - 101.5
+            - 111.5
+        - points:
+          - - 101.5
+            - 171.0
+          - - 101.5
+            - 187.0
+        - points:
+          - - 317.5
+            - 246.5
+          - - 317.5
+            - 262.5
+        - points:
+          - - 195
+            - 216.75
+          - - 200
+            - 216.75
+          - - 200
+            - 65.75
+          - - 224
+            - 65.75
+        - points:
+          - - 195
+            - 292.25
+          - - 206
+            - 292.25
+          - - 206
+            - 65.75
+          - - 224
+            - 65.75
+        - points:
+          - - 411
+            - 65.75
+          - - 440
+            - 65.75
+        - points:
+          - - 411
+            - 292.25
+          - - 416
+            - 292.25
+          - - 416
+            - 141.25
+          - - 440
+            - 141.25
+        - points:
+          - - 411
+            - 216.75
+          - - 440
+            - 216.75
+        - points:
+          - - 411
+            - 292.25
+          - - 440
+            - 292.25
+        - points:
+          - - 536
+            - 330
+          - - 536
+            - 346
+        - points:
+          - - 101
+            - 346
+          - - 101
+            - 330
+          color: accent
+      difficulties:
+      - name: 手机上稀疏采样可用且用得起
+        size: 4.27
+        points:
+        - name: 难点
+          text: SPE可选、固件可关；间隔小耗电，间隔大漏判热页
+        - name: 可用性摸底
+          text: 逐SoC核查arm_spe_0节点、固件开关与可采样核
+        - name: 自适应采样
+          text: 仅大核与应用核采样，按PSI和前台状态调间隔，
+          highlight: 自适应稀疏采样
+      - name: 采样证明不了冷
+        size: 4.27
+        points:
+        - name: 难点
+          text: 没采到不等于没访问，当冷换出会误伤热页，引发refault
+        - name: 三态证据
+          text: 热、冷候选、未知三态，未知态不换出
+        - name: 非对称证据
+          text: SPE命中即标热，冷须Accessed位为0加代龄确认，
+          highlight: SPE管热页表管冷
+      - name: 预取对象与预取量
+        size: 4.92
+        points:
+        - name: 难点
+          text: 预取多了挤掉别的页，预取晚了又没用
+        - name: 恢复集
+          text: 应用切后台时记录最近窗口热页，切回前台头几百毫秒批量换入
+        - name: 余量封顶
+          text: 预取量受内存余量封顶，命中率低自动减量，
+          highlight: 热集合预取加封顶
+      milestones:
+      - date: 2027.03.31
+        deliverable: 'SPE可用性摸底
+
+          采样开销实测'
+      - date: 2027.06.30
+        deliverable: '冷热模型与恢复集
+
+          预取原型'
+      - date: 2027.09.30
+        deliverable: 合入内部版本
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: 多证据匿名页zram换出：
+      title_suffix: 共用KT1-b冷热模型，后台存活+30%～+80%
+      challenges:
+      - name: 容量被冻结
+        text: 移动DRAM涨价4倍，只能靠回收腾空间。
+      - name: 换出不准
+        text: 误换热页引发refault，匿名页回收偏弱。
+      - name: 杀进程代价高
+        text: 压力顶满杀后台，冷启动与存活双输
+      goal: 基于同一冷热识别把冷匿名页换出到zram，不加DRAM提升有效容量，
+      goal_highlight: 后台存活+30%～+80%
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0
+          - 207.8
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 0
+          - 346
+          - 640
+          - 62
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8
+          - 36.0
+          - 187
+          - 59.5
+          fill: highlight_blue
+          kind: rounded
+          text: '冷热模型
+
+            与KT1-b共用'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8
+          - 111.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: PSI与内存压力
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 187.0
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: 'zram mm_stat
+
+            压缩率、占用'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 262.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: 各memcg前后台状态
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224
+          - 36.0
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '冷候选清单
+
+            三条证据一致才入选'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 111.5
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '按应用、按压力
+
+            换出配额'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 187.0
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: 'zram与写回
+
+            分流阈值'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 262.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '熔断：refault超阈值
+
+            暂停换出'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440
+          - 36.0
+          - 192
+          - 59.5
+          fill: primary
+          kind: rounded
+          text: '经memory.reclaim
+
+            / DAMOS换出到zram'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 440
+          - 111.5
+          - 192
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '可压缩冷页入zram
+
+            可二次压缩'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440
+          - 187.0
+          - 192
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '不可压缩且空闲页
+
+            限额写回，按日写入封顶'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440
+          - 262.5
+          - 192
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: 与大folio对齐
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: refault率
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 166.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 换出后5秒内重访比例
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 324.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: lmkd杀进程次数
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 482.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 压缩率与闪存写入量
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 2
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 2
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        texts:
+        - box:
+          - 8.0
+          - 3
+          - 191.6
+          - 26
+          text: 感知建模：冷热模型
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 224.1
+          - 3
+          - 191.6
+          - 26
+          text: 决策：候选与配额
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 440.2
+          - 3
+          - 195.8
+          - 26
+          text: 执行：换出与分流
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 8
+          - 348
+          - 120
+          - 22
+          text: 反馈
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        arrows:
+        - points:
+          - - 317.5
+            - 95.5
+          - - 317.5
+            - 111.5
+        - points:
+          - - 317.5
+            - 171.0
+          - - 317.5
+            - 187.0
+        - points:
+          - - 317.5
+            - 246.5
+          - - 317.5
+            - 262.5
+        - points:
+          - - 195
+            - 65.75
+          - - 224
+            - 65.75
+        - points:
+          - - 195
+            - 141.25
+          - - 224
+            - 141.25
+        - points:
+          - - 195
+            - 216.75
+          - - 224
+            - 216.75
+        - points:
+          - - 195
+            - 292.25
+          - - 200
+            - 292.25
+          - - 200
+            - 141.25
+          - - 224
+            - 141.25
+        - points:
+          - - 411
+            - 65.75
+          - - 440
+            - 65.75
+        - points:
+          - - 411
+            - 216.75
+          - - 416
+            - 216.75
+          - - 416
+            - 141.25
+          - - 440
+            - 141.25
+        - points:
+          - - 411
+            - 216.75
+          - - 440
+            - 216.75
+        - points:
+          - - 536
+            - 330
+          - - 536
+            - 346
+        - points:
+          - - 101
+            - 346
+          - - 101
+            - 330
+          color: accent
+      difficulties:
+      - name: 换出准确率
+        size: 4.92
+        points:
+        - name: 难点
+          text: 换出热页要付压缩再解压的代价，还可能触发lmkd
+        - name: 证据一致
+          text: 须同时满足：无SPE热证据、访问位为0、代龄达标，
+          highlight: 多证据一致才换出
+        - name: 闭环预算
+          text: 按应用memcg设配额，先换已进后台且冷的应用，PSI反馈控量
+      - name: 压缩、CPU与闪存的预算博弈
+        size: 4.27
+        points:
+        - name: 难点
+          text: 不可压缩页占DRAM又压不下；写回带来闪存写放大与寿命问题
+        - name: 分流
+          text: 可压缩冷页进zram（可二次压缩），不可压缩且长期空闲页限额写回，
+          highlight: 按可压缩性分流
+        - name: 写入封顶
+          text: 按日写入量设上限，与KT1-a共用一本账
+      - name: 与内核既有回收协同
+        size: 3.62
+        points:
+        - name: 难点
+          text: 回收路径与厂商hook复杂，内核swap子系统本身也在重构
+        - name: 冷页注入
+          text: 用memory.reclaim或DAMOS作入口注入冷页清单，策略放用户态，
+          highlight: 不改内核主路径
+      milestones:
+      - date: 2027.03.31
+        deliverable: '冷热模型原型与
+
+          换出准确率基线'
+      - date: 2027.06.30
+        deliverable: '闭环配额与
+
+          分流策略'
+      - date: 2027.09.30
+        deliverable: 合入内部版本
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: MoE专家缓存与稀疏权重分层：
+      title_suffix: 自适应缓存加预测预取，命中率+30%、解码≥1.5倍
+      challenges:
+      - name: 容量放不下
+        text: 35B级Q4约21GB（估算），超16GB。
+      - name: 命中率悬崖
+        text: iPhone上512MiB，LRU命中0%。
+      - name: 换入带宽
+        text: 未命中每token约1.1GB IO（估算）
+      goal: 把稀疏权重纳入系统分层，提升专家命中率，在有限内存下跑大模型，
+      goal_highlight: 命中率较LRU+30%、解码较mmap≥1.5倍
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0
+          - 207.8
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 0
+          - 346
+          - 640
+          - 62
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8
+          - 36.0
+          - 187
+          - 59.5
+          fill: highlight_blue
+          kind: rounded
+          text: '专家访问轨迹
+
+            层、专家、时间'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8
+          - 111.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '热度与转移概率模型
+
+            专家、PLE、神经元簇'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 187.0
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '跨层门控信号
+
+            预测后层专家'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 262.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: UFS带宽与空闲内存
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224
+          - 36.0
+          - 187
+          - 59.5
+          fill: primary
+          kind: rounded
+          text: '分层放置
+
+            DRAM / 压缩区 / UFS'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 224
+          - 111.5
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '淘汰策略选择
+
+            LRU / 频率 / 学习型'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 187.0
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '预取预测
+
+            跨层预测+簇布局'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 262.5
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '未命中降级决策
+
+            换入低位宽副本'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 36.0
+          - 192
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '权重页池
+
+            与KT3共用映射'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440
+          - 111.5
+          - 192
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '异步预取线程
+
+            共用UFS IO队列'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 187.0
+          - 192
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '低位宽副本
+
+            未命中不阻塞解码'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 262.5
+          - 192
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: NPU可见固定arena
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 命中率
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 166.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 预取准确率与提前量
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 324.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: tokens/s
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 482.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 热状态
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 2
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 2
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 256.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        texts:
+        - box:
+          - 8.0
+          - 3
+          - 191.6
+          - 26
+          text: 感知建模：访问轨迹
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 224.1
+          - 3
+          - 191.6
+          - 26
+          text: 决策：分层与淘汰
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 440.2
+          - 3
+          - 195.8
+          - 26
+          text: 执行：页池与预取
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 8
+          - 348
+          - 120
+          - 22
+          text: 反馈
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        arrows:
+        - points:
+          - - 101.5
+            - 95.5
+          - - 101.5
+            - 111.5
+        - points:
+          - - 195
+            - 141.25
+          - - 224
+            - 141.25
+        - points:
+          - - 195
+            - 216.75
+          - - 224
+            - 216.75
+        - points:
+          - - 195
+            - 292.25
+          - - 200
+            - 292.25
+          - - 200
+            - 65.75
+          - - 224
+            - 65.75
+        - points:
+          - - 411
+            - 65.75
+          - - 440
+            - 65.75
+        - points:
+          - - 411
+            - 216.75
+          - - 416
+            - 216.75
+          - - 416
+            - 141.25
+          - - 440
+            - 141.25
+        - points:
+          - - 411
+            - 292.25
+          - - 422
+            - 292.25
+          - - 422
+            - 216.75
+          - - 440
+            - 216.75
+        - points:
+          - - 536
+            - 330
+          - - 536
+            - 346
+        - points:
+          - - 101
+            - 346
+          - - 101
+            - 330
+          color: accent
+      difficulties:
+      - name: 命中率对容量和负载敏感
+        size: 4.27
+        points:
+        - name: 难点
+          text: 小缓存下LRU遇循环访问完全失效；Agent任务一切换路由分布就漂移
+        - name: 热度建模
+          text: 统一建模专家、PLE、神经元簇的热度，缓存由系统记账
+        - name: 策略选择
+          text: 在LRU、频率、学习型策略间在线切换，
+          highlight: 按负载在线选策略
+      - name: 预取要在UFS带宽内到位
+        size: 3.62
+        points:
+        - name: 难点
+          text: 专家仅2–3MB属随机读，要等前层门控算完才知后层用谁
+        - name: 跨层预测
+          text: 前层门控预测后层专家，预取与KT3共用IO队列
+        - name: 布局打包
+          text: 按簇打包存储布局（行列捆绑），
+          highlight: 预测与布局联合设计
+      - name: 精度与容量的折中
+        size: 3.62
+        points:
+        - name: 难点
+          text: 低精度替换、减少激活专家都会损失质量
+        - name: 低位宽兜底
+          text: 未命中时换入低位宽副本，
+          highlight: 未命中也不阻塞
+        - name: 质量门限
+          text: 用评估集约束质量折损
+      milestones:
+      - date: 2027.03.31
+        deliverable: '手机侧专家轨迹
+
+          与LRU基线'
+      - date: 2027.06.30
+        deliverable: '自适应策略加预测
+
+          预取原型'
+      - date: 2027.12.31
+        deliverable: '稀疏权重分层
+
+          统一接口落地'
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: KV Cache回收与压缩：
+      title_suffix: KV块化记账加分级压缩，常驻压缩≥2.5倍
+      challenges:
+      - name: 钉住不可回收
+        text: KV在回收路径之外，易提前触发查杀。
+      - name: 随上下文增长
+        text: 4B稠密32K的KV约4.5GiB（估算）。
+      - name: 压缩有质量风险
+        text: 2-bit在工具调用上未充分验证
+      goal: 让KV成为可记账、可压缩、可换出的系统对象，降低常驻量并加快会话恢复，
+      goal_highlight: 常驻压缩≥2.5倍、质量回归≤1个百分点
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0
+          - 207.8
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 0
+          - 346
+          - 640
+          - 62
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8
+          - 36.0
+          - 187
+          - 59.5
+          fill: highlight_blue
+          kind: rounded
+          text: '块注意力得分
+
+            与访问时间'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8
+          - 111.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '压缩容忍度
+
+            按块评估'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 187.0
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: 会话优先级
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 262.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: 内存压力与UFS带宽
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224
+          - 36.0
+          - 187
+          - 59.5
+          fill: primary
+          kind: rounded
+          text: '保留 / 压缩 /
+
+            换出 / 丢弃重算'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 224
+          - 111.5
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '分级压缩决策
+
+            关键块保持高精度'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 187.0
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: 'IO与重算择优
+
+            带宽不足选重算'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 262.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '跨会话前缀共享判定
+
+            系统提示、工具schema'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440
+          - 36.0
+          - 192
+          - 59.5
+          fill: primary
+          kind: rounded
+          text: 'KV块池
+
+            16 token一块，统一记账'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 440
+          - 111.5
+          - 192
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: 量化与反量化kernel
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 187.0
+          - 192
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: UFS写出与预载
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 262.5
+          - 192
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: 前缀块共享映射
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: TTFT
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 166.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 解码速度
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 324.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 工具调用成功率
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 482.0
+          - 372
+          - 150.0
+          - 30
+          fill: bg
+          kind: rounded
+          text: 重算比例
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 2
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 256.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 256.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        texts:
+        - box:
+          - 8.0
+          - 3
+          - 191.6
+          - 26
+          text: 感知建模：块与会话
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 224.1
+          - 3
+          - 191.6
+          - 26
+          text: 决策：块级四选一
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 440.2
+          - 3
+          - 195.8
+          - 26
+          text: 执行：块池与换出
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 8
+          - 348
+          - 120
+          - 22
+          text: 反馈
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        arrows:
+        - points:
+          - - 195
+            - 65.75
+          - - 224
+            - 65.75
+        - points:
+          - - 195
+            - 141.25
+          - - 224
+            - 141.25
+        - points:
+          - - 195
+            - 216.75
+          - - 200
+            - 216.75
+          - - 200
+            - 65.75
+          - - 224
+            - 65.75
+        - points:
+          - - 195
+            - 292.25
+          - - 206
+            - 292.25
+          - - 206
+            - 216.75
+          - - 224
+            - 216.75
+        - points:
+          - - 411
+            - 65.75
+          - - 440
+            - 65.75
+        - points:
+          - - 411
+            - 141.25
+          - - 440
+            - 141.25
+        - points:
+          - - 411
+            - 216.75
+          - - 440
+            - 216.75
+        - points:
+          - - 411
+            - 292.25
+          - - 440
+            - 292.25
+        - points:
+          - - 536
+            - 330
+          - - 536
+            - 346
+        - points:
+          - - 101
+            - 346
+          - - 101
+            - 330
+          color: accent
+      difficulties:
+      - name: KV块化记账
+        size: 3.62
+        points:
+        - name: 难点
+          text: KV在dma-buf或NPU缓冲里，不在LRU上，回收不了
+        - name: 块池
+          text: 按16 token一块切分，纳入统一记账与分配
+        - name: 回收接口
+          text: 每块可压缩、换出，或丢弃后重算，
+          highlight: KV成为可回收对象
+      - name: 容忍度分级压缩
+        size: 4.27
+        points:
+        - name: 难点
+          text: 2-bit量化与淘汰对工具调用、长推理的影响未知
+        - name: 敏感度评估
+          text: 按块评估压缩容忍度并分级
+        - name: 差异精度
+          text: 关键块保持高精度，系统提示、旧工具输出用低位宽，
+          highlight: 按块差异化压缩
+      - name: 换出与重算择优
+        size: 3.62
+        points:
+        - name: 难点
+          text: UFS带宽比DRAM低一个数量级，换出要掩盖延迟
+        - name: 预载预测
+          text: 只换出长期不被关注的块，用元数据预测提前预载
+        - name: 重算择优
+          text: 带宽不够选重算，跨会话复用固定前缀，
+          highlight: IO与重算择优
+      milestones:
+      - date: 2027.03.31
+        deliverable: 'KV块池与统一
+
+          记账原型'
+      - date: 2027.06.30
+        deliverable: '分级压缩与
+
+          前缀复用'
+      - date: 2027.09.30
+        deliverable: '闪存换出与
+
+          重算择优'
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: 模型加载/卸载零拷贝映射：
+      title_suffix: 文件页直映射NPU，额外拷贝0份、冷加载达60%～70%
+      challenges:
+      - name: 多份拷贝
+        text: 权重在页缓存与NPU缓冲间重复。
+      - name: 钉住代价高
+        text: 8GB CMA约6.44s（待核实）。
+      - name: IO吃不满
+        text: 4KB缺页难以打满UFS 5.8GB/s
+      goal: 权重以文件页直接映射给各算力，缩短冷加载、去除重复拷贝，并可回收，
+      goal_highlight: 额外拷贝0份、冷加载达顺序读60%～70%
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0
+          - 203.6
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0
+          - 207.8
+          - 330
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 0
+          - 346
+          - 640
+          - 62
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8
+          - 36.0
+          - 187
+          - 59.5
+          fill: highlight_blue
+          kind: rounded
+          text: '模型清单
+
+            与布局元数据'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8
+          - 111.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '各会话所需
+
+            层和专家'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 187.0
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: UFS带宽与内存压力
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8
+          - 262.5
+          - 187
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: 'NPU驱动与IOMMU能力
+
+            待SoC厂商确认'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224
+          - 36.0
+          - 187
+          - 59.5
+          fill: primary
+          kind: rounded
+          text: '加载顺序
+
+            与预读窗口'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 224
+          - 111.5
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: 常驻与可回收划分
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 187.0
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '卸载时机
+
+            直接回收或保留映射'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224
+          - 262.5
+          - 187
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '权重内容键
+
+            共享判定'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 36.0
+          - 192
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '页对齐权重文件格式
+
+            离线模型翻译'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 111.5
+          - 192
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '文件页经dma-buf
+
+            映射到NPU IOMMU'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 187.0
+          - 192
+          - 59.5
+          fill: highlight
+          kind: rounded
+          text: '批量预读
+
+            与KT2-A共用IO队列'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440
+          - 262.5
+          - 192
+          - 59.5
+          fill: bg
+          kind: rounded
+          text: '共享映射
+
+            统一记账'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8.0
+          - 372
+          - 202.7
+          - 30
+          fill: bg
+          kind: rounded
+          text: 冷 / 热加载时间
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 218.66666666666666
+          - 372
+          - 202.7
+          - 30
+          fill: bg
+          kind: rounded
+          text: 缺页次数与IO大小分布
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 429.3333333333333
+          - 372
+          - 202.7
+          - 30
+          fill: bg
+          kind: rounded
+          text: 回收后再缺页率
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 2
+          - 256.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 218
+          - 256.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 30.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 105.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 181.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 434
+          - 256.5
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        texts:
+        - box:
+          - 8.0
+          - 3
+          - 191.6
+          - 26
+          text: 感知建模：清单与带宽
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 224.1
+          - 3
+          - 191.6
+          - 26
+          text: 决策：顺序与划分
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 440.2
+          - 3
+          - 195.8
+          - 26
+          text: 执行：映射与预读
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 8
+          - 348
+          - 120
+          - 22
+          text: 反馈
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        arrows:
+        - points:
+          - - 195
+            - 65.75
+          - - 224
+            - 65.75
+        - points:
+          - - 195
+            - 141.25
+          - - 200
+            - 141.25
+          - - 200
+            - 65.75
+          - - 224
+            - 65.75
+        - points:
+          - - 195
+            - 216.75
+          - - 224
+            - 216.75
+        - points:
+          - - 195
+            - 292.25
+          - - 206
+            - 292.25
+          - - 206
+            - 141.25
+          - - 224
+            - 141.25
+        - points:
+          - - 411
+            - 65.75
+          - - 416
+            - 65.75
+          - - 416
+            - 216.75
+          - - 440
+            - 216.75
+        - points:
+          - - 411
+            - 141.25
+          - - 440
+            - 141.25
+        - points:
+          - - 411
+            - 292.25
+          - - 440
+            - 292.25
+        - points:
+          - - 411
+            - 141.25
+          - - 422
+            - 141.25
+          - - 422
+            - 65.75
+          - - 440
+            - 65.75
+        - points:
+          - - 536
+            - 330
+          - - 536
+            - 346
+        - points:
+          - - 101
+            - 346
+          - - 101
+            - 330
+          color: accent
+      difficulties:
+      - name: NPU路径文件页映射
+        size: 4.27
+        points:
+        - name: 难点
+          text: NPU要IOMMU映射与缓冲注册，常要求钉住而回收不了
+        - name: 布局转换
+          text: 离线转为页对齐的NPU友好布局（模型翻译）
+        - name: IOMMU映射
+          text: 文件页经dma-buf映射给NPU，可缺页、可回收，
+          highlight: 文件页即NPU内存
+      - name: 顺序化大块IO
+        size: 3.62
+        points:
+        - name: 难点
+          text: 缺页是4KB级随机请求，打不满UFS带宽
+        - name: 打包预读
+          text: 按层或专家顺序打包，按调度顺序大块预读，
+          highlight: 大块顺序读
+        - name: 共享队列
+          text: 与KT2-A的预取共用IO队列
+      - name: 权重按内容共享
+        size: 3.62
+        points:
+        - name: 难点
+          text: 同一基座被多Agent、多LoRA、CPU与NPU各存一份
+        - name: 共享映射
+          text: 以权重内容为键共享映射，
+          highlight: 一份权重多方共用
+        - name: 统一记账
+          text: 由内存系统统一记账，映射页计入模型内存
+      milestones:
+      - date: 2027.03.31
+        deliverable: '加载基线与
+
+          IOMMU可行性'
+      - date: 2027.06.30
+        deliverable: '页对齐格式与
+
+          大块预读'
+      - date: 2027.09.30
+        deliverable: 'NPU零拷贝映射
+
+          与权重共享'
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: Agent云转端评估平台：
+      title_suffix: 手机仿真校准+决策模型，TTFT/TPOT误差≤10%
+      challenges:
+      - name: 无统一账本
+        text: 端云能耗口径不同，难直接比较。
+      - name: 仿真无手机先例
+        text: 现有仿真器误差1–10%但全在GPU。
+      - name: 体验风险难量化
+        text: 云成本<1美分，端耗电约1.5%（估算）
+      goal: 建立手机侧Agent云转端的仿真评估平台，用统一决策模型判断哪些步骤值得下沉，
+      goal_highlight: TTFT/TPOT误差≤10%、功耗误差≤15%
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0.0
+          - 207.8
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8.0
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 8.0
+          - 42.0
+          - 187.6
+          - 50
+          fill: highlight_blue
+          kind: rounded
+          text: '真机观测
+
+            Perfetto+ODPM计数器'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8.0
+          - 122.0
+          - 187.6
+          - 50
+          fill: bg
+          kind: rounded
+          text: '体验指标（自定义）
+
+            响应·质量·资源·干扰·经济'
+          text_style: caption
+          radius: 3
+          line: line
+        - box:
+          - 8.0
+          - 202.0
+          - 187.6
+          - 50
+          fill: highlight
+          kind: rounded
+          text: '按步骤×阶段记账
+
+            预填充·解码·空闲·网络'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 8.0
+          - 282.0
+          - 187.6
+          - 50
+          fill: bg
+          kind: rounded
+          text: '云侧公开口径（不含网络）
+
+            网络射频能耗单独建模'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224.1
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 42.0
+          - 187.6
+          - 50
+          fill: highlight_blue
+          kind: rounded
+          text: '标准负载集
+
+            模型层·轨迹层·叠加场景层'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 224.1
+          - 122.0
+          - 187.6
+          - 50
+          fill: primary
+          kind: rounded
+          text: '手机仿真平台
+
+            SoC·DVFS·热·带宽模型'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 202.0
+          - 187.6
+          - 50
+          fill: highlight
+          kind: rounded
+          text: '分层校准
+
+            算子→系统→热/DVFS长时序'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224.1
+          - 282.0
+          - 187.6
+          - 50
+          fill: bg
+          kind: rounded
+          text: '验收：算子、端到端误差≤10%
+
+            功耗误差≤15%（目标假设）'
+          text_style: caption
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 42.0
+          - 191.8
+          - 50
+          fill: primary
+          kind: rounded
+          text: '净收益NB：成本+隐私−能耗
+
+            −内存−时延惩罚−风险'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 122.0
+          - 191.8
+          - 50
+          fill: highlight
+          kind: rounded
+          text: '体验红线硬约束
+
+            TTFT·掉帧·冷启动·温度'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440.2
+          - 202.0
+          - 191.8
+          - 42
+          fill: bg
+          kind: rounded
+          text: 'λ三档预设+灵敏度扫描
+
+            成本 / 体验 / 隐私优先'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 274.0
+          - 191.8
+          - 50
+          fill: highlight_blue
+          kind: rounded
+          text: '下沉建议 + 决策翻转点
+
+            （≥6类典型任务）'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 201.4
+          - 392.6
+          - 235
+          - 14
+          fill: bg
+          kind: rect
+          text: 真机轨迹回灌，校准仿真并出误差报告
+          text_style: caption
+          color: accent
+        texts:
+        - box:
+          - 30.0
+          - 3.0
+          - 165.6
+          - 30
+          text: 感知 / 建模
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 246.1
+          - 3.0
+          - 165.6
+          - 30
+          text: 仿真校准评估
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 462.2
+          - 3.0
+          - 169.8
+          - 30
+          text: 决策与执行
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        arrows:
+        - points:
+          - - 101.8
+            - 92.0
+          - - 101.8
+            - 122.0
+        - points:
+          - - 101.8
+            - 172.0
+          - - 101.8
+            - 202.0
+        - points:
+          - - 101.8
+            - 252.0
+          - - 101.8
+            - 282.0
+        - points:
+          - - 317.9
+            - 92.0
+          - - 317.9
+            - 122.0
+        - points:
+          - - 317.9
+            - 172.0
+          - - 317.9
+            - 202.0
+        - points:
+          - - 317.9
+            - 252.0
+          - - 317.9
+            - 282.0
+        - points:
+          - - 536.1
+            - 92.0
+          - - 536.1
+            - 122.0
+        - points:
+          - - 536.1
+            - 172.0
+          - - 536.1
+            - 202.0
+        - points:
+          - - 536.1
+            - 244.0
+          - - 536.1
+            - 274.0
+        - points:
+          - - 195.6
+            - 307.0
+          - - 209.8
+            - 307.0
+          - - 209.8
+            - 67.0
+          - - 224.1
+            - 67.0
+        - points:
+          - - 411.7
+            - 307.0
+          - - 425.9
+            - 307.0
+          - - 425.9
+            - 67.0
+          - - 440.2
+            - 67.0
+        - points:
+          - - 536.1
+            - 324.0
+          - - 536.1
+            - 399.6
+          - - 101.8
+            - 399.6
+          - - 101.8
+            - 332.0
+          color: accent
+      difficulties:
+      - name: 统一能耗记账与真机指标
+        size: 5
+        points:
+        - name: 难点
+          text: ODPM仅部分机型有，整机电流难拆分；云侧能耗不含网络
+        - name: 真机指标
+          text: Perfetto+ODPM采集，隔离供电；自定五类体验指标
+        - name: 分阶段记账
+          text: 端侧按prefill、decode、空闲、网络建模，
+          highlight: 记账下沉到步骤×阶段
+      - name: 标准负载集与仿真校准
+        size: 5
+        points:
+        - name: 难点
+          text: 手机有DVFS、热降频、带宽共享，无公开校准方法
+        - name: 标准负载
+          text: 模型层MLPerf Mobile LLM+轨迹回放+叠加3–5个应用
+        - name: 分层校准
+          text: 算子、系统、热三层校准，每次平台升级复跑，
+          highlight: 真机回灌公布误差带
+      - name: 体验红线与云转端决策
+        size: 4
+        points:
+        - name: 难点
+          text: 端侧推理占用内存，挤压前台应用，体验风险难量化
+        - name: 红线约束
+          text: 常驻内存换算成冷启动退化与回收次数，
+          highlight: 红线加翻转点
+      milestones:
+      - date: 2027.03.31
+        deliverable: 负载集与真机基线
+      - date: 2027.06.30
+        deliverable: '仿真平台v1
+
+          与校准报告'
+      - date: 2027.09.30
+        deliverable: '决策模型与
+
+          翻转点报告'
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: 单Agent并行化方案：
+      title_suffix: 依赖图+仿真筛选导出策略，多工具任务时延降20–40%
+      challenges:
+      - name: 串行等待
+        text: 生成→工具→生成串行，时延为各步之和。
+      - name: 算力闲置
+        text: NPU验证阶段闲置超70%（待核实）。
+      - name: 带宽共享
+        text: CPU+NPU并用仅比NPU单用高约6%
+      goal: 在单Agent内部导出并仿真验证并行方案，缩短端侧多工具任务时延，
+      goal_highlight: 多工具任务时延降20–40%
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0.0
+          - 207.8
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8.0
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 8.0
+          - 42.0
+          - 187.6
+          - 44
+          fill: highlight_blue
+          kind: rounded
+          text: '轨迹依赖图
+
+            数据依赖 + 顺序依赖'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8.0
+          - 115.5
+          - 187.6
+          - 40
+          fill: primary
+          kind: rounded
+          text: 工具语义标签库
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 8.0
+          - 185.0
+          - 187.6
+          - 44
+          fill: highlight
+          kind: rounded
+          text: '只读·幂等·可回滚
+
+            开放并行与投机'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 8.0
+          - 258.5
+          - 187.6
+          - 44
+          fill: bg
+          kind: rounded
+          text: '有副作用·需确认
+
+            串行执行，不投机'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8.0
+          - 332.0
+          - 187.6
+          - 44
+          fill: bg
+          kind: rounded
+          text: '投机结果隔离
+
+            确认前不落地'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224.1
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 42.0
+          - 187.6
+          - 44
+          fill: highlight_blue
+          kind: rounded
+          text: '带宽 / 功耗 / 热模型
+
+            （复用S1）'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 224.1
+          - 116.0
+          - 187.6
+          - 50
+          fill: primary
+          kind: rounded
+          text: '带宽争抢模型
+
+            并行度×批大小×背景流量'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 196.0
+          - 187.6
+          - 44
+          fill: highlight
+          kind: rounded
+          text: 收益拐点 → 并行度上限
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224.1
+          - 270.0
+          - 187.6
+          - 44
+          fill: bg
+          kind: rounded
+          text: 与KT2-B的KV配额联动
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 42.0
+          - 191.8
+          - 40
+          fill: primary
+          kind: rounded
+          text: 计划生成：枚举候选并行计划
+          text_style: caption
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 112.0
+          - 191.8
+          - 44
+          fill: highlight
+          kind: rounded
+          text: '仿真筛选
+
+            时延 / 能耗 / 内存帕累托'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440.2
+          - 186.0
+          - 191.8
+          - 40
+          fill: highlight_blue
+          kind: rounded
+          text: 固化策略模板
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 440.2
+          - 256.0
+          - 92.9
+          - 70
+          fill: bg
+          kind: rounded
+          text: '工具并发
+
+            投机隔离回滚'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 539.1
+          - 256.0
+          - 92.9
+          - 70
+          fill: bg
+          kind: rounded
+          text: '合批·投机解码
+
+            异构流水'
+          text_style: caption
+          radius: 3
+          line: line
+        - box:
+          - 226.2
+          - 392.6
+          - 235
+          - 14
+          fill: bg
+          kind: rect
+          text: 命中率、回滚率、仿真偏差回流
+          text_style: caption
+          color: accent
+        texts:
+        - box:
+          - 30.0
+          - 3.0
+          - 165.6
+          - 30
+          text: 工具语义与许可
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 246.1
+          - 3.0
+          - 165.6
+          - 30
+          text: 带宽感知并行度
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 462.2
+          - 3.0
+          - 169.8
+          - 30
+          text: 方案导出与执行
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        arrows:
+        - points:
+          - - 101.8
+            - 86.0
+          - - 101.8
+            - 115.5
+        - points:
+          - - 101.8
+            - 155.5
+          - - 101.8
+            - 185.0
+        - points:
+          - - 101.8
+            - 229.0
+          - - 101.8
+            - 258.5
+        - points:
+          - - 101.8
+            - 302.5
+          - - 101.8
+            - 332.0
+        - points:
+          - - 317.9
+            - 86.0
+          - - 317.9
+            - 116.0
+        - points:
+          - - 317.9
+            - 166.0
+          - - 317.9
+            - 196.0
+        - points:
+          - - 317.9
+            - 240.0
+          - - 317.9
+            - 270.0
+        - points:
+          - - 536.1
+            - 82.0
+          - - 536.1
+            - 112.0
+        - points:
+          - - 536.1
+            - 156.0
+          - - 536.1
+            - 186.0
+        - points:
+          - - 486.6
+            - 226.0
+          - - 486.6
+            - 256.0
+        - points:
+          - - 585.6
+            - 226.0
+          - - 585.6
+            - 256.0
+        - points:
+          - - 195.6
+            - 280.5
+          - - 209.8
+            - 280.5
+          - - 209.8
+            - 141.0
+          - - 224.1
+            - 141.0
+        - points:
+          - - 411.7
+            - 218.0
+          - - 425.9
+            - 218.0
+          - - 425.9
+            - 134.0
+          - - 440.2
+            - 134.0
+        - points:
+          - - 585.6
+            - 326.0
+          - - 585.6
+            - 399.6
+          - - 101.8
+            - 399.6
+          - - 101.8
+            - 376.0
+          color: accent
+      difficulties:
+      - name: 工具并行许可
+        size: 5
+        points:
+        - name: 难点
+          text: 手机工具多有副作用，需权限与用户确认
+        - name: 语义标签
+          text: 只读、幂等、可回滚开放并行与投机，其余串行
+        - name: 结果隔离
+          text: 投机结果在确认前隔离不落地，
+          highlight: 元数据驱动并行许可
+      - name: 带宽争抢下的收益
+        size: 5
+        points:
+        - name: 难点
+          text: CPU+NPU并用约59.6GB/s，工具与UI还在抢带宽
+        - name: 争抢建模
+          text: 扫描并行度×批大小×背景流量，按拐点设上限，
+          highlight: 带宽感知并行上限
+      - name: 并行方案自动导出
+        size: 5
+        points:
+        - name: 难点
+          text: 依赖隐含在对话里，规划出错会造成执行错序
+        - name: 依赖图
+          text: 从历史轨迹抽取依赖图，枚举候选计划
+        - name: 仿真筛选
+          text: 帕累托筛选后固化为模板，
+          highlight: 轨迹到模板的闭环
+      milestones:
+      - date: 2027.06.30
+        deliverable: '工具标签与
+
+          依赖图抽取'
+      - date: 2027.09.30
+        deliverable: '带宽争抢模型
+
+          与并行度上限'
+      - date: 2027.12.31
+        deliverable: 策略模板上线验证
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: 3DGS全链路热稳态能效：
+      title_suffix: 温度预算驱动渲染，稳态60FPS+、功耗<1.5W
+      challenges:
+      - name: 渲染功耗高
+        text: 量化3DGS稳态仅3FPS、5.89W。
+      - name: 端侧生成太慢
+        text: 多视角重建255s，单图亚秒仅服务器可达。
+      - name: 格式未统一
+        text: PLY数百MB，标准未定，兼容性差
+      goal: 在手机热稳态下实现3DGS拍完即看、秒开流畅，形成采集到渲染的全链路能效方案，
+      goal_highlight: 稳态60FPS+、渲染功耗<1.5W
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0.0
+          - 207.8
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8.0
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 8.0
+          - 42.0
+          - 187.6
+          - 48
+          fill: highlight_blue
+          kind: rounded
+          text: '感知：热 / 电量监测
+
+            场景复杂度估计'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8.0
+          - 120.0
+          - 187.6
+          - 48
+          fill: primary
+          kind: rounded
+          text: '预算控制器
+
+            温度预算 → 高斯数量'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 8.0
+          - 198.0
+          - 187.6
+          - 48
+          fill: highlight
+          kind: rounded
+          text: 'LOD档位决策
+
+            视距·贡献度·帧预算裁剪'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 8.0
+          - 276.0
+          - 187.6
+          - 44
+          fill: bg
+          kind: rounded
+          text: '稳态遥测回灌
+
+            更新档位表'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224.1
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 42.0
+          - 187.6
+          - 44
+          fill: highlight
+          kind: rounded
+          text: '生成路径选择
+
+            多视角 / 单图'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224.1
+          - 116.0
+          - 90.8
+          - 48
+          fill: highlight_blue
+          kind: rounded
+          text: '单图：
+
+            前馈模型'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 320.9
+          - 116.0
+          - 90.8
+          - 48
+          fill: bg
+          kind: rounded
+          text: '多视角：
+
+            优化重建'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224.1
+          - 194.0
+          - 187.6
+          - 48
+          fill: primary
+          kind: rounded
+          text: '可抢占重建阶段
+
+            位姿 → 初始化 → 优化'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 272.0
+          - 187.6
+          - 44
+          fill: bg
+          kind: rounded
+          text: 前台争用GPU与内存时让位
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 42.0
+          - 191.8
+          - 48
+          fill: bg
+          kind: rounded
+          text: 'SPZ / glTF封装
+
+            标准容器，不做私有格式'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 120.0
+          - 191.8
+          - 48
+          fill: highlight_blue
+          kind: rounded
+          text: '并行加载：6路ZSTD解码
+
+            流式上传GPU'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 440.2
+          - 198.0
+          - 191.8
+          - 48
+          fill: primary
+          kind: rounded
+          text: '免排序 / Tiled渲染
+
+            神经增强补偿半透明'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 276.0
+          - 191.8
+          - 44
+          fill: highlight
+          kind: rounded
+          text: 稳态帧率·功耗·温度遥测
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 201.4
+          - 392.6
+          - 235
+          - 14
+          fill: bg
+          kind: rect
+          text: 温度遥测回灌预算控制器
+          text_style: caption
+          color: accent
+        texts:
+        - box:
+          - 30.0
+          - 3.0
+          - 165.6
+          - 30
+          text: 热预算与LOD
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 246.1
+          - 3.0
+          - 165.6
+          - 30
+          text: 生成与可抢占重建
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 462.2
+          - 3.0
+          - 169.8
+          - 30
+          text: 封装加载与渲染
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        arrows:
+        - points:
+          - - 101.8
+            - 90.0
+          - - 101.8
+            - 120.0
+        - points:
+          - - 101.8
+            - 168.0
+          - - 101.8
+            - 198.0
+        - points:
+          - - 101.8
+            - 246.0
+          - - 101.8
+            - 276.0
+        - points:
+          - - 269.5
+            - 86.0
+          - - 269.5
+            - 116.0
+        - points:
+          - - 366.3
+            - 86.0
+          - - 366.3
+            - 116.0
+        - points:
+          - - 269.5
+            - 164.0
+          - - 269.5
+            - 194.0
+        - points:
+          - - 366.3
+            - 164.0
+          - - 366.3
+            - 194.0
+        - points:
+          - - 317.9
+            - 242.0
+          - - 317.9
+            - 272.0
+        - points:
+          - - 536.1
+            - 90.0
+          - - 536.1
+            - 120.0
+        - points:
+          - - 536.1
+            - 168.0
+          - - 536.1
+            - 198.0
+        - points:
+          - - 536.1
+            - 246.0
+          - - 536.1
+            - 276.0
+        - points:
+          - - 195.6
+            - 222.0
+          - - 209.8
+            - 222.0
+          - - 209.8
+            - 64.0
+          - - 224.1
+            - 64.0
+        - points:
+          - - 411.7
+            - 218.0
+          - - 425.9
+            - 218.0
+          - - 425.9
+            - 66.0
+          - - 440.2
+            - 66.0
+        - points:
+          - - 536.1
+            - 320.0
+          - - 536.1
+            - 399.6
+          - - 101.8
+            - 399.6
+          - - 101.8
+            - 320.0
+          color: accent
+      difficulties:
+      - name: 热稳态渲染能效
+        size: 5
+        points:
+        - name: 难点
+          text: 冷启动127FPS，稳态降到74FPS，GPU持续降频
+        - name: 温度预算
+          text: 按视距与贡献度做LOD，温度预算反馈给高斯数量，
+          highlight: 温度预算驱动渲染
+        - name: 免排序
+          text: 免排序渲染，神经增强弥补半透明伪影
+      - name: 端侧生成耗时与内存
+        size: 5
+        points:
+        - name: 难点
+          text: 重建255s、峰值近3GB，与前台争GPU和内存
+        - name: 可抢占
+          text: 重建拆成位姿、初始化、优化三阶段，
+          highlight: 分阶段可抢占重建
+        - name: 前馈
+          text: 单图场景用前馈模型代替优化
+      - name: 格式压缩端侧可解码
+        size: 5
+        points:
+        - name: 难点
+          text: glTF基础扩展不含压缩，SPZ版本不兼容，MPEG未发布
+        - name: 标准容器
+          text: 跟随glTF+SPZ，房间级文件目标10–25MB
+        - name: 流式加载
+          text: 6路ZSTD并行解码，流式上传GPU，
+          highlight: 不整体解压后常驻
+      milestones:
+      - date: 2027.03.31
+        deliverable: 全链路基线
+      - date: 2027.06.30
+        deliverable: '温度预算渲染
+
+          与流式加载'
+      - date: 2027.12.31
+        deliverable: 端侧单图生成原型
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: 系统级常驻AI萌宠：
+      title_suffix: 事件驱动分级渲染，空闲功耗趋零
+      challenges:
+      - name: 常驻耗电
+        text: 连续渲染唤醒GPU与显示，无公开功耗数据。
+      - name: 无系统级先例
+        text: 七家厂商均无官方宠物功能。
+      - name: 记忆与隐私
+        text: 个性化需长期记忆，端侧存取要低时延且隔离
+      goal: 打造系统级事件驱动的常驻AI萌宠，空闲几乎不耗电，互动有个性、有记忆，
+      goal_highlight: 空闲功耗趋零
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0.0
+          - 207.8
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8.0
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 8.0
+          - 42.0
+          - 187.6
+          - 48
+          fill: highlight_blue
+          kind: rounded
+          text: '系统事件 / 语音输入
+
+            渲染负载监测'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8.0
+          - 120.0
+          - 187.6
+          - 48
+          fill: primary
+          kind: rounded
+          text: '三层记忆库
+
+            短期·事件摘要·长期偏好'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 8.0
+          - 198.0
+          - 187.6
+          - 44
+          fill: highlight
+          kind: rounded
+          text: 召回：只取相关少量条目
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 8.0
+          - 272.0
+          - 187.6
+          - 48
+          fill: bg
+          kind: rounded
+          text: '系统受保护目录存储
+
+            云端仅用户授权时使用'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224.1
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 42.0
+          - 187.6
+          - 48
+          fill: primary
+          kind: rounded
+          text: '行为决策器
+
+            事件 + 记忆 → 行为意图'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 120.0
+          - 90.8
+          - 60
+          fill: highlight
+          kind: rounded
+          text: '大模型低频
+
+            动作脚本
+
+            状态机参数'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 320.9
+          - 120.0
+          - 90.8
+          - 60
+          fill: bg
+          kind: rounded
+          text: '小模型高频
+
+            嘴型等
+
+            高频动作'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224.1
+          - 210.0
+          - 187.6
+          - 44
+          fill: highlight_blue
+          kind: rounded
+          text: 动作脚本 + 状态机参数
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 224.1
+          - 284.0
+          - 187.6
+          - 40
+          fill: bg
+          kind: rounded
+          text: 音频驱动：语音 → 嘴型
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 42.0
+          - 191.8
+          - 48
+          fill: primary
+          kind: rounded
+          text: '状态机运行时
+
+            本地执行脚本与预制片段'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 119.5
+          - 191.8
+          - 40
+          fill: bg
+          kind: rounded
+          text: 静止：无事件不提交帧
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 189.0
+          - 191.8
+          - 40
+          fill: bg
+          kind: rounded
+          text: 微动：低帧率 + 预制片段
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 258.5
+          - 191.8
+          - 40
+          fill: bg
+          kind: rounded
+          text: 互动：满帧 + 模型驱动
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 328.0
+          - 191.8
+          - 48
+          fill: highlight_blue
+          kind: rounded
+          text: '系统合成层常驻渲染
+
+            随息屏、遮挡、温度降级'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 201.4
+          - 392.6
+          - 235
+          - 14
+          fill: bg
+          kind: rect
+          text: 功耗帧率监测与互动、关闭行为回流
+          text_style: caption
+          color: accent
+        texts:
+        - box:
+          - 30.0
+          - 3.0
+          - 165.6
+          - 30
+          text: 分层记忆与感知
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 246.1
+          - 3.0
+          - 165.6
+          - 30
+          text: 混合动作决策
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 462.2
+          - 3.0
+          - 169.8
+          - 30
+          text: 常驻渲染分级
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        arrows:
+        - points:
+          - - 101.8
+            - 90.0
+          - - 101.8
+            - 120.0
+        - points:
+          - - 101.8
+            - 168.0
+          - - 101.8
+            - 198.0
+        - points:
+          - - 101.8
+            - 242.0
+          - - 101.8
+            - 272.0
+        - points:
+          - - 269.5
+            - 90.0
+          - - 269.5
+            - 120.0
+        - points:
+          - - 366.3
+            - 90.0
+          - - 366.3
+            - 120.0
+        - points:
+          - - 269.5
+            - 180.0
+          - - 269.5
+            - 210.0
+        - points:
+          - - 366.3
+            - 180.0
+          - - 366.3
+            - 210.0
+        - points:
+          - - 317.9
+            - 254.0
+          - - 317.9
+            - 284.0
+        - points:
+          - - 536.1
+            - 90.0
+          - - 536.1
+            - 119.5
+        - points:
+          - - 195.6
+            - 220.0
+          - - 209.8
+            - 220.0
+          - - 209.8
+            - 66.0
+          - - 224.1
+            - 66.0
+        - points:
+          - - 411.7
+            - 232.0
+          - - 425.9
+            - 232.0
+          - - 425.9
+            - 66.0
+          - - 440.2
+            - 66.0
+        - points:
+          - - 536.1
+            - 376.0
+          - - 536.1
+            - 399.6
+          - - 101.8
+            - 399.6
+          - - 101.8
+            - 320.0
+          color: accent
+      difficulties:
+      - name: 端侧分层记忆与隐私
+        size: 5
+        points:
+        - name: 难点
+          text: 记忆越多越个性化，也越敏感
+        - name: 三层记忆
+          text: 短期对话、事件摘要、长期偏好，参考抽取—召回
+        - name: 受保护存储
+          text: 存系统受保护目录，云端仅授权时用，
+          highlight: 只召回少量相关条目
+      - name: 动作的混合式生成
+        size: 5
+        points:
+        - name: 难点
+          text: 大模型实时驱动不可持续，纯预制动画无个性
+        - name: 大模型
+          text: 按需生成动作脚本和状态机参数，本地状态机执行
+        - name: 小模型
+          text: 嘴型等高频动作用小模型驱动，
+          highlight: 低频大模型高频小模型
+      - name: 常驻渲染功耗预算
+        size: 5
+        points:
+        - name: 难点
+          text: 连续动画会持续唤醒GPU和显示管线
+        - name: 分级渲染
+          text: 静止、微动、互动三档，随息屏、遮挡、温度降级
+        - name: 事件驱动
+          text: 渲染放在系统合成层，无事件不提交帧，
+          highlight: 空闲零帧
+      milestones:
+      - date: 2027.03.31
+        deliverable: '常驻功耗与
+
+          内存基线'
+      - date: 2027.06.30
+        deliverable: '分级渲染与状
+
+          态机运行时'
+      - date: 2027.09.30
+        deliverable: 灰度验证留存假设
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: 系统级神经超分插帧：
+      title_suffix: 帧预算调度+系统光流，同画质功耗降20–40%
+      challenges:
+      - name: 帧预算超支
+        text: 插帧约18ms（非官方），预算仅8.3ms。
+      - name: 持续降频
+        text: 高负载游戏数分钟后锁帧，体验波动。
+      - name: 硬件碎片
+        text: 四家神经加速器各异，API未统一
+      goal: 在手机持续高负载下，以神经超分与插帧换取更低功耗和更稳帧率，对存量游戏透明可用，
+      goal_highlight: 同画质功耗降20–40%、插帧<4ms
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0.0
+          - 207.8
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8.0
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 8.0
+          - 42.0
+          - 187.6
+          - 44
+          fill: highlight_blue
+          kind: rounded
+          text: 帧时间 / GPU频率温度监测
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8.0
+          - 115.5
+          - 187.6
+          - 40
+          fill: bg
+          kind: rounded
+          text: 游戏与UI层识别
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8.0
+          - 185.0
+          - 187.6
+          - 44
+          fill: primary
+          kind: rounded
+          text: '合成器侧光流估计
+
+            无需游戏提供运动向量'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 8.0
+          - 258.5
+          - 187.6
+          - 44
+          fill: highlight
+          kind: rounded
+          text: 'UI遮罩
+
+            固定屏幕区域·合成层'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 8.0
+          - 332.0
+          - 187.6
+          - 44
+          fill: bg
+          kind: rounded
+          text: 'SDK级补充运动向量
+
+            （高质量路径）'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224.1
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 42.0
+          - 187.6
+          - 48
+          fill: highlight_blue
+          kind: rounded
+          text: '硬件能力查询
+
+            有无GPU内联神经加速器'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 224.1
+          - 120.0
+          - 187.6
+          - 48
+          fill: primary
+          kind: rounded
+          text: '帧预算调度器
+
+            按帧时间启停插帧'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 198.0
+          - 187.6
+          - 48
+          fill: highlight
+          kind: rounded
+          text: '路径选择
+
+            系统级 / SDK级'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224.1
+          - 276.0
+          - 187.6
+          - 48
+          fill: bg
+          kind: rounded
+          text: '模型档位
+
+            小模型或半分辨率光流'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 42.0
+          - 191.8
+          - 48
+          fill: primary
+          kind: rounded
+          text: '统一算子抽象层
+
+            超分·插帧·降噪接口'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 120.0
+          - 92.9
+          - 60
+          fill: highlight_blue
+          kind: rounded
+          text: 'GPU内联
+
+            神经加速器
+
+            （INT8）'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 539.1
+          - 120.0
+          - 92.9
+          - 60
+          fill: bg
+          kind: rounded
+          text: 'NPU /
+
+            通用GPU
+
+            后端'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 210.0
+          - 191.8
+          - 44
+          fill: highlight
+          kind: rounded
+          text: 神经超分·插帧·降噪
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440.2
+          - 284.0
+          - 191.8
+          - 40
+          fill: bg
+          kind: rounded
+          text: 帧抖动·功耗·伪影检测
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 201.4
+          - 392.6
+          - 235
+          - 14
+          fill: bg
+          kind: rect
+          text: 帧抖动、功耗温度、伪影检测回流
+          text_style: caption
+          color: accent
+        texts:
+        - box:
+          - 30.0
+          - 3.0
+          - 165.6
+          - 30
+          text: 系统级输入
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 246.1
+          - 3.0
+          - 165.6
+          - 30
+          text: 帧预算调度
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 462.2
+          - 3.0
+          - 169.8
+          - 30
+          text: 后端抽象执行
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        arrows:
+        - points:
+          - - 101.8
+            - 86.0
+          - - 101.8
+            - 115.5
+        - points:
+          - - 101.8
+            - 155.5
+          - - 101.8
+            - 185.0
+        - points:
+          - - 101.8
+            - 229.0
+          - - 101.8
+            - 258.5
+        - points:
+          - - 101.8
+            - 302.5
+          - - 101.8
+            - 332.0
+        - points:
+          - - 317.9
+            - 90.0
+          - - 317.9
+            - 120.0
+        - points:
+          - - 317.9
+            - 168.0
+          - - 317.9
+            - 198.0
+        - points:
+          - - 317.9
+            - 246.0
+          - - 317.9
+            - 276.0
+        - points:
+          - - 486.6
+            - 90.0
+          - - 486.6
+            - 120.0
+        - points:
+          - - 585.6
+            - 90.0
+          - - 585.6
+            - 120.0
+        - points:
+          - - 486.6
+            - 180.0
+          - - 486.6
+            - 210.0
+        - points:
+          - - 585.6
+            - 180.0
+          - - 585.6
+            - 210.0
+        - points:
+          - - 536.1
+            - 254.0
+          - - 536.1
+            - 284.0
+        - points:
+          - - 195.6
+            - 280.5
+          - - 209.8
+            - 280.5
+          - - 209.8
+            - 144.0
+          - - 224.1
+            - 144.0
+        - points:
+          - - 411.7
+            - 222.0
+          - - 425.9
+            - 222.0
+          - - 425.9
+            - 66.0
+          - - 440.2
+            - 66.0
+        - points:
+          - - 536.1
+            - 324.0
+          - - 536.1
+            - 399.6
+          - - 101.8
+            - 399.6
+          - - 101.8
+            - 376.0
+          color: accent
+      difficulties:
+      - name: 系统级输入信息不足
+        size: 5
+        points:
+        - name: 难点
+          text: 系统级拿不到深度和运动向量，UI会被一起插值
+        - name: 光流估计
+          text: 在合成器一侧估计光流，SDK级补充运动向量
+        - name: UI遮罩
+          text: 按固定屏幕区域、合成层检测UI，
+          highlight: 系统光流加UI遮罩
+      - name: 帧预算内完成推理
+        size: 5
+        points:
+        - name: 难点
+          text: 插帧实测11–30ms，推理与渲染共享GPU，持续运行降频
+        - name: 内联加速
+          text: 有硬件走GPU内联加速器，无则小模型或半分辨率光流
+        - name: 预算调度
+          text: 按帧时间动态决定是否插帧，
+          highlight: 按预算动态启停插帧
+      - name: 加速器碎片化
+        size: 5
+        points:
+        - name: 难点
+          text: 四家各一套，Vulkan ML仍是厂商扩展
+        - name: 算子抽象
+          text: 系统图形栈内做后端抽象层，统一超分、插帧、降噪接口
+        - name: 多后端
+          text: 向下适配tensor / data graph路径，
+          highlight: 统一算子抽象层
+      milestones:
+      - date: 2027.03.31
+        deliverable: '功耗与插帧
+
+          耗时基线'
+      - date: 2027.06.30
+        deliverable: '后端抽象层与
+
+          帧预算调度'
+      - date: 2027.09.30
+        deliverable: '系统光流加U
+
+          I遮罩上线'
+  - template: solution.solution-kickoff-difficulties
+    data:
+      title: 生成式UI原生渲染：
+      title_suffix: 声明式组件流式渲染，WebView兜底，流式不掉帧
+      challenges:
+      - name: 流式易卡顿
+        text: 组件树持续到达，反复布局重绘，首元素要早。
+      - name: 隔离与资源矛盾
+        text: iframe常驻WebView，声明式受限。
+      - name: 与原生割裂
+        text: 字体、深色、无障碍易不一致
+      goal: 在系统渲染引擎中支持模型生成界面的流式、安全、原生一致渲染（指标待原型测定），
+      goal_highlight: 流式不掉帧、越权100%拦截
+      arch:
+        canvas:
+        - 640
+        - 411
+        panels:
+        - box:
+          - 0.0
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 216.1
+          - 0.0
+          - 203.6
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        - box:
+          - 432.2
+          - 0.0
+          - 207.8
+          - 386.0
+          fill: surface_light
+          kind: rounded
+          radius: 8
+        shapes:
+        - box:
+          - 8.0
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '1'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 8.0
+          - 42.0
+          - 187.6
+          - 48
+          fill: highlight_blue
+          kind: rounded
+          text: '组件目录 + 设计令牌
+
+            系统设计系统构建'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 8.0
+          - 120.0
+          - 187.6
+          - 40
+          fill: bg
+          kind: rounded
+          text: '设备能力
+
+            深色·无障碍·屏幕'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 8.0
+          - 190.0
+          - 187.6
+          - 48
+          fill: primary
+          kind: rounded
+          text: '协议校验层
+
+            声明式JSON / MCP Apps'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 8.0
+          - 268.0
+          - 187.6
+          - 44
+          fill: highlight
+          kind: rounded
+          text: '非法节点
+
+            拒绝或自动修复'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 224.1
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '2'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 42.0
+          - 187.6
+          - 44
+          fill: primary
+          kind: rounded
+          text: 渲染路径选择
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 224.1
+          - 116.0
+          - 90.8
+          - 60
+          fill: highlight
+          kind: rounded
+          text: '声明式
+
+            默认路径'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 320.9
+          - 116.0
+          - 90.8
+          - 60
+          fill: bg
+          kind: rounded
+          text: '受限WebView
+
+            表达不足兜底'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224.1
+          - 206.0
+          - 187.6
+          - 44
+          fill: bg
+          kind: rounded
+          text: '权限判定
+
+            逐项声明、逐项授权'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 224.1
+          - 280.0
+          - 187.6
+          - 44
+          fill: bg
+          kind: rounded
+          text: 'WebView按需创建
+
+            用完回收'
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 10.0
+          - 16
+          - 16
+          fill: highlight_strong
+          kind: oval
+          text: '3'
+          text_style: caption
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 42.0
+          - 191.8
+          - 44
+          fill: primary
+          kind: rounded
+          text: '流式解析器
+
+            组件流增量解析'
+          text_style: detail
+          radius: 3
+          line: primary
+          color: on_primary
+          bold: true
+        - box:
+          - 440.2
+          - 115.5
+          - 191.8
+          - 44
+          fill: highlight
+          kind: rounded
+          text: '增量差分
+
+            只更新变化节点'
+          text_style: detail
+          radius: 3
+          line: accent
+          color: accent
+          bold: true
+        - box:
+          - 440.2
+          - 189.0
+          - 191.8
+          - 44
+          fill: bg
+          kind: rounded
+          text: 布局移出渲染线程
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 440.2
+          - 262.5
+          - 191.8
+          - 44
+          fill: highlight_blue
+          kind: rounded
+          text: '按帧预算合批提交
+
+            可见内容优先'
+          text_style: detail
+          radius: 3
+          line: primary
+        - box:
+          - 440.2
+          - 336.0
+          - 191.8
+          - 40
+          fill: bg
+          kind: rounded
+          text: 首帧·掉帧监测
+          text_style: detail
+          radius: 3
+          line: line
+        - box:
+          - 201.4
+          - 392.6
+          - 235
+          - 14
+          fill: bg
+          kind: rect
+          text: 交互回传给模型，首帧与掉帧监测回流
+          text_style: caption
+          color: accent
+        texts:
+        - box:
+          - 30.0
+          - 3.0
+          - 165.6
+          - 30
+          text: 组件目录与校验
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 246.1
+          - 3.0
+          - 165.6
+          - 30
+          text: 渲染路径与权限
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        - box:
+          - 462.2
+          - 3.0
+          - 169.8
+          - 30
+          text: 流式增量渲染
+          style: body_strong
+          align: left
+          valign: middle
+          color: primary_text
+        arrows:
+        - points:
+          - - 101.8
+            - 90.0
+          - - 101.8
+            - 120.0
+        - points:
+          - - 101.8
+            - 160.0
+          - - 101.8
+            - 190.0
+        - points:
+          - - 101.8
+            - 238.0
+          - - 101.8
+            - 268.0
+        - points:
+          - - 269.5
+            - 86.0
+          - - 269.5
+            - 116.0
+        - points:
+          - - 366.3
+            - 86.0
+          - - 366.3
+            - 116.0
+        - points:
+          - - 269.5
+            - 176.0
+          - - 269.5
+            - 206.0
+        - points:
+          - - 366.3
+            - 176.0
+          - - 366.3
+            - 206.0
+        - points:
+          - - 317.9
+            - 250.0
+          - - 317.9
+            - 280.0
+        - points:
+          - - 536.1
+            - 86.0
+          - - 536.1
+            - 115.5
+        - points:
+          - - 536.1
+            - 159.5
+          - - 536.1
+            - 189.0
+        - points:
+          - - 536.1
+            - 233.0
+          - - 536.1
+            - 262.5
+        - points:
+          - - 536.1
+            - 306.5
+          - - 536.1
+            - 336.0
+        - points:
+          - - 195.6
+            - 290.0
+          - - 209.8
+            - 290.0
+          - - 209.8
+            - 64.0
+          - - 224.1
+            - 64.0
+        - points:
+          - - 411.7
+            - 228.0
+          - - 425.9
+            - 228.0
+          - - 425.9
+            - 64.0
+          - - 440.2
+            - 64.0
+        - points:
+          - - 536.1
+            - 376.0
+          - - 536.1
+            - 399.6
+          - - 101.8
+            - 399.6
+          - - 101.8
+            - 312.0
+          color: accent
+      difficulties:
+      - name: 生成物与原生一致
+        size: 5
+        points:
+        - name: 难点
+          text: 字体、间距、深色、无障碍易与系统不一致
+        - name: 目录约束
+          text: 系统设计系统建组件目录，模型只能引用目录内组件与令牌
+        - name: 校验修复
+          text: 校验层拒绝或修复非法节点，
+          highlight: 令牌约束的组件目录
+      - name: 沙箱隔离与资源平衡
+        size: 6
+        points:
+        - name: 难点
+          text: iframe隔离强但WebView重，纯声明式表达力受限
+        - name: 声明式优先
+          text: 默认声明式组件目录，数据不是代码，权限逐项授权
+        - name: 兜底路径
+          text: 表达不足时按需创建、用完回收，
+          highlight: 声明式为主兜底
+      - name: 流式增量渲染不卡顿
+        size: 5
+        points:
+        - name: 难点
+          text: 组件树持续到达，每次都可能触发布局和重绘
+        - name: 增量差分
+          text: 只更新变化节点，布局计算移出渲染线程
+        - name: 帧预算合批
+          text: 约定生成顺序，可见内容优先，
+          highlight: 按帧预算合批提交
+      milestones:
+      - date: 2027.03.31
+        deliverable: 双路径原型与测量
+      - date: 2027.06.30
+        deliverable: '组件目录与流
+
+          式增量渲染'
+      - date: 2027.09.30
+        deliverable: '协议对接与
+
+          安全校验'
+  # 17 2027 交付节奏
+  - template: solution.roadmap-matrix
+    data:
+      title: 2027交付：
+      title_suffix: 先建真机基线，再把建议区间定为承诺值
+      goals:
+        - name: （1）真机基线
+          text: 2027Q1建成标准负载集、体验指标和真机基线，是KT1至KT3、G1至G4的共同前置
+        - name: （2）承诺值
+          text: 基线建成后，把各技术的「建议区间」定为承诺值，再分季度合入内部版本
+        - name: （3）决策点
+          text: Q1完成SPE可用性摸底，并与SoC厂商确认NPU IOMMU映射可行性
+      generations:
+        - { name: 2027Q1, theme: 建基线、做摸底 }
+        - { name: 2027Q2, theme: 原型与策略 }
+        - { name: 2027Q3, theme: 合入内部版本 }
+        - { name: 2027Q4, theme: 统一接口与验证 }
+      rows:
+        - name: 系统内存
+          cells:
+            - items:
+                - { name: KT1, text: 冷启动基线、SPE摸底 }
+            - items:
+                - { name: KT1-a, text: 锁路径优化、软保护 }
+                - { name: KT1-b/c, text: 冷热模型、预取 }
+            - items:
+                - { name: KT1, text: 合入，KT1-a商用 }
+            - items:
+                - { name: KT1, text: 未排期，待确认 }
+        - name: 模型内存
+          cells:
+            - items:
+                - { name: KT2, text: 专家基线、KV块池 }
+                - { name: KT3, text: 加载基线、IOMMU }
+            - items:
+                - { name: KT2, text: 自适应预取、KV压缩 }
+                - { name: KT3, text: 页对齐、大块预读 }
+            - items:
+                - { name: KT2-B, text: 闪存换出、重算 }
+                - { name: KT3, text: NPU零拷贝、共享 }
+            - items:
+                - { name: KT2-A, text: 稀疏权重统一接口 }
+        - name: 仿真平台
+          cells:
+            - items:
+                - { name: S1, text: 负载集、真机基线 }
+            - items:
+                - { name: S1, text: 仿真v1与校准报告 }
+                - { name: S2, text: 工具标签、依赖图 }
+            - items:
+                - { name: S1, text: 云转端决策与翻转点 }
+                - { name: S2, text: 带宽模型、并行上限 }
+            - items:
+                - { name: S2, text: 策略模板上线验证 }
+        - name: AI图形
+          cells:
+            - items:
+                - { name: G1·G3, text: 全链路、插帧基线 }
+                - { name: G2·G4, text: 功耗基线、双路径 }
+            - items:
+                - { name: G1·G3, text: 温度预算、帧调度 }
+                - { name: G2·G4, text: 分级渲染、组件目录 }
+            - items:
+                - { name: G3, text: 光流加UI遮罩上线 }
+                - { name: G2·G4, text: 灰度留存、协议安全 }
+            - items:
+                - { name: G1, text: 端侧单图生成原型 }
+
+  # 18 风险与应对
+  - template: common.risk-table
+    data:
+      title: 风险与应对
+      title_suffix: Agent OS与AI+图形
+      takeaway: 3项高风险都有Q1前置动作，需立项后尽早落实
+      risks:
+        - risk: 量产手机SoC是否放开SPE，目前查不到公开资料
+          level: 高
+          mitigation: 2027Q1逐个SoC摸底并作为继续与否的决策点；备选用DAMON加Accessed位等软件信号驱动同一套预取，但与ASAP、Ariadne的差异会变小
+          owner: 待指定
+        - risk: 几乎所有目标缺少手机侧真机基线
+          level: 高
+          mitigation: 2027Q1由S1建成标准负载集、体验指标和真机基线，再把建议区间定为承诺值
+          owner: 待指定
+        - risk: NPU驱动与IOMMU能否映射文件页，决定KT3零拷贝能否成立
+          level: 高
+          mitigation: 尽早与SoC厂商确认驱动和IOMMU能力；2027Q1完成映射可行性确认
+          owner: 待指定
+        - risk: MoE主流度仅为中等置信度，2027年哪条稀疏路线胜出不确定
+          level: 中
+          mitigation: 把缓存对象泛化为可分页的稀疏权重单元，覆盖专家、PLE表、神经元簇，路线变化时投入不落空
+          owner: 待指定
+        - risk: 萌宠提升留存的假设没有证据，另有内容安全与未成年人保护风险
+          level: 中
+          mitigation: 立项落点放在系统层常驻低功耗渲染；2027Q3用灰度实验验证留存假设，并设内存预算上限
+          owner: 待指定
+        - risk: 标准未定且2026年下半年信息多为二手来源
+          level: 低
+          mitigation: A2UI在预览期、glTF扩展在候选版，跟随标准不做私有格式；进评审前按待核实清单逐条复核关键数字
+          owner: 待指定
+
+  # 19 立项诉求
+  - template: common.ask-decision
+    data:
+      title: 立项诉求
+      title_suffix: 批准立项并协调资源
+      takeaway: 批准两条线立项，并协调SoC厂商与真机资源
+      context:
+        - 12GB是端侧Agent门槛，DRAM合约价近翻倍，只能靠系统挖出可用内存
+        - 公开资料中没有统一记账、回收和共享模型内存的机制，手机侧仿真器也是空白
+        - 几乎所有目标缺手机侧基线，SPE与NPU IOMMU能力未确认，需要先行摸底
+      asks:
+        - item: 批准Agent OS立项
+          detail: 三项关键技术KT1智慧化内存管理、KT2 Agent内存组件、KT3模型翻译组件，加性能跟踪与仿真平台S1/S2
+        - item: 批准AI+图形立项
+          detail: 四项体验技术G1 3DGS、G2常驻萌宠、G3神经超分与插帧、G4生成式UI
+        - item: 协调SoC厂商，提供真机测试资源
+          detail: 确认SPE与NPU IOMMU能力，提供真机测试资源；人力与预算：待立项组填写

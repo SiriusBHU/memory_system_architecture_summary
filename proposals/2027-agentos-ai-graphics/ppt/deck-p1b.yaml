@@ -1,0 +1,119 @@
+style: default
+pages:
+  # 17 2027 交付节奏
+  - template: solution.roadmap-matrix
+    data:
+      title: 2027交付：
+      title_suffix: 先建真机基线，再把建议区间定为承诺值
+      goals:
+        - name: （1）真机基线
+          text: 2027Q1建成标准负载集、体验指标和真机基线，是KT1至KT3、G1至G4的共同前置
+        - name: （2）承诺值
+          text: 基线建成后，把各技术的「建议区间」定为承诺值，再分季度合入内部版本
+        - name: （3）决策点
+          text: Q1完成SPE可用性摸底，并与SoC厂商确认NPU IOMMU映射可行性
+      generations:
+        - { name: 2027Q1, theme: 建基线、做摸底 }
+        - { name: 2027Q2, theme: 原型与策略 }
+        - { name: 2027Q3, theme: 合入内部版本 }
+        - { name: 2027Q4, theme: 统一接口与验证 }
+      rows:
+        - name: 系统内存
+          cells:
+            - items:
+                - { name: KT1, text: 冷启动基线、SPE摸底 }
+            - items:
+                - { name: KT1-a, text: 锁路径优化、软保护 }
+                - { name: KT1-b/c, text: 冷热模型、预取 }
+            - items:
+                - { name: KT1, text: 合入，KT1-a商用 }
+            - items:
+                - { name: KT1, text: 未排期，待确认 }
+        - name: 模型内存
+          cells:
+            - items:
+                - { name: KT2, text: 专家基线、KV块池 }
+                - { name: KT3, text: 加载基线、IOMMU }
+            - items:
+                - { name: KT2, text: 自适应预取、KV压缩 }
+                - { name: KT3, text: 页对齐、大块预读 }
+            - items:
+                - { name: KT2-B, text: 闪存换出、重算 }
+                - { name: KT3, text: NPU零拷贝、共享 }
+            - items:
+                - { name: KT2-A, text: 稀疏权重统一接口 }
+        - name: 仿真平台
+          cells:
+            - items:
+                - { name: S1, text: 负载集、真机基线 }
+            - items:
+                - { name: S1, text: 仿真v1与校准报告 }
+                - { name: S2, text: 工具标签、依赖图 }
+            - items:
+                - { name: S1, text: 云转端决策与翻转点 }
+                - { name: S2, text: 带宽模型、并行上限 }
+            - items:
+                - { name: S2, text: 策略模板上线验证 }
+        - name: AI图形
+          cells:
+            - items:
+                - { name: G1·G3, text: 全链路、插帧基线 }
+                - { name: G2·G4, text: 功耗基线、双路径 }
+            - items:
+                - { name: G1·G3, text: 温度预算、帧调度 }
+                - { name: G2·G4, text: 分级渲染、组件目录 }
+            - items:
+                - { name: G3, text: 光流加UI遮罩上线 }
+                - { name: G2·G4, text: 灰度留存、协议安全 }
+            - items:
+                - { name: G1, text: 端侧单图生成原型 }
+
+  # 18 风险与应对
+  - template: common.risk-table
+    data:
+      title: 风险与应对
+      title_suffix: Agent OS与AI+图形
+      takeaway: 3项高风险都有Q1前置动作，需立项后尽早落实
+      risks:
+        - risk: 量产手机SoC是否放开SPE，目前查不到公开资料
+          level: 高
+          mitigation: 2027Q1逐个SoC摸底并作为继续与否的决策点；备选用DAMON加Accessed位等软件信号驱动同一套预取，但与ASAP、Ariadne的差异会变小
+          owner: 待指定
+        - risk: 几乎所有目标缺少手机侧真机基线
+          level: 高
+          mitigation: 2027Q1由S1建成标准负载集、体验指标和真机基线，再把建议区间定为承诺值
+          owner: 待指定
+        - risk: NPU驱动与IOMMU能否映射文件页，决定KT3零拷贝能否成立
+          level: 高
+          mitigation: 尽早与SoC厂商确认驱动和IOMMU能力；2027Q1完成映射可行性确认
+          owner: 待指定
+        - risk: MoE主流度仅为中等置信度，2027年哪条稀疏路线胜出不确定
+          level: 中
+          mitigation: 把缓存对象泛化为可分页的稀疏权重单元，覆盖专家、PLE表、神经元簇，路线变化时投入不落空
+          owner: 待指定
+        - risk: 萌宠提升留存的假设没有证据，另有内容安全与未成年人保护风险
+          level: 中
+          mitigation: 立项落点放在系统层常驻低功耗渲染；2027Q3用灰度实验验证留存假设，并设内存预算上限
+          owner: 待指定
+        - risk: 标准未定且2026年下半年信息多为二手来源
+          level: 低
+          mitigation: A2UI在预览期、glTF扩展在候选版，跟随标准不做私有格式；进评审前按待核实清单逐条复核关键数字
+          owner: 待指定
+
+  # 19 立项诉求
+  - template: common.ask-decision
+    data:
+      title: 立项诉求
+      title_suffix: 批准立项并协调资源
+      takeaway: 批准两条线立项，并协调SoC厂商与真机资源
+      context:
+        - 12GB是端侧Agent门槛，DRAM合约价近翻倍，只能靠系统挖出可用内存
+        - 公开资料中没有统一记账、回收和共享模型内存的机制，手机侧仿真器也是空白
+        - 几乎所有目标缺手机侧基线，SPE与NPU IOMMU能力未确认，需要先行摸底
+      asks:
+        - item: 批准Agent OS立项
+          detail: 三项关键技术KT1智慧化内存管理、KT2 Agent内存组件、KT3模型翻译组件，加性能跟踪与仿真平台S1/S2
+        - item: 批准AI+图形立项
+          detail: 四项体验技术G1 3DGS、G2常驻萌宠、G3神经超分与插帧、G4生成式UI
+        - item: 协调SoC厂商，提供真机测试资源
+          detail: 确认SPE与NPU IOMMU能力，提供真机测试资源；人力与预算：待立项组填写

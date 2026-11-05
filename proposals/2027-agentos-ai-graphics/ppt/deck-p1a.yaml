@@ -1,0 +1,435 @@
+style: default
+pages:
+  # 1 封面
+  - template: common.cover-basic
+    data:
+      title: 面向终端的Agent OS与AI+图形
+      subtitle: 2027立项评审：下一代终端软件系统
+      presenter: 立项组
+      date: 2026年11月
+
+  # 2 目录
+  - template: common.agenda-list
+    data:
+      title: 目录
+      title_suffix: 本次立项汇报
+      takeaway: 先讲为什么现在做，再讲做什么、怎么做、要什么
+      items:
+        - { num: "01", name: 洞察, note: 端侧Agent的门槛转向内存，业界无人统一治理模型内存 }
+        - { num: "02", name: 问题, note: 叠加场景下，当代系统的回收、换入和模型内存都撑不住 }
+        - { num: "03", name: 架构与关键技术, note: 模型内存一等公民，KT1至KT3加仿真平台，以及G1至G4 }
+        - { num: "04", name: 技术难点与做法, note: 逐项说明难在哪、怎么破、关键突破是什么 }
+        - { num: "05", name: 交付节奏与诉求, note: 2027年分季度交付，说明风险并提出立项诉求 }
+
+  # 3 核心判断
+  - template: common.summary-kpi
+    data:
+      title: 为什么现在立项
+      title_suffix: 内存成为端侧Agent的第一约束
+      takeaway: 门槛在内存，加内存走不通，只能靠系统挖出可用内存
+      kpis:
+        - { value: 12GB, label: 端侧Agent内存门槛, note: Gemini Intelligence与iOS 27最强端侧模型均要求 }
+        - { value: 近翻倍, label: 移动DRAM合约价, note: 2026年上半年；TrendForce判断2027年不会明显回落 }
+        - { value: 86.6%, label: GB级应用冷启动超1秒, note: AppFlow，Pixel 7/8 }
+        - { value: 0%, label: 专家缓存命中率, note: iPhone上512MiB LRU缓存（预印本） }
+      notes:
+        - 加内存的路走不通：移动DRAM合约价2026Q2接近翻倍，回收成了唯一杠杆，系统必须自己挖出更多可用内存。
+        - Agent叠加在应用之上：12GB机型常驻模型1–6GB后，留给应用的内存约2.5–7.5GB（估算），冷启动、切换卡顿和后台被杀一起恶化。
+        - 业界没有人统一治理模型内存：Apple把20B MoE放闪存按需调入（二手报道，待核实），阶跃只有叙事，没有公开的统一记账、回收和共享机制。
+        - 我们的位置：模型内存成为系统的一等公民，三项关键技术加仿真平台，AI+图形做体验线；最大共同风险是缺少真机基线。
+
+  # 4 第一部分
+  - template: common.section-basic
+    data:
+      num: "01"
+      title: 洞察
+      subtitle: 业界最新发展趋势
+
+  # 5 竞争格局
+  - template: competition.overview-landscape
+    data:
+      title: Agent OS竞争格局
+      title_suffix: 商业形态六类玩家
+      takeaway: 真正做手机OS加端侧模型的只有阶跃，其余在云端或跟随
+      players:
+        - name: 阶跃 Step AOS
+          position: 手机、自研OS、端侧模型一体
+          strength: Step Edge四款端侧模型加自研NPU推理引擎，2026-07亮相，3999元起
+          weakness: 体量小，生态靠合作；参数量与常驻内存未公开，无量化指标
+        - name: Grok/OpenAI
+          position: 云端常驻Agent
+          strength: Grok Bot、dot各配云端电脑，抬高用户对全天候、主动Agent的预期
+          weakness: 无端侧部分，隐私、离线不可用；官方页面未能读取，待核实
+        - name: Apple
+          position: 端侧稀疏大模型加PCC
+          strength: 软硬件垂直；据报20B MoE放闪存，每次调入1–4B（二手，待核实）
+          weakness: 最强能力被锁在12GB机型
+        - name: Google
+          position: OS内置，按内存分层准入
+          strength: AICore统一接口，端云回落机制成熟
+          weakness: 要求12GB以上，存量机被排除；Nano 4 Full据报常驻约5.9GB（单一来源）
+        - name: 华为
+          position: 系统能力Skill化
+          strength: 系统级调用面最广，2100多项系统能力
+          weakness: 端侧模型规格和资源数据都不公开
+        - name: 字节 / 努比亚
+          position: 豆包手机助手，GUI自动化
+          strength: 不需要应用适配，2026-09已量产
+          weakness: 依赖系统特权，要与风控博弈；我们不做GUI Agent
+      insight: 没有任何一家公开统一记账、回收模型内存的机制，这是我们可以占据的位置
+
+  # 6 商业形态趋势
+  - template: trend.trend-points
+    data:
+      title: Agent OS商业形态趋势
+      title_suffix: 四条主线
+      takeaway: 内存是第一约束，主阵地仍是现有OS内核
+      trends:
+        - name: 12GB成分水岭
+          evidence: Gemini Intelligence要求12GB以上（2026-05）；iOS 27最强端侧模型要求12GB；Pixel 11全系12GB起；STEPX Neo 16GB
+          impact: 端侧Agent的门槛从算力转为内存，内存供给是第一约束，支撑总体构想
+        - name: 稀疏权重加闪存分层
+          evidence: Apple据报20B MoE、调入1–4B（二手）；Gemini Nano 4基于PLE稀疏；Meta MobileMoE峰值内存低约30%
+          impact: 支撑KT2专家缓存和KT3闪存映射加载
+        - name: 应用能力工具化
+          evidence: Step AOS用MCP暴露系统功能块；HMAF 2.0把系统能力Skill化；豆包用SAEP声明协议
+          impact: Agent频繁拉起应用，带来冷启动、.so页争用、后台被杀，支撑KT1
+        - name: 云端常驻与整机重构
+          evidence: Grok Bot、dot、Meta Muse在云端；STEPX Neo 3999元、荣耀Robot Phone 9999元，出货规模小；OpenAI硬件推迟
+          impact: 2027年可落地的差异化在内核层内存与IO；S1以云端Agent为对照基准
+
+  # 7 基础能力洞察
+  - template: trend.trend-points
+    data:
+      title: Agent OS基础能力洞察
+      title_suffix: 零件有，手机侧组合是空白
+      takeaway: 上游零件已有，手机侧的组合与实测还没人做
+      trends:
+        - name: 硬件采样起步，证冷难
+          evidence: openEuler有19个SPE补丁（无性能数据）；DAMON硬件采样RFC v2（2026-09）；作者指出采样证明热、证明不了冷
+          impact: SPE作为DAMON硬件源对接；KT1-b/c共用「SPE证热、页表证冷」模型
+        - name: MoE换入命中率脆
+          evidence: EStream预填充TTFT加速2.25–27.57倍；iPhone上512MiB的LRU命中率0%，576MiB为38.58%（均为预印本）
+          impact: 命中率对容量和负载极敏感，手机侧无公认基线，是可以占的位置
+        - name: NPU零拷贝无方案
+          evidence: mmap加页对齐已成共识；NPU侧文件映射、零拷贝没有公开方案；UFS 5.0顺序读达10.8GB/s（2027年起量产）
+          impact: KT3差异化空间最大
+        - name: 手机侧仿真器空白
+          evidence: Vidur、LLMServingSim 2.0等全部面向数据中心GPU/TPU；未找到面向手机SoC的公开LLM仿真器
+          impact: 自研仿真平台S1/S2本身就是立项理由
+
+  # 8 AI+图形洞察
+  - template: trend.trend-points
+    data:
+      title: AI+图形洞察
+      title_suffix: 硬件窗口已打开，落点在系统层
+      takeaway: 单点能力已被证明，差异化在系统层
+      trends:
+        - name: G1 3DGS上手机
+          evidence: Mobile-GS在骁龙8 Gen 3稳态74FPS、0.83W，量化版3DGS仅3FPS、5.89W；PocketGS训练255秒
+          impact: 差异化放在采集到渲染全链路的热稳态能效，而不是单点帧率
+        - name: G3 神经渲染进GPU
+          evidence: Arm Mali G2-Ultra NX、Apple A19 Pro的GPU内置神经加速器；骁龙称游戏省电最高40%（厂商口径）
+          impact: 硬件多样、API未统一，对游戏透明的系统级方案是我们能掌控的部分
+        - name: G2 萌宠只在App里
+          evidence: 七家手机厂商都未找到官方萌宠；陪伴App前10%拿走89%收入；AI类App年留存21.1%
+          impact: 落点是系统层常驻低功耗渲染；能提升留存是待验证的假设
+        - name: G4 生成式UI三形态
+          evidence: Google A2UI（公开预览）、MCP Apps、Gemini动态视图；Apple只有@Generable；鸿蒙采用A2UI仅为报道（待核实）
+          impact: 声明式加组件目录加流式增量最适合原生渲染，受限WebView兜底
+
+  # 9 第二部分
+  - template: common.section-basic
+    data:
+      num: "02"
+      title: 问题
+      subtitle: 未来的终端场景，为什么现在满足不了
+
+  # 10 Agent 叠加场景
+  - template: workload.requirement-matrix
+    data:
+      title: Agent叠加场景需求
+      title_suffix: 负载特征到系统需求
+      takeaway: 叠加场景下冷启动、切换和KV是最先吃紧的三项
+      workload: 12GB机型：系统3–4GB，模型1–6GB，应用约2.5–7.5GB（估算）
+      items:
+        - feature: S-B Agent调应用
+          value: 依次或经MCP调起多个应用
+          requirement: 叠加场景冷启动相对无Agent基线劣化不超过10%，切回后热启动比例不低于80%（建议，待校准）
+        - feature: S-A 用应用时唤起
+          value: 刷视频、地图时唤起Agent
+          requirement: Agent首token热不超1秒、冷不超3秒；唤起后3秒掉帧增量不超1个百分点；前台应用被杀0次
+        - feature: S-C 长对话长任务
+          value: 8K–64K，32K时KV4.5GiB
+          requirement: 长上下文首token劣化不超过2倍；KV占用有上限并随内存压力回收（KV估算依据公开config）
+        - feature: S-D 稀疏大模型
+          value: 35B级MoE的Q4权重约14–21GB
+          requirement: 12–16GB机型靠分层驻留运行；以解码tokens/s、TTFT、峰值常驻内存度量；命中率0%时上限约5 tokens/s（估算）
+        - feature: S-E 端云切换与并行
+          value: 弱网回落端侧；单Agent并行调用工具
+          requirement: 切换额外时延不超过500ms；多工具任务时延降20–40%（建议）
+
+  # 11 Agent OS 瓶颈
+  - template: solution.problem-arch-callouts
+    data:
+      title: Agent OS瓶颈：DRAM涨价冻结容量，回收与换入撑不住
+      title_suffix: 模型内存游离在治理之外
+      diagram: diagram-bottleneck.png
+      left_cards:
+        - kind: problem
+          num: ①
+          size: 2.2
+          problem: 容量被冻结：DRAM合约价Q2近翻倍
+          measure_pre: 加内存走不通，
+          measure_key: 回收成唯一杠杆
+        - kind: problem
+          num: ②
+          size: 2.2
+          problem: 回收锁争用：kswapd等rmap锁超300ms
+          measure_pre: 共享库页争用，
+          measure_key: KT1-a去全局锁
+        - kind: tech
+          size: 2.4
+          name: per-VMA lock
+          meta: （2023 Linux 6.4/6.5）
+          desc: 缺页只拿VMA锁，6.5起覆盖页缓存命中的文件缺页
+          desc_note: I/O型缺页待核实
+        - kind: problem
+          num: ③
+          size: 2.2
+          problem: 换入无冷热无预取：切回前台大量缺页
+          measure_pre: 解压在关键路径，
+          measure_key: KT1-b/c冷热预取
+        - kind: tech
+          size: 2.4
+          name: Ariadne
+          meta: （2025 HPCA，Pixel 7）
+          desc: 软件热信号分级，重启时延降50%
+          desc_note: 仅用软件信号
+      right_cards:
+        - kind: problem
+          num: ④
+          size: 2.8
+          problem: KV被钉住：KV、dma-buf、NPU缓冲在LRU之外
+          measure_pre: 易提前触发lmkd，
+          measure_key: KT2-B KV块可回收
+        - kind: tech
+          size: 2.2
+          name: KIVI
+          meta: （2024 ICML）
+          desc: 2-bit KV量化，峰值内存降2.6倍
+          desc_note: Agent轨迹精度未验证
+        - kind: problem
+          num: ⑤
+          size: 2.8
+          problem: MoE命中率脆弱：iPhone上512MiB的LRU命中率0%，每token约1.1GB IO
+          measure_pre: 命中率决定能否用，
+          measure_key: KT2-A自适应缓存
+        - kind: tech
+          size: 2.2
+          name: EStream
+          meta: （2026 预印本）
+          desc: 骁龙手机上预填充TTFT加速2.25–27.57倍
+          desc_note: 无公认基线
+      bottom_num: ⑥
+      bottom_problem: NPU路径多份拷贝、长期钉住，回收不了
+      bottom_cards:
+        - kind: tech
+          size: 1.6
+          name: ExecuTorch
+          meta: （页对齐数据段 RFC）
+          desc: .pte页对齐便于mmap；权重共享还在RFC阶段
+        - kind: tech
+          size: 1.6
+          name: T-MAN
+          meta: （2025-11 预印本）
+          desc: NPU上统一查表，只保留一份权重
+
+  # 12 AI+图形 场景与瓶颈
+  - template: workload.requirement-matrix
+    data:
+      title: AI+图形场景与瓶颈
+      title_suffix: 瓶颈数据对应体验指标
+      takeaway: 手机侧全链路缺公开基线，指标均待真机校准
+      workload: G1–G4四类体验场景（目标值为建议，待校准）
+      items:
+        - feature: G1 3DGS渲染
+          value: 量化版稳态3FPS、5.89W
+          requirement: 稳态60FPS以上，渲染功耗1.5W以内；PLY约250MB，单场景压到10–25MB
+        - feature: G3 神经超分插帧
+          value: MetalFX插帧约18ms/帧
+          requirement: 120Hz帧预算8.3ms，插帧压到4ms内；同画质功耗降20–40%（插帧数据来自开发者论坛，非官方）
+        - feature: G2 常驻AI萌宠
+          value: 常驻功耗内存无公开数据
+          requirement: 静止态额外功耗接近零；常驻内存100–150MB（估算）；前台冷启动无可测影响
+        - feature: G4 生成式UI
+          value: 3000token、30token/s约100秒
+          requirement: 必须边生成边渲染；首个可见元素尽早出现，流式不掉帧，越权用例100%拦截（耗时为假设值）
+
+  # 13 第三部分
+  - template: common.section-basic
+    data:
+      num: "03"
+      title: 架构与关键技术
+      subtitle: 模型内存成为系统的一等公民
+
+  # 14 Agent OS 总体架构
+  - template: solution.solution-arch-overview
+    data:
+      title: Agent OS总体架构
+      title_suffix: 模型内存一等公民
+      takeaway: 统一记账、可回收、可共享，不加DRAM撑起Agent与应用叠加
+      challenges:
+        - { name: 模型内存游离, detail: 权重、KV、NPU缓冲分属不同账，回收收不走 }
+        - { name: 非模型内存不足, detail: 容量被冻结，冷启动受.so页争用和锁拖累 }
+        - { name: 加载驻留低效, detail: 多份拷贝、长期钉住、IO打不满，命中率不稳 }
+      principles:
+        - { name: 统一记账, detail: 权重、专家、KV、NPU缓冲同一本账 }
+        - { name: 可回收, detail: 权重是干净文件页，KV块可压缩换出 }
+        - { name: 可共享, detail: 同一份权重按内容多方共用 }
+      arch:
+        partitions:
+          - name: KT1 智慧化内存管理
+            layers:
+              - name: 感知
+                modules:
+                  - { name: SPE冷热识别, highlight: true }
+                  - { name: 页表冷证据 }
+              - name: 匿名页
+                modules:
+                  - { name: 预取, highlight: true }
+                  - { name: 换出, highlight: true }
+              - name: 文件页
+                modules:
+                  - { name: 锁优化, highlight: true }
+          - name: KT2 Agent 内存组件
+            layers:
+              - name: 权重
+                modules:
+                  - { name: 稀疏权重分层, highlight: true }
+                  - { name: 热度模型, highlight: true }
+              - name: KV
+                modules:
+                  - { name: KV块池, highlight: true }
+                  - { name: 压缩换出, highlight: true }
+                  - { name: 前缀复用, highlight: true }
+          - name: KT3 模型翻译组件
+            layers:
+              - name: 布局
+                modules:
+                  - { name: 页对齐布局 }
+              - name: 加载
+                modules:
+                  - { name: 大块预读 }
+                  - { name: 权重内容共享, highlight: true }
+              - name: 映射
+                modules:
+                  - { name: NPU零拷贝映射, highlight: true }
+        shared:
+          - name: 共享层
+            modules:
+              - { name: 统一模型内存记账, highlight: true }
+              - { name: 预算账本, highlight: true }
+              - { name: 冷热模型, highlight: true }
+              - { name: IO调度队列, highlight: true }
+          - name: 内核基座
+            modules:
+              - { name: 缺页/rmap }
+              - { name: LRU }
+              - { name: DAMON }
+              - { name: memcg }
+              - { name: zram }
+              - { name: IOMMU }
+      key_techs:
+        - name: KT1 智慧化内存管理
+          points:
+            - SPE证热、页表证冷，预取与换出同源
+            - 冷启动降15–30%，切回降20–40%（建议）
+        - name: KT2 Agent内存组件
+          points:
+            - 专家缓存与KV块纳入统一记账
+            - 命中率较LRU高30%，KV压缩2.5倍（建议）
+        - name: KT3 模型翻译组件
+          points:
+            - 页对齐布局，文件页经IOMMU给NPU
+            - 冷加载达UFS理论值60–70%，零额外拷贝
+        - name: 仿真平台 S1/S2
+          points:
+            - S1云转端评估，S2单Agent并行化
+            - 仿真误差在10%内，先建真机基线（建议）
+
+  # 15 AI+图形架构
+  - template: solution.solution-arch-overview
+    data:
+      title: AI+图形架构
+      title_suffix: 预算驱动的系统级体验
+      takeaway: 热稳态下稳态60FPS以上，游戏同画质功耗降20–40%（建议）
+      challenges:
+        - { name: 热稳态能效, detail: 量化版3DGS仅3FPS、5.89W，游戏易降频 }
+        - { name: 帧预算内推理, detail: 插帧约18ms对8.3ms预算，界面要边生成边渲 }
+        - { name: 碎片化, detail: 加速器四家各一套，格式与UI协议未统一 }
+      principles:
+        - { name: 预算驱动, detail: 温度与帧预算定画质档位 }
+        - { name: 系统层优先, detail: 常驻渲染、对游戏透明 }
+        - { name: 跟随标准, detail: 不做私有格式 }
+      arch:
+        partitions:
+          - name: 3D与游戏（G1、G3）
+            layers:
+              - name: 3DGS
+                modules:
+                  - { name: 采集生成, highlight: true }
+                  - { name: SPZ压缩加载 }
+                  - { name: 免排序渲染, highlight: true }
+              - name: 后处理
+                modules:
+                  - { name: 神经超分, highlight: true }
+                  - { name: 神经插帧, highlight: true }
+                  - { name: 降噪 }
+          - name: 陪伴与交互（G2、G4）
+            layers:
+              - name: 萌宠
+                modules:
+                  - { name: 行为状态机, highlight: true }
+                  - { name: 分级渲染, highlight: true }
+                  - { name: 记忆 }
+              - name: 生成UI
+                modules:
+                  - { name: 流式解析 }
+                  - { name: 增量渲染, highlight: true }
+                  - { name: Web兜底 }
+        shared:
+          - name: 共享层
+            modules:
+              - { name: 帧与温度预算调度器, highlight: true }
+              - { name: 神经图形算子抽象层, highlight: true }
+              - { name: 合成层常驻渲染服务, highlight: true }
+          - name: 硬件
+            modules:
+              - { name: GPU神经加速器 }
+              - { name: NPU }
+              - { name: 显示管线 }
+      key_techs:
+        - name: G1 3DGS热稳态能效
+          points:
+            - 温度预算驱动LOD，免排序渲染
+            - 稳态60FPS以上，功耗1.5W内（建议）
+        - name: G2 常驻低功耗萌宠
+          points:
+            - 静止零帧、微动、互动三级渲染
+            - 静止态近零功耗，常驻100–150MB（估算）
+        - name: G3 神经超分与插帧
+          points:
+            - 系统光流加UI遮罩，后端抽象层
+            - 同画质功耗降20–40%，插帧4ms内（建议）
+        - name: G4 生成式UI渲染
+          points:
+            - 声明式JSON为主，受限WebView兜底
+            - 流式不掉帧，越权用例100%拦截
+
+  # 16 第四部分
+  - template: common.section-basic
+    data:
+      num: "04"
+      title: 关键技术难点与做法
+      subtitle: 难在哪、怎么破、关键突破

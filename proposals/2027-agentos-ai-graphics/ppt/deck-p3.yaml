@@ -1,0 +1,2536 @@
+# 由 build_p3.py 生成：AgentOS 与 AI 图形六个关键技术立项页
+style: default
+pages:
+- template: solution.solution-kickoff-difficulties
+  data:
+    title: Agent云转端评估平台：
+    title_suffix: 手机仿真校准+决策模型，TTFT/TPOT误差≤10%
+    challenges:
+    - name: 无统一账本
+      text: 端云能耗口径不同，难直接比较。
+    - name: 仿真无手机先例
+      text: 现有仿真器误差1–10%但全在GPU。
+    - name: 体验风险难量化
+      text: 云成本<1美分，端耗电约1.5%（估算）
+    goal: 建立手机侧Agent云转端的仿真评估平台，用统一决策模型判断哪些步骤值得下沉，
+    goal_highlight: TTFT/TPOT误差≤10%、功耗误差≤15%
+    arch:
+      canvas:
+      - 640
+      - 411
+      panels:
+      - box:
+        - 0.0
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 216.1
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 432.2
+        - 0.0
+        - 207.8
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      shapes:
+      - box:
+        - 8.0
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '1'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 8.0
+        - 42.0
+        - 187.6
+        - 50
+        fill: highlight_blue
+        kind: rounded
+        text: '真机观测
+
+          Perfetto+ODPM计数器'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 8.0
+        - 122.0
+        - 187.6
+        - 50
+        fill: bg
+        kind: rounded
+        text: '体验指标（自定义）
+
+          响应·质量·资源·干扰·经济'
+        text_style: caption
+        radius: 3
+        line: line
+      - box:
+        - 8.0
+        - 202.0
+        - 187.6
+        - 50
+        fill: highlight
+        kind: rounded
+        text: '按步骤×阶段记账
+
+          预填充·解码·空闲·网络'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 8.0
+        - 282.0
+        - 187.6
+        - 50
+        fill: bg
+        kind: rounded
+        text: '云侧公开口径（不含网络）
+
+          网络射频能耗单独建模'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 224.1
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '2'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 42.0
+        - 187.6
+        - 50
+        fill: highlight_blue
+        kind: rounded
+        text: '标准负载集
+
+          模型层·轨迹层·叠加场景层'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 224.1
+        - 122.0
+        - 187.6
+        - 50
+        fill: primary
+        kind: rounded
+        text: '手机仿真平台
+
+          SoC·DVFS·热·带宽模型'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 202.0
+        - 187.6
+        - 50
+        fill: highlight
+        kind: rounded
+        text: '分层校准
+
+          算子→系统→热/DVFS长时序'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 224.1
+        - 282.0
+        - 187.6
+        - 50
+        fill: bg
+        kind: rounded
+        text: '验收：算子、端到端误差≤10%
+
+          功耗误差≤15%（目标假设）'
+        text_style: caption
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '3'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 42.0
+        - 191.8
+        - 50
+        fill: primary
+        kind: rounded
+        text: '净收益NB：成本+隐私−能耗
+
+          −内存−时延惩罚−风险'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 122.0
+        - 191.8
+        - 50
+        fill: highlight
+        kind: rounded
+        text: '体验红线硬约束
+
+          TTFT·掉帧·冷启动·温度'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 440.2
+        - 202.0
+        - 191.8
+        - 42
+        fill: bg
+        kind: rounded
+        text: 'λ三档预设+灵敏度扫描
+
+          成本 / 体验 / 隐私优先'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 274.0
+        - 191.8
+        - 50
+        fill: highlight_blue
+        kind: rounded
+        text: '下沉建议 + 决策翻转点
+
+          （≥6类典型任务）'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 201.4
+        - 392.6
+        - 235
+        - 14
+        fill: bg
+        kind: rect
+        text: 真机轨迹回灌，校准仿真并出误差报告
+        text_style: caption
+        color: accent
+      texts:
+      - box:
+        - 30.0
+        - 3.0
+        - 165.6
+        - 30
+        text: 感知 / 建模
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 246.1
+        - 3.0
+        - 165.6
+        - 30
+        text: 仿真校准评估
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 462.2
+        - 3.0
+        - 169.8
+        - 30
+        text: 决策与执行
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      arrows:
+      - points:
+        - - 101.8
+          - 92.0
+        - - 101.8
+          - 122.0
+      - points:
+        - - 101.8
+          - 172.0
+        - - 101.8
+          - 202.0
+      - points:
+        - - 101.8
+          - 252.0
+        - - 101.8
+          - 282.0
+      - points:
+        - - 317.9
+          - 92.0
+        - - 317.9
+          - 122.0
+      - points:
+        - - 317.9
+          - 172.0
+        - - 317.9
+          - 202.0
+      - points:
+        - - 317.9
+          - 252.0
+        - - 317.9
+          - 282.0
+      - points:
+        - - 536.1
+          - 92.0
+        - - 536.1
+          - 122.0
+      - points:
+        - - 536.1
+          - 172.0
+        - - 536.1
+          - 202.0
+      - points:
+        - - 536.1
+          - 244.0
+        - - 536.1
+          - 274.0
+      - points:
+        - - 195.6
+          - 307.0
+        - - 209.8
+          - 307.0
+        - - 209.8
+          - 67.0
+        - - 224.1
+          - 67.0
+      - points:
+        - - 411.7
+          - 307.0
+        - - 425.9
+          - 307.0
+        - - 425.9
+          - 67.0
+        - - 440.2
+          - 67.0
+      - points:
+        - - 536.1
+          - 324.0
+        - - 536.1
+          - 399.6
+        - - 101.8
+          - 399.6
+        - - 101.8
+          - 332.0
+        color: accent
+    difficulties:
+    - name: 统一能耗记账与真机指标
+      size: 5
+      points:
+      - name: 难点
+        text: ODPM仅部分机型有，整机电流难拆分；云侧能耗不含网络
+      - name: 真机指标
+        text: Perfetto+ODPM采集，隔离供电；自定五类体验指标
+      - name: 分阶段记账
+        text: 端侧按prefill、decode、空闲、网络建模，
+        highlight: 记账下沉到步骤×阶段
+    - name: 标准负载集与仿真校准
+      size: 5
+      points:
+      - name: 难点
+        text: 手机有DVFS、热降频、带宽共享，无公开校准方法
+      - name: 标准负载
+        text: 模型层MLPerf Mobile LLM+轨迹回放+叠加3–5个应用
+      - name: 分层校准
+        text: 算子、系统、热三层校准，每次平台升级复跑，
+        highlight: 真机回灌公布误差带
+    - name: 体验红线与云转端决策
+      size: 4
+      points:
+      - name: 难点
+        text: 端侧推理占用内存，挤压前台应用，体验风险难量化
+      - name: 红线约束
+        text: 常驻内存换算成冷启动退化与回收次数，
+        highlight: 红线加翻转点
+    milestones:
+    - date: 2027.03.31
+      deliverable: 负载集与真机基线
+    - date: 2027.06.30
+      deliverable: '仿真平台v1
+
+        与校准报告'
+    - date: 2027.09.30
+      deliverable: '决策模型与
+
+        翻转点报告'
+- template: solution.solution-kickoff-difficulties
+  data:
+    title: 单Agent并行化方案：
+    title_suffix: 依赖图+仿真筛选导出策略，多工具任务时延降20–40%
+    challenges:
+    - name: 串行等待
+      text: 生成→工具→生成串行，时延为各步之和。
+    - name: 算力闲置
+      text: NPU验证阶段闲置超70%（待核实）。
+    - name: 带宽共享
+      text: CPU+NPU并用仅比NPU单用高约6%
+    goal: 在单Agent内部导出并仿真验证并行方案，缩短端侧多工具任务时延，
+    goal_highlight: 多工具任务时延降20–40%
+    arch:
+      canvas:
+      - 640
+      - 411
+      panels:
+      - box:
+        - 0.0
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 216.1
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 432.2
+        - 0.0
+        - 207.8
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      shapes:
+      - box:
+        - 8.0
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '1'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 8.0
+        - 42.0
+        - 187.6
+        - 44
+        fill: highlight_blue
+        kind: rounded
+        text: '轨迹依赖图
+
+          数据依赖 + 顺序依赖'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 8.0
+        - 115.5
+        - 187.6
+        - 40
+        fill: primary
+        kind: rounded
+        text: 工具语义标签库
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 8.0
+        - 185.0
+        - 187.6
+        - 44
+        fill: highlight
+        kind: rounded
+        text: '只读·幂等·可回滚
+
+          开放并行与投机'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 8.0
+        - 258.5
+        - 187.6
+        - 44
+        fill: bg
+        kind: rounded
+        text: '有副作用·需确认
+
+          串行执行，不投机'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 8.0
+        - 332.0
+        - 187.6
+        - 44
+        fill: bg
+        kind: rounded
+        text: '投机结果隔离
+
+          确认前不落地'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 224.1
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '2'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 42.0
+        - 187.6
+        - 44
+        fill: highlight_blue
+        kind: rounded
+        text: '带宽 / 功耗 / 热模型
+
+          （复用S1）'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 224.1
+        - 116.0
+        - 187.6
+        - 50
+        fill: primary
+        kind: rounded
+        text: '带宽争抢模型
+
+          并行度×批大小×背景流量'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 196.0
+        - 187.6
+        - 44
+        fill: highlight
+        kind: rounded
+        text: 收益拐点 → 并行度上限
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 224.1
+        - 270.0
+        - 187.6
+        - 44
+        fill: bg
+        kind: rounded
+        text: 与KT2-B的KV配额联动
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '3'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 42.0
+        - 191.8
+        - 40
+        fill: primary
+        kind: rounded
+        text: 计划生成：枚举候选并行计划
+        text_style: caption
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 112.0
+        - 191.8
+        - 44
+        fill: highlight
+        kind: rounded
+        text: '仿真筛选
+
+          时延 / 能耗 / 内存帕累托'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 440.2
+        - 186.0
+        - 191.8
+        - 40
+        fill: highlight_blue
+        kind: rounded
+        text: 固化策略模板
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 440.2
+        - 256.0
+        - 92.9
+        - 70
+        fill: bg
+        kind: rounded
+        text: '工具并发
+
+          投机隔离回滚'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 539.1
+        - 256.0
+        - 92.9
+        - 70
+        fill: bg
+        kind: rounded
+        text: '合批·投机解码
+
+          异构流水'
+        text_style: caption
+        radius: 3
+        line: line
+      - box:
+        - 226.2
+        - 392.6
+        - 235
+        - 14
+        fill: bg
+        kind: rect
+        text: 命中率、回滚率、仿真偏差回流
+        text_style: caption
+        color: accent
+      texts:
+      - box:
+        - 30.0
+        - 3.0
+        - 165.6
+        - 30
+        text: 工具语义与许可
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 246.1
+        - 3.0
+        - 165.6
+        - 30
+        text: 带宽感知并行度
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 462.2
+        - 3.0
+        - 169.8
+        - 30
+        text: 方案导出与执行
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      arrows:
+      - points:
+        - - 101.8
+          - 86.0
+        - - 101.8
+          - 115.5
+      - points:
+        - - 101.8
+          - 155.5
+        - - 101.8
+          - 185.0
+      - points:
+        - - 101.8
+          - 229.0
+        - - 101.8
+          - 258.5
+      - points:
+        - - 101.8
+          - 302.5
+        - - 101.8
+          - 332.0
+      - points:
+        - - 317.9
+          - 86.0
+        - - 317.9
+          - 116.0
+      - points:
+        - - 317.9
+          - 166.0
+        - - 317.9
+          - 196.0
+      - points:
+        - - 317.9
+          - 240.0
+        - - 317.9
+          - 270.0
+      - points:
+        - - 536.1
+          - 82.0
+        - - 536.1
+          - 112.0
+      - points:
+        - - 536.1
+          - 156.0
+        - - 536.1
+          - 186.0
+      - points:
+        - - 486.6
+          - 226.0
+        - - 486.6
+          - 256.0
+      - points:
+        - - 585.6
+          - 226.0
+        - - 585.6
+          - 256.0
+      - points:
+        - - 195.6
+          - 280.5
+        - - 209.8
+          - 280.5
+        - - 209.8
+          - 141.0
+        - - 224.1
+          - 141.0
+      - points:
+        - - 411.7
+          - 218.0
+        - - 425.9
+          - 218.0
+        - - 425.9
+          - 134.0
+        - - 440.2
+          - 134.0
+      - points:
+        - - 585.6
+          - 326.0
+        - - 585.6
+          - 399.6
+        - - 101.8
+          - 399.6
+        - - 101.8
+          - 376.0
+        color: accent
+    difficulties:
+    - name: 工具并行许可
+      size: 5
+      points:
+      - name: 难点
+        text: 手机工具多有副作用，需权限与用户确认
+      - name: 语义标签
+        text: 只读、幂等、可回滚开放并行与投机，其余串行
+      - name: 结果隔离
+        text: 投机结果在确认前隔离不落地，
+        highlight: 元数据驱动并行许可
+    - name: 带宽争抢下的收益
+      size: 5
+      points:
+      - name: 难点
+        text: CPU+NPU并用约59.6GB/s，工具与UI还在抢带宽
+      - name: 争抢建模
+        text: 扫描并行度×批大小×背景流量，按拐点设上限，
+        highlight: 带宽感知并行上限
+    - name: 并行方案自动导出
+      size: 5
+      points:
+      - name: 难点
+        text: 依赖隐含在对话里，规划出错会造成执行错序
+      - name: 依赖图
+        text: 从历史轨迹抽取依赖图，枚举候选计划
+      - name: 仿真筛选
+        text: 帕累托筛选后固化为模板，
+        highlight: 轨迹到模板的闭环
+    milestones:
+    - date: 2027.06.30
+      deliverable: '工具标签与
+
+        依赖图抽取'
+    - date: 2027.09.30
+      deliverable: '带宽争抢模型
+
+        与并行度上限'
+    - date: 2027.12.31
+      deliverable: 策略模板上线验证
+- template: solution.solution-kickoff-difficulties
+  data:
+    title: 3DGS全链路热稳态能效：
+    title_suffix: 温度预算驱动渲染，稳态60FPS+、功耗<1.5W
+    challenges:
+    - name: 渲染功耗高
+      text: 量化3DGS稳态仅3FPS、5.89W。
+    - name: 端侧生成太慢
+      text: 多视角重建255s，单图亚秒仅服务器可达。
+    - name: 格式未统一
+      text: PLY数百MB，标准未定，兼容性差
+    goal: 在手机热稳态下实现3DGS拍完即看、秒开流畅，形成采集到渲染的全链路能效方案，
+    goal_highlight: 稳态60FPS+、渲染功耗<1.5W
+    arch:
+      canvas:
+      - 640
+      - 411
+      panels:
+      - box:
+        - 0.0
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 216.1
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 432.2
+        - 0.0
+        - 207.8
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      shapes:
+      - box:
+        - 8.0
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '1'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 8.0
+        - 42.0
+        - 187.6
+        - 48
+        fill: highlight_blue
+        kind: rounded
+        text: '感知：热 / 电量监测
+
+          场景复杂度估计'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 8.0
+        - 120.0
+        - 187.6
+        - 48
+        fill: primary
+        kind: rounded
+        text: '预算控制器
+
+          温度预算 → 高斯数量'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 8.0
+        - 198.0
+        - 187.6
+        - 48
+        fill: highlight
+        kind: rounded
+        text: 'LOD档位决策
+
+          视距·贡献度·帧预算裁剪'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 8.0
+        - 276.0
+        - 187.6
+        - 44
+        fill: bg
+        kind: rounded
+        text: '稳态遥测回灌
+
+          更新档位表'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 224.1
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '2'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 42.0
+        - 187.6
+        - 44
+        fill: highlight
+        kind: rounded
+        text: '生成路径选择
+
+          多视角 / 单图'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 224.1
+        - 116.0
+        - 90.8
+        - 48
+        fill: highlight_blue
+        kind: rounded
+        text: '单图：
+
+          前馈模型'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 320.9
+        - 116.0
+        - 90.8
+        - 48
+        fill: bg
+        kind: rounded
+        text: '多视角：
+
+          优化重建'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 224.1
+        - 194.0
+        - 187.6
+        - 48
+        fill: primary
+        kind: rounded
+        text: '可抢占重建阶段
+
+          位姿 → 初始化 → 优化'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 272.0
+        - 187.6
+        - 44
+        fill: bg
+        kind: rounded
+        text: 前台争用GPU与内存时让位
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '3'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 42.0
+        - 191.8
+        - 48
+        fill: bg
+        kind: rounded
+        text: 'SPZ / glTF封装
+
+          标准容器，不做私有格式'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 120.0
+        - 191.8
+        - 48
+        fill: highlight_blue
+        kind: rounded
+        text: '并行加载：6路ZSTD解码
+
+          流式上传GPU'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 440.2
+        - 198.0
+        - 191.8
+        - 48
+        fill: primary
+        kind: rounded
+        text: '免排序 / Tiled渲染
+
+          神经增强补偿半透明'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 276.0
+        - 191.8
+        - 44
+        fill: highlight
+        kind: rounded
+        text: 稳态帧率·功耗·温度遥测
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 201.4
+        - 392.6
+        - 235
+        - 14
+        fill: bg
+        kind: rect
+        text: 温度遥测回灌预算控制器
+        text_style: caption
+        color: accent
+      texts:
+      - box:
+        - 30.0
+        - 3.0
+        - 165.6
+        - 30
+        text: 热预算与LOD
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 246.1
+        - 3.0
+        - 165.6
+        - 30
+        text: 生成与可抢占重建
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 462.2
+        - 3.0
+        - 169.8
+        - 30
+        text: 封装加载与渲染
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      arrows:
+      - points:
+        - - 101.8
+          - 90.0
+        - - 101.8
+          - 120.0
+      - points:
+        - - 101.8
+          - 168.0
+        - - 101.8
+          - 198.0
+      - points:
+        - - 101.8
+          - 246.0
+        - - 101.8
+          - 276.0
+      - points:
+        - - 269.5
+          - 86.0
+        - - 269.5
+          - 116.0
+      - points:
+        - - 366.3
+          - 86.0
+        - - 366.3
+          - 116.0
+      - points:
+        - - 269.5
+          - 164.0
+        - - 269.5
+          - 194.0
+      - points:
+        - - 366.3
+          - 164.0
+        - - 366.3
+          - 194.0
+      - points:
+        - - 317.9
+          - 242.0
+        - - 317.9
+          - 272.0
+      - points:
+        - - 536.1
+          - 90.0
+        - - 536.1
+          - 120.0
+      - points:
+        - - 536.1
+          - 168.0
+        - - 536.1
+          - 198.0
+      - points:
+        - - 536.1
+          - 246.0
+        - - 536.1
+          - 276.0
+      - points:
+        - - 195.6
+          - 222.0
+        - - 209.8
+          - 222.0
+        - - 209.8
+          - 64.0
+        - - 224.1
+          - 64.0
+      - points:
+        - - 411.7
+          - 218.0
+        - - 425.9
+          - 218.0
+        - - 425.9
+          - 66.0
+        - - 440.2
+          - 66.0
+      - points:
+        - - 536.1
+          - 320.0
+        - - 536.1
+          - 399.6
+        - - 101.8
+          - 399.6
+        - - 101.8
+          - 320.0
+        color: accent
+    difficulties:
+    - name: 热稳态渲染能效
+      size: 5
+      points:
+      - name: 难点
+        text: 冷启动127FPS，稳态降到74FPS，GPU持续降频
+      - name: 温度预算
+        text: 按视距与贡献度做LOD，温度预算反馈给高斯数量，
+        highlight: 温度预算驱动渲染
+      - name: 免排序
+        text: 免排序渲染，神经增强弥补半透明伪影
+    - name: 端侧生成耗时与内存
+      size: 5
+      points:
+      - name: 难点
+        text: 重建255s、峰值近3GB，与前台争GPU和内存
+      - name: 可抢占
+        text: 重建拆成位姿、初始化、优化三阶段，
+        highlight: 分阶段可抢占重建
+      - name: 前馈
+        text: 单图场景用前馈模型代替优化
+    - name: 格式压缩端侧可解码
+      size: 5
+      points:
+      - name: 难点
+        text: glTF基础扩展不含压缩，SPZ版本不兼容，MPEG未发布
+      - name: 标准容器
+        text: 跟随glTF+SPZ，房间级文件目标10–25MB
+      - name: 流式加载
+        text: 6路ZSTD并行解码，流式上传GPU，
+        highlight: 不整体解压后常驻
+    milestones:
+    - date: 2027.03.31
+      deliverable: 全链路基线
+    - date: 2027.06.30
+      deliverable: '温度预算渲染
+
+        与流式加载'
+    - date: 2027.12.31
+      deliverable: 端侧单图生成原型
+- template: solution.solution-kickoff-difficulties
+  data:
+    title: 系统级常驻AI萌宠：
+    title_suffix: 事件驱动分级渲染，空闲功耗趋零
+    challenges:
+    - name: 常驻耗电
+      text: 连续渲染唤醒GPU与显示，无公开功耗数据。
+    - name: 无系统级先例
+      text: 七家厂商均无官方宠物功能。
+    - name: 记忆与隐私
+      text: 个性化需长期记忆，端侧存取要低时延且隔离
+    goal: 打造系统级事件驱动的常驻AI萌宠，空闲几乎不耗电，互动有个性、有记忆，
+    goal_highlight: 空闲功耗趋零
+    arch:
+      canvas:
+      - 640
+      - 411
+      panels:
+      - box:
+        - 0.0
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 216.1
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 432.2
+        - 0.0
+        - 207.8
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      shapes:
+      - box:
+        - 8.0
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '1'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 8.0
+        - 42.0
+        - 187.6
+        - 48
+        fill: highlight_blue
+        kind: rounded
+        text: '系统事件 / 语音输入
+
+          渲染负载监测'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 8.0
+        - 120.0
+        - 187.6
+        - 48
+        fill: primary
+        kind: rounded
+        text: '三层记忆库
+
+          短期·事件摘要·长期偏好'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 8.0
+        - 198.0
+        - 187.6
+        - 44
+        fill: highlight
+        kind: rounded
+        text: 召回：只取相关少量条目
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 8.0
+        - 272.0
+        - 187.6
+        - 48
+        fill: bg
+        kind: rounded
+        text: '系统受保护目录存储
+
+          云端仅用户授权时使用'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 224.1
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '2'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 42.0
+        - 187.6
+        - 48
+        fill: primary
+        kind: rounded
+        text: '行为决策器
+
+          事件 + 记忆 → 行为意图'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 120.0
+        - 90.8
+        - 60
+        fill: highlight
+        kind: rounded
+        text: '大模型低频
+
+          动作脚本
+
+          状态机参数'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 320.9
+        - 120.0
+        - 90.8
+        - 60
+        fill: bg
+        kind: rounded
+        text: '小模型高频
+
+          嘴型等
+
+          高频动作'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 224.1
+        - 210.0
+        - 187.6
+        - 44
+        fill: highlight_blue
+        kind: rounded
+        text: 动作脚本 + 状态机参数
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 224.1
+        - 284.0
+        - 187.6
+        - 40
+        fill: bg
+        kind: rounded
+        text: 音频驱动：语音 → 嘴型
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '3'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 42.0
+        - 191.8
+        - 48
+        fill: primary
+        kind: rounded
+        text: '状态机运行时
+
+          本地执行脚本与预制片段'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 119.5
+        - 191.8
+        - 40
+        fill: bg
+        kind: rounded
+        text: 静止：无事件不提交帧
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 189.0
+        - 191.8
+        - 40
+        fill: bg
+        kind: rounded
+        text: 微动：低帧率 + 预制片段
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 258.5
+        - 191.8
+        - 40
+        fill: bg
+        kind: rounded
+        text: 互动：满帧 + 模型驱动
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 328.0
+        - 191.8
+        - 48
+        fill: highlight_blue
+        kind: rounded
+        text: '系统合成层常驻渲染
+
+          随息屏、遮挡、温度降级'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 201.4
+        - 392.6
+        - 235
+        - 14
+        fill: bg
+        kind: rect
+        text: 功耗帧率监测与互动、关闭行为回流
+        text_style: caption
+        color: accent
+      texts:
+      - box:
+        - 30.0
+        - 3.0
+        - 165.6
+        - 30
+        text: 分层记忆与感知
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 246.1
+        - 3.0
+        - 165.6
+        - 30
+        text: 混合动作决策
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 462.2
+        - 3.0
+        - 169.8
+        - 30
+        text: 常驻渲染分级
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      arrows:
+      - points:
+        - - 101.8
+          - 90.0
+        - - 101.8
+          - 120.0
+      - points:
+        - - 101.8
+          - 168.0
+        - - 101.8
+          - 198.0
+      - points:
+        - - 101.8
+          - 242.0
+        - - 101.8
+          - 272.0
+      - points:
+        - - 269.5
+          - 90.0
+        - - 269.5
+          - 120.0
+      - points:
+        - - 366.3
+          - 90.0
+        - - 366.3
+          - 120.0
+      - points:
+        - - 269.5
+          - 180.0
+        - - 269.5
+          - 210.0
+      - points:
+        - - 366.3
+          - 180.0
+        - - 366.3
+          - 210.0
+      - points:
+        - - 317.9
+          - 254.0
+        - - 317.9
+          - 284.0
+      - points:
+        - - 536.1
+          - 90.0
+        - - 536.1
+          - 119.5
+      - points:
+        - - 195.6
+          - 220.0
+        - - 209.8
+          - 220.0
+        - - 209.8
+          - 66.0
+        - - 224.1
+          - 66.0
+      - points:
+        - - 411.7
+          - 232.0
+        - - 425.9
+          - 232.0
+        - - 425.9
+          - 66.0
+        - - 440.2
+          - 66.0
+      - points:
+        - - 536.1
+          - 376.0
+        - - 536.1
+          - 399.6
+        - - 101.8
+          - 399.6
+        - - 101.8
+          - 320.0
+        color: accent
+    difficulties:
+    - name: 端侧分层记忆与隐私
+      size: 5
+      points:
+      - name: 难点
+        text: 记忆越多越个性化，也越敏感
+      - name: 三层记忆
+        text: 短期对话、事件摘要、长期偏好，参考抽取—召回
+      - name: 受保护存储
+        text: 存系统受保护目录，云端仅授权时用，
+        highlight: 只召回少量相关条目
+    - name: 动作的混合式生成
+      size: 5
+      points:
+      - name: 难点
+        text: 大模型实时驱动不可持续，纯预制动画无个性
+      - name: 大模型
+        text: 按需生成动作脚本和状态机参数，本地状态机执行
+      - name: 小模型
+        text: 嘴型等高频动作用小模型驱动，
+        highlight: 低频大模型高频小模型
+    - name: 常驻渲染功耗预算
+      size: 5
+      points:
+      - name: 难点
+        text: 连续动画会持续唤醒GPU和显示管线
+      - name: 分级渲染
+        text: 静止、微动、互动三档，随息屏、遮挡、温度降级
+      - name: 事件驱动
+        text: 渲染放在系统合成层，无事件不提交帧，
+        highlight: 空闲零帧
+    milestones:
+    - date: 2027.03.31
+      deliverable: '常驻功耗与
+
+        内存基线'
+    - date: 2027.06.30
+      deliverable: '分级渲染与状
+
+        态机运行时'
+    - date: 2027.09.30
+      deliverable: 灰度验证留存假设
+- template: solution.solution-kickoff-difficulties
+  data:
+    title: 系统级神经超分插帧：
+    title_suffix: 帧预算调度+系统光流，同画质功耗降20–40%
+    challenges:
+    - name: 帧预算超支
+      text: 插帧约18ms（非官方），预算仅8.3ms。
+    - name: 持续降频
+      text: 高负载游戏数分钟后锁帧，体验波动。
+    - name: 硬件碎片
+      text: 四家神经加速器各异，API未统一
+    goal: 在手机持续高负载下，以神经超分与插帧换取更低功耗和更稳帧率，对存量游戏透明可用，
+    goal_highlight: 同画质功耗降20–40%、插帧<4ms
+    arch:
+      canvas:
+      - 640
+      - 411
+      panels:
+      - box:
+        - 0.0
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 216.1
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 432.2
+        - 0.0
+        - 207.8
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      shapes:
+      - box:
+        - 8.0
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '1'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 8.0
+        - 42.0
+        - 187.6
+        - 44
+        fill: highlight_blue
+        kind: rounded
+        text: 帧时间 / GPU频率温度监测
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 8.0
+        - 115.5
+        - 187.6
+        - 40
+        fill: bg
+        kind: rounded
+        text: 游戏与UI层识别
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 8.0
+        - 185.0
+        - 187.6
+        - 44
+        fill: primary
+        kind: rounded
+        text: '合成器侧光流估计
+
+          无需游戏提供运动向量'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 8.0
+        - 258.5
+        - 187.6
+        - 44
+        fill: highlight
+        kind: rounded
+        text: 'UI遮罩
+
+          固定屏幕区域·合成层'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 8.0
+        - 332.0
+        - 187.6
+        - 44
+        fill: bg
+        kind: rounded
+        text: 'SDK级补充运动向量
+
+          （高质量路径）'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 224.1
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '2'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 42.0
+        - 187.6
+        - 48
+        fill: highlight_blue
+        kind: rounded
+        text: '硬件能力查询
+
+          有无GPU内联神经加速器'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 224.1
+        - 120.0
+        - 187.6
+        - 48
+        fill: primary
+        kind: rounded
+        text: '帧预算调度器
+
+          按帧时间启停插帧'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 198.0
+        - 187.6
+        - 48
+        fill: highlight
+        kind: rounded
+        text: '路径选择
+
+          系统级 / SDK级'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 224.1
+        - 276.0
+        - 187.6
+        - 48
+        fill: bg
+        kind: rounded
+        text: '模型档位
+
+          小模型或半分辨率光流'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '3'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 42.0
+        - 191.8
+        - 48
+        fill: primary
+        kind: rounded
+        text: '统一算子抽象层
+
+          超分·插帧·降噪接口'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 120.0
+        - 92.9
+        - 60
+        fill: highlight_blue
+        kind: rounded
+        text: 'GPU内联
+
+          神经加速器
+
+          （INT8）'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 539.1
+        - 120.0
+        - 92.9
+        - 60
+        fill: bg
+        kind: rounded
+        text: 'NPU /
+
+          通用GPU
+
+          后端'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 210.0
+        - 191.8
+        - 44
+        fill: highlight
+        kind: rounded
+        text: 神经超分·插帧·降噪
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 440.2
+        - 284.0
+        - 191.8
+        - 40
+        fill: bg
+        kind: rounded
+        text: 帧抖动·功耗·伪影检测
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 201.4
+        - 392.6
+        - 235
+        - 14
+        fill: bg
+        kind: rect
+        text: 帧抖动、功耗温度、伪影检测回流
+        text_style: caption
+        color: accent
+      texts:
+      - box:
+        - 30.0
+        - 3.0
+        - 165.6
+        - 30
+        text: 系统级输入
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 246.1
+        - 3.0
+        - 165.6
+        - 30
+        text: 帧预算调度
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 462.2
+        - 3.0
+        - 169.8
+        - 30
+        text: 后端抽象执行
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      arrows:
+      - points:
+        - - 101.8
+          - 86.0
+        - - 101.8
+          - 115.5
+      - points:
+        - - 101.8
+          - 155.5
+        - - 101.8
+          - 185.0
+      - points:
+        - - 101.8
+          - 229.0
+        - - 101.8
+          - 258.5
+      - points:
+        - - 101.8
+          - 302.5
+        - - 101.8
+          - 332.0
+      - points:
+        - - 317.9
+          - 90.0
+        - - 317.9
+          - 120.0
+      - points:
+        - - 317.9
+          - 168.0
+        - - 317.9
+          - 198.0
+      - points:
+        - - 317.9
+          - 246.0
+        - - 317.9
+          - 276.0
+      - points:
+        - - 486.6
+          - 90.0
+        - - 486.6
+          - 120.0
+      - points:
+        - - 585.6
+          - 90.0
+        - - 585.6
+          - 120.0
+      - points:
+        - - 486.6
+          - 180.0
+        - - 486.6
+          - 210.0
+      - points:
+        - - 585.6
+          - 180.0
+        - - 585.6
+          - 210.0
+      - points:
+        - - 536.1
+          - 254.0
+        - - 536.1
+          - 284.0
+      - points:
+        - - 195.6
+          - 280.5
+        - - 209.8
+          - 280.5
+        - - 209.8
+          - 144.0
+        - - 224.1
+          - 144.0
+      - points:
+        - - 411.7
+          - 222.0
+        - - 425.9
+          - 222.0
+        - - 425.9
+          - 66.0
+        - - 440.2
+          - 66.0
+      - points:
+        - - 536.1
+          - 324.0
+        - - 536.1
+          - 399.6
+        - - 101.8
+          - 399.6
+        - - 101.8
+          - 376.0
+        color: accent
+    difficulties:
+    - name: 系统级输入信息不足
+      size: 5
+      points:
+      - name: 难点
+        text: 系统级拿不到深度和运动向量，UI会被一起插值
+      - name: 光流估计
+        text: 在合成器一侧估计光流，SDK级补充运动向量
+      - name: UI遮罩
+        text: 按固定屏幕区域、合成层检测UI，
+        highlight: 系统光流加UI遮罩
+    - name: 帧预算内完成推理
+      size: 5
+      points:
+      - name: 难点
+        text: 插帧实测11–30ms，推理与渲染共享GPU，持续运行降频
+      - name: 内联加速
+        text: 有硬件走GPU内联加速器，无则小模型或半分辨率光流
+      - name: 预算调度
+        text: 按帧时间动态决定是否插帧，
+        highlight: 按预算动态启停插帧
+    - name: 加速器碎片化
+      size: 5
+      points:
+      - name: 难点
+        text: 四家各一套，Vulkan ML仍是厂商扩展
+      - name: 算子抽象
+        text: 系统图形栈内做后端抽象层，统一超分、插帧、降噪接口
+      - name: 多后端
+        text: 向下适配tensor / data graph路径，
+        highlight: 统一算子抽象层
+    milestones:
+    - date: 2027.03.31
+      deliverable: '功耗与插帧
+
+        耗时基线'
+    - date: 2027.06.30
+      deliverable: '后端抽象层与
+
+        帧预算调度'
+    - date: 2027.09.30
+      deliverable: '系统光流加U
+
+        I遮罩上线'
+- template: solution.solution-kickoff-difficulties
+  data:
+    title: 生成式UI原生渲染：
+    title_suffix: 声明式组件流式渲染，WebView兜底，流式不掉帧
+    challenges:
+    - name: 流式易卡顿
+      text: 组件树持续到达，反复布局重绘，首元素要早。
+    - name: 隔离与资源矛盾
+      text: iframe常驻WebView，声明式受限。
+    - name: 与原生割裂
+      text: 字体、深色、无障碍易不一致
+    goal: 在系统渲染引擎中支持模型生成界面的流式、安全、原生一致渲染（指标待原型测定），
+    goal_highlight: 流式不掉帧、越权100%拦截
+    arch:
+      canvas:
+      - 640
+      - 411
+      panels:
+      - box:
+        - 0.0
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 216.1
+        - 0.0
+        - 203.6
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      - box:
+        - 432.2
+        - 0.0
+        - 207.8
+        - 386.0
+        fill: surface_light
+        kind: rounded
+        radius: 8
+      shapes:
+      - box:
+        - 8.0
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '1'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 8.0
+        - 42.0
+        - 187.6
+        - 48
+        fill: highlight_blue
+        kind: rounded
+        text: '组件目录 + 设计令牌
+
+          系统设计系统构建'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 8.0
+        - 120.0
+        - 187.6
+        - 40
+        fill: bg
+        kind: rounded
+        text: '设备能力
+
+          深色·无障碍·屏幕'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 8.0
+        - 190.0
+        - 187.6
+        - 48
+        fill: primary
+        kind: rounded
+        text: '协议校验层
+
+          声明式JSON / MCP Apps'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 8.0
+        - 268.0
+        - 187.6
+        - 44
+        fill: highlight
+        kind: rounded
+        text: '非法节点
+
+          拒绝或自动修复'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 224.1
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '2'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 42.0
+        - 187.6
+        - 44
+        fill: primary
+        kind: rounded
+        text: 渲染路径选择
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 224.1
+        - 116.0
+        - 90.8
+        - 60
+        fill: highlight
+        kind: rounded
+        text: '声明式
+
+          默认路径'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 320.9
+        - 116.0
+        - 90.8
+        - 60
+        fill: bg
+        kind: rounded
+        text: '受限WebView
+
+          表达不足兜底'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 224.1
+        - 206.0
+        - 187.6
+        - 44
+        fill: bg
+        kind: rounded
+        text: '权限判定
+
+          逐项声明、逐项授权'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 224.1
+        - 280.0
+        - 187.6
+        - 44
+        fill: bg
+        kind: rounded
+        text: 'WebView按需创建
+
+          用完回收'
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 10.0
+        - 16
+        - 16
+        fill: highlight_strong
+        kind: oval
+        text: '3'
+        text_style: caption
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 42.0
+        - 191.8
+        - 44
+        fill: primary
+        kind: rounded
+        text: '流式解析器
+
+          组件流增量解析'
+        text_style: detail
+        radius: 3
+        line: primary
+        color: on_primary
+        bold: true
+      - box:
+        - 440.2
+        - 115.5
+        - 191.8
+        - 44
+        fill: highlight
+        kind: rounded
+        text: '增量差分
+
+          只更新变化节点'
+        text_style: detail
+        radius: 3
+        line: accent
+        color: accent
+        bold: true
+      - box:
+        - 440.2
+        - 189.0
+        - 191.8
+        - 44
+        fill: bg
+        kind: rounded
+        text: 布局移出渲染线程
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 440.2
+        - 262.5
+        - 191.8
+        - 44
+        fill: highlight_blue
+        kind: rounded
+        text: '按帧预算合批提交
+
+          可见内容优先'
+        text_style: detail
+        radius: 3
+        line: primary
+      - box:
+        - 440.2
+        - 336.0
+        - 191.8
+        - 40
+        fill: bg
+        kind: rounded
+        text: 首帧·掉帧监测
+        text_style: detail
+        radius: 3
+        line: line
+      - box:
+        - 201.4
+        - 392.6
+        - 235
+        - 14
+        fill: bg
+        kind: rect
+        text: 交互回传给模型，首帧与掉帧监测回流
+        text_style: caption
+        color: accent
+      texts:
+      - box:
+        - 30.0
+        - 3.0
+        - 165.6
+        - 30
+        text: 组件目录与校验
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 246.1
+        - 3.0
+        - 165.6
+        - 30
+        text: 渲染路径与权限
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      - box:
+        - 462.2
+        - 3.0
+        - 169.8
+        - 30
+        text: 流式增量渲染
+        style: body_strong
+        align: left
+        valign: middle
+        color: primary_text
+      arrows:
+      - points:
+        - - 101.8
+          - 90.0
+        - - 101.8
+          - 120.0
+      - points:
+        - - 101.8
+          - 160.0
+        - - 101.8
+          - 190.0
+      - points:
+        - - 101.8
+          - 238.0
+        - - 101.8
+          - 268.0
+      - points:
+        - - 269.5
+          - 86.0
+        - - 269.5
+          - 116.0
+      - points:
+        - - 366.3
+          - 86.0
+        - - 366.3
+          - 116.0
+      - points:
+        - - 269.5
+          - 176.0
+        - - 269.5
+          - 206.0
+      - points:
+        - - 366.3
+          - 176.0
+        - - 366.3
+          - 206.0
+      - points:
+        - - 317.9
+          - 250.0
+        - - 317.9
+          - 280.0
+      - points:
+        - - 536.1
+          - 86.0
+        - - 536.1
+          - 115.5
+      - points:
+        - - 536.1
+          - 159.5
+        - - 536.1
+          - 189.0
+      - points:
+        - - 536.1
+          - 233.0
+        - - 536.1
+          - 262.5
+      - points:
+        - - 536.1
+          - 306.5
+        - - 536.1
+          - 336.0
+      - points:
+        - - 195.6
+          - 290.0
+        - - 209.8
+          - 290.0
+        - - 209.8
+          - 64.0
+        - - 224.1
+          - 64.0
+      - points:
+        - - 411.7
+          - 228.0
+        - - 425.9
+          - 228.0
+        - - 425.9
+          - 64.0
+        - - 440.2
+          - 64.0
+      - points:
+        - - 536.1
+          - 376.0
+        - - 536.1
+          - 399.6
+        - - 101.8
+          - 399.6
+        - - 101.8
+          - 312.0
+        color: accent
+    difficulties:
+    - name: 生成物与原生一致
+      size: 5
+      points:
+      - name: 难点
+        text: 字体、间距、深色、无障碍易与系统不一致
+      - name: 目录约束
+        text: 系统设计系统建组件目录，模型只能引用目录内组件与令牌
+      - name: 校验修复
+        text: 校验层拒绝或修复非法节点，
+        highlight: 令牌约束的组件目录
+    - name: 沙箱隔离与资源平衡
+      size: 6
+      points:
+      - name: 难点
+        text: iframe隔离强但WebView重，纯声明式表达力受限
+      - name: 声明式优先
+        text: 默认声明式组件目录，数据不是代码，权限逐项授权
+      - name: 兜底路径
+        text: 表达不足时按需创建、用完回收，
+        highlight: 声明式为主兜底
+    - name: 流式增量渲染不卡顿
+      size: 5
+      points:
+      - name: 难点
+        text: 组件树持续到达，每次都可能触发布局和重绘
+      - name: 增量差分
+        text: 只更新变化节点，布局计算移出渲染线程
+      - name: 帧预算合批
+        text: 约定生成顺序，可见内容优先，
+        highlight: 按帧预算合批提交
+    milestones:
+    - date: 2027.03.31
+      deliverable: 双路径原型与测量
+    - date: 2027.06.30
+      deliverable: '组件目录与流
+
+        式增量渲染'
+    - date: 2027.09.30
+      deliverable: '协议对接与
+
+        安全校验'
