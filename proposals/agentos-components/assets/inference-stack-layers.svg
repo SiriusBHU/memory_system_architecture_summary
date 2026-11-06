@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="700" viewBox="0 0 1060 700" font-family="-apple-system, 'Segoe UI', 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1060" height="700" fill="#ffffff"/>
+  <text x="530" y="32" text-anchor="middle" font-size="21" font-weight="700" fill="#1f2937">端侧推理栈分层图：玩家、开放度与控制方（2026-11）</text>
+  <text x="530" y="54" text-anchor="middle" font-size="12.5" fill="#6b7280">Windows 为非手机参照；橙色竖条标出非 Google / Apple 的 OS 厂商真正的杠杆层；开放度底色：绿=开源为主，蓝=开放 API，黄=受限，灰=封闭</text>
+
+  <!-- Header -->
+  <g font-size="13" font-weight="700" fill="#ffffff">
+    <rect x="20" y="70" width="130" height="30" fill="#374151"/><text x="85" y="90" text-anchor="middle">层</text>
+    <rect x="150" y="70" width="190" height="30" fill="#2563eb"/><text x="245" y="90" text-anchor="middle">Android</text>
+    <rect x="340" y="70" width="180" height="30" fill="#4b5563"/><text x="430" y="90" text-anchor="middle">Apple</text>
+    <rect x="520" y="70" width="180" height="30" fill="#0891b2"/><text x="610" y="90" text-anchor="middle">Windows（参照）</text>
+    <rect x="700" y="70" width="170" height="30" fill="#dc2626"/><text x="785" y="90" text-anchor="middle">HarmonyOS</text>
+    <rect x="870" y="70" width="80" height="30" fill="#374151"/><text x="910" y="90" text-anchor="middle">开放度</text>
+    <rect x="950" y="70" width="90" height="30" fill="#374151"/><text x="995" y="90" text-anchor="middle">控制方</text>
+  </g>
+
+  <!-- Row grid -->
+  <g fill="none" stroke="#e5e7eb">
+    <rect x="20" y="100" width="1020" height="70"/>
+    <rect x="20" y="170" width="1020" height="70"/>
+    <rect x="20" y="240" width="1020" height="70"/>
+    <rect x="20" y="310" width="1020" height="70"/>
+    <rect x="20" y="380" width="1020" height="70"/>
+    <rect x="20" y="450" width="1020" height="70"/>
+    <rect x="20" y="520" width="1020" height="70"/>
+    <line x1="150" y1="100" x2="150" y2="590"/>
+    <line x1="340" y1="100" x2="340" y2="590"/>
+    <line x1="520" y1="100" x2="520" y2="590"/>
+    <line x1="700" y1="100" x2="700" y2="590"/>
+    <line x1="870" y1="100" x2="870" y2="590"/>
+    <line x1="950" y1="100" x2="950" y2="590"/>
+  </g>
+
+  <!-- Lever highlight bars (L5, L4) -->
+  <rect x="20" y="240" width="6" height="140" fill="#d97706"/>
+
+  <!-- Layer labels -->
+  <g fill="#111827">
+    <text x="34" y="130" font-size="13" font-weight="700">L7 应用 / Agent</text>
+    <text x="34" y="200" font-size="13" font-weight="700">L6 应用 API</text>
+    <text x="34" y="268" font-size="13" font-weight="700">L5 系统服务</text>
+    <text x="34" y="287" font-size="11.5" fill="#b45309">杠杆：准入与记账</text>
+    <text x="34" y="338" font-size="13" font-weight="700">L4 运行时 / 框架</text>
+    <text x="34" y="357" font-size="11.5" fill="#b45309">杠杆：分发通道</text>
+    <text x="34" y="410" font-size="13" font-weight="700">L3 芯片 SDK</text>
+    <text x="34" y="428" font-size="13" font-weight="700">/ 编译器</text>
+    <text x="34" y="480" font-size="13" font-weight="700">L2 驱动 / HAL</text>
+    <text x="34" y="550" font-size="13" font-weight="700">L1 芯片</text>
+  </g>
+
+  <!-- Platform cells -->
+  <g font-size="11.5" fill="#1f2937">
+    <!-- L7 -->
+    <text x="160" y="128">第三方应用</text><text x="160" y="146">系统助手：Gemini</text>
+    <text x="350" y="128">第三方应用</text><text x="350" y="146">系统助手：Siri</text>
+    <text x="530" y="128">第三方应用</text><text x="530" y="146">系统助手：Copilot</text>
+    <text x="710" y="128">第三方应用</text><text x="710" y="146">系统助手：小艺</text>
+    <!-- L6 -->
+    <text x="160" y="192">ML Kit GenAI</text><text x="160" y="210">Prompt API（beta）</text><text x="160" y="228">AppFunctions</text>
+    <text x="350" y="192">Foundation Models</text><text x="350" y="210">framework</text><text x="350" y="228">LanguageModel 协议</text>
+    <text x="530" y="192">Windows AI APIs</text><text x="530" y="210">Phi Silica（LAF 受限）</text><text x="530" y="228">→ Aion Instruct</text>
+    <text x="710" y="192">意图框架 / HMAF</text><text x="710" y="210">开放范围待核实</text>
+    <!-- L5 -->
+    <text x="160" y="262">AICore</text><text x="160" y="280">只许前台、两级配额</text><text x="160" y="298">并发时 BUSY 拒绝</text>
+    <text x="350" y="262">系统模型服务 + PCC</text><text x="350" y="280">适配器与底座版本</text><text x="350" y="298">一一绑定</text>
+    <text x="530" y="262">Windows AI Foundry</text><text x="530" y="280">模型经 Windows Update</text><text x="530" y="298">下发、可由用户删除</text>
+    <text x="710" y="262">小艺系统服务</text><text x="710" y="280">内存与配额细节</text><text x="710" y="298">未公开</text>
+    <!-- L4 -->
+    <text x="160" y="332">LiteRT / LiteRT-LM</text><text x="160" y="350">（经 Play 分发）</text><text x="160" y="368">ExecuTorch、llama.cpp 等</text>
+    <text x="350" y="332">Core AI（设备特化）</text><text x="350" y="350">Core ML（传统 ML）</text><text x="350" y="368">MLX</text>
+    <text x="530" y="332">Windows ML</text><text x="530" y="350">（ONNX Runtime）</text><text x="530" y="368">共享运行时与模型目录</text>
+    <text x="710" y="332">MindSpore Lite</text>
+    <!-- L3 -->
+    <text x="160" y="402">QAIRT / GenieX</text><text x="160" y="420">NeuroPilot、Tensor 运行库</text><text x="160" y="438">每个 SoC 一份产物</text>
+    <text x="350" y="402">Apple 内部</text><text x="350" y="420">不对外开放</text>
+    <text x="530" y="402">各芯片厂商的 EP</text><text x="530" y="420">以 MSIX 经</text><text x="530" y="438">Windows Update 分发</text>
+    <text x="710" y="402">CANN</text><text x="710" y="420">HiAI Foundation</text>
+    <!-- L2 -->
+    <text x="160" y="472">NNAPI（Android 15 弃用）</text><text x="160" y="490">厂商 NPU 驱动</text><text x="160" y="508">（多在内核树外）</text>
+    <text x="350" y="472">Apple 内部</text>
+    <text x="530" y="472">MCDM / WDDM</text><text x="530" y="490">驱动模型由微软掌握</text>
+    <text x="710" y="472">NNRt HDI</text><text x="710" y="490">56 个算子、仅同步推理</text>
+    <!-- L1 -->
+    <text x="160" y="542">Hexagon、APU</text><text x="160" y="560">Tensor TPU</text>
+    <text x="350" y="542">ANE</text><text x="350" y="560">（Apple 芯片）</text>
+    <text x="530" y="542">Hexagon、Intel NPU</text><text x="530" y="560">AMD XDNA</text>
+    <text x="710" y="542">昇腾 / 达芬奇 NPU</text>
+  </g>
+
+  <!-- Openness cells -->
+  <g font-size="12">
+    <rect x="871" y="101" width="78" height="68" fill="#f3f4f6"/><text x="910" y="140" text-anchor="middle" fill="#374151">—</text>
+    <rect x="871" y="171" width="78" height="68" fill="#eff6ff"/><text x="910" y="210" text-anchor="middle" fill="#1e3a8a">开放 API</text>
+    <rect x="871" y="241" width="78" height="68" fill="#f3f4f6"/><text x="910" y="280" text-anchor="middle" fill="#374151">封闭</text>
+    <rect x="871" y="311" width="78" height="68" fill="#f0fdf4"/><text x="910" y="350" text-anchor="middle" fill="#065f46">开源为主</text>
+    <rect x="871" y="381" width="78" height="68" fill="#fffbeb"/><text x="910" y="420" text-anchor="middle" fill="#92400e">受限</text>
+    <rect x="871" y="451" width="78" height="68" fill="#fffbeb"/><text x="910" y="482" text-anchor="middle" fill="#92400e">接口开放</text><text x="910" y="500" text-anchor="middle" fill="#92400e">实现封闭</text>
+    <rect x="871" y="521" width="78" height="68" fill="#f3f4f6"/><text x="910" y="560" text-anchor="middle" fill="#374151">封闭</text>
+  </g>
+
+  <!-- Control cells -->
+  <g font-size="11.5" fill="#1f2937">
+    <text x="958" y="130">应用开发者</text><text x="958" y="148">助手：OS 厂商</text>
+    <text x="958" y="210">OS 厂商</text>
+    <text x="958" y="280">OS 厂商</text>
+    <text x="958" y="342">平台厂商</text><text x="958" y="360">开源社区</text>
+    <text x="958" y="420">芯片厂商</text>
+    <text x="958" y="482">芯片厂商</text><text x="958" y="500">+ OS 厂商</text>
+    <text x="958" y="560">芯片厂商</text>
+  </g>
+
+  <!-- Footnotes -->
+  <g font-size="12.5" fill="#374151">
+    <text x="20" y="618"><tspan font-weight="700">内核侧：</tspan>Linux accel 子系统统一了 NPU 的设备节点与提交框架（PC / 嵌入式 NPU），不统一算子与编译器；手机 NPU 驱动基本不走这条路径。</text>
+    <text x="20" y="642"><tspan font-weight="700">判断：</tspan>OS 厂商能直接改的是 L5、L6 与部分 L2；L3、L1 由芯片厂商控制。非 Google / Apple 的 OS 厂商，杠杆在 L5 的准入与记账、L4 的分发通道。</text>
+    <text x="20" y="666">NNAPI 弃用、LiteRT 每 SoC 一份产物、Windows ML EP 经 Windows Update 分发，三件事共同说明：抽象层能否存活，取决于谁握着分发与更新通道。</text>
+    <text x="20" y="690" font-size="11.5" fill="#6b7280">来源：C1a 笔记 E2–E33（ML Kit GenAI、NNAPI 迁移指南、LiteRT-LM NPU 表、WWDC26 session 241 / 324、Windows ML / Windows AI APIs 文档、OpenHarmony NNRt、Linux accel 文档）。</text>
+  </g>
+</svg>
