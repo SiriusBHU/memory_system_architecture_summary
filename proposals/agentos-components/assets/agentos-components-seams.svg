@@ -21,7 +21,7 @@
   </g>
   <line x1="34" y1="278" x2="316" y2="278" stroke="#bfdbfe"/>
   <text id="c1-finding" x="34" y="298" font-size="12" fill="#1d4ed8">结论：共享底座已量产，但只是受限共享；</text>
-  <text id="c1-finding2" x="34" y="314" font-size="12" fill="#1d4ed8">NPU 抽象取决于分发通道，调度只到准入</text>
+  <text id="c1-finding2" x="34" y="314" font-size="12" fill="#1d4ed8">NPU 抽象看分发通道，调度到模型级抢占</text>
 
   <!-- ========== Sandbox (top-right) ========== -->
   <rect x="450" y="130" width="310" height="190" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
