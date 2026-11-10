@@ -4,8 +4,11 @@
 """
 
 import re
+from pathlib import Path
 
-from pptx.util import Pt
+from pptx.oxml import parse_xml
+from pptx.oxml.ns import nsdecls, qn
+from pptx.util import Emu, Pt
 
 import lib
 from lib import arrow, badge, block_arrow, box, footnote, measure, new_slide, outline, plain, rect, round_card, table, \
@@ -143,178 +146,151 @@ def insight_section(prs):
                       "业界进展与技术趋势")
 
 
-# ---------------------------------------------------------------- 概括：商业化趋势与端侧运行需求
+# ---------------------------------------------------------------- 概括：趋势洞察（背景 + 三个演进趋势）
 
-def _bar_chart(s, b, title, points, note, unit=""):
-    """柱状图（形状绘制，可在 PowerPoint 中直接改）：points = [(时点, 数值, 标签)]；末柱红框强调。"""
-    x, y, w, h = b
-    text(s, (x, y, w, 18), title, style="detail", check=False)
-    top, base = y + 36, y + h - 38
-    vmax = max(v for _, v, _ in points)
-    n = len(points)
-    slot = w / n
-    bw = slot * 0.56
-    for i, (lab, v, vlab) in enumerate(points):
-        cx = x + slot * (i + 0.5)
-        bh = max(2.0, (base - top) * v / vmax)
-        last = i == n - 1
-        rect(s, (cx - bw / 2, base - bh, bw, bh), "peach_m" if last else "blue_m",
-             line="red" if last else None, line_width=1.25)
-        text(s, (cx - slot / 2, base - bh - 17, slot, 16), f"!!{vlab}!!" if last else f"**{vlab}**",
-             style="caption", align="center", check=False)
-        text(s, (cx - slot / 2, base + 3, slot, 15), lab, style="footnote", color="grey_d", align="center",
-             check=False)
-    arrow(s, (x, base), (x + w, base), color="grey_d", width=0.75, head=False)
-    text(s, (x, base + 20, w, 18), note, style="detail", align="center", check=False)
+IMG = Path(__file__).parent / "img"
 
 
-def _diagram_inference(s, dx, dy):
+def _picture(s, name, x, y, h):
+    """按高度插图、保持原比例，返回图片宽度（逻辑像素）。"""
+    pic = s.shapes.add_picture(str(IMG / name), Emu(lib.px_to_emu(x)), Emu(lib.px_to_emu(y)),
+                               height=Emu(lib.px_to_emu(h)))
+    return pic.width / lib.px_to_emu(1)
+
+
+def _glow(s, b):
+    """标题上方的浅灰光晕：自顶部中点向外渐隐为白色，衔接「背景」与「演进趋势」。"""
+    shp = rect(s, b, "bg", kind="oval")
+    sp_pr = shp._element.spPr
+    for tag in ("a:solidFill", "a:noFill", "a:gradFill"):
+        for el in sp_pr.findall(qn(tag)):
+            sp_pr.remove(el)
+    grad = parse_xml(
+        f'<a:gradFill {nsdecls("a")} rotWithShape="1"><a:gsLst>'
+        '<a:gs pos="0"><a:srgbClr val="D9D9D9"/></a:gs>'
+        '<a:gs pos="100000"><a:srgbClr val="FFFFFF"/></a:gs></a:gsLst>'
+        '<a:path path="circle"><a:fillToRect l="50000" t="0" r="50000" b="100000"/></a:path></a:gradFill>')
+    sp_pr.find(qn("a:prstGeom")).addnext(grad)
+    shp.line.fill.background()
+
+
+def _diagram_inference(s, dx, dy, W=320):
     """推理服务化：多个应用与 Agent 共用系统托管的一个底座模型。"""
-    names = ["应用 A", "应用 B", "Agent"]
-    bw, g = 62, 9
-    for i, nm in enumerate(names):
+    g = 12
+    bw = (W - 2 * g) / 3
+    for i, nm in enumerate(["应用 A", "应用 B", "Agent"]):
         bx = dx + i * (bw + g)
-        box(s, (bx, dy + 4, bw, 24), nm, fill="green_l" if nm == "Agent" else "bg", line="grey_d", style="caption")
-        arrow(s, (bx + bw / 2, dy + 29), (bx + bw / 2, dy + 45), color="dark")
-    box(s, (dx, dy + 46, 204, 38), "**系统推理服务**\n一个底座模型，按会话分配算力", fill="peach_l", line="red",
-        line_width=1.25, color="accent", style="caption")
-    arrow(s, (dx + 102, dy + 85), (dx + 102, dy + 95), color="dark", head=False)
-    box(s, (dx, dy + 95, 204, 22), "NPU · GPU · PIM", fill="blue_l", style="caption")
+        box(s, (bx, dy + 4, bw, 26), nm, fill="green_l" if nm == "Agent" else "bg", line="grey_d")
+        arrow(s, (bx + bw / 2, dy + 31), (bx + bw / 2, dy + 47), color="dark")
+    box(s, (dx, dy + 48, W, 42), "**系统推理服务**\n一个底座模型，按会话分配算力", fill="peach_l", line="red",
+        line_width=1.25, color="accent")
+    arrow(s, (dx + W / 2, dy + 91), (dx + W / 2, dy + 101), color="dark", head=False)
+    box(s, (dx, dy + 101, W, 24), "NPU · GPU · PIM", fill="blue_l")
 
 
-def _diagram_sandbox(s, dx, dy):
-    """执行沙箱服务化：外部 Agent 经 A2A 入站、Agent 经 MCP 出站，每次调用在会话沙箱边界上判定。"""
-    box(s, (dx, dy + 34, 44, 46), "外部\nAgent", fill="bg", line="grey_d", style="caption", inset=1)
-    box(s, (dx + 160, dy + 34, 44, 46), "应用\n工具", fill="bg", line="grey_d", style="caption", inset=1)
-    outline(s, (dx + 66, dy + 4, 72, 112), line="red", width=1.5, dash=True)
-    text(s, (dx + 66, dy + 7, 72, 16), "!!会话沙箱!!", style="caption", align="center", check=False)
-    box(s, (dx + 76, dy + 40, 52, 34), "Agent", fill="green_l", line="grey_d", style="caption", inset=1)
-    text(s, (dx + 66, dy + 80, 72, 34), "隔离\n按调用判定", style="caption", align="center", check=False)
-    arrow(s, (dx + 45, dy + 57), (dx + 75, dy + 57), color="dark", width=1.25)
-    arrow(s, (dx + 129, dy + 57), (dx + 159, dy + 57), color="dark", width=1.25)
-    text(s, (dx + 40, dy + 38, 40, 15), "@@A2A@@", style="caption", align="center", check=False)
-    text(s, (dx + 124, dy + 38, 40, 15), "@@MCP@@", style="caption", align="center", check=False)
+def _diagram_sandbox(s, dx, dy, W=320):
+    """执行沙箱化：外部 Agent 经 A2A 入站、Agent 经 MCP 出站，每次调用在会话沙箱边界上判定。"""
+    ew, sw = 58, 124
+    cx = dx + W / 2
+    box(s, (dx, dy + 36, ew, 50), "外部\nAgent", fill="bg", line="grey_d", inset=1)
+    box(s, (dx + W - ew, dy + 36, ew, 50), "应用\n工具", fill="bg", line="grey_d", inset=1)
+    outline(s, (cx - sw / 2, dy + 4, sw, 121), line="red", width=1.5, dash=True)
+    text(s, (cx - sw / 2, dy + 8, sw, 16), "!!会话沙箱!!", style="detail", align="center", check=False)
+    box(s, (cx - 40, dy + 40, 80, 42), "Agent", fill="green_l", line="grey_d")
+    text(s, (cx - sw / 2, dy + 88, sw, 34), "隔离\n按调用判定", style="detail", align="center", check=False)
+    arrow(s, (dx + ew + 1, dy + 61), (cx - 41, dy + 61), color="dark", width=1.25)
+    arrow(s, (cx + 41, dy + 61), (dx + W - ew - 1, dy + 61), color="dark", width=1.25)
+    gap = W / 2 - sw / 2 - ew
+    text(s, (dx + ew, dy + 42, gap, 15), "@@A2A@@", style="caption", align="center", check=False)
+    text(s, (cx + sw / 2, dy + 42, gap, 15), "@@MCP@@", style="caption", align="center", check=False)
 
 
-def _diagram_memory(s, dx, dy):
+def _diagram_memory(s, dx, dy, W=320):
     """X + Agent 内存协同管理：前台应用与 Agent 的权重、KV 共用一块 DRAM，统一记账、协同回收。"""
-    text(s, (dx, dy, 204, 15), "DRAM（12GB 机型）", style="caption", color="grey_d", check=False)
+    text(s, (dx, dy, W, 15), "DRAM（12GB 机型）", style="caption", color="grey_d", check=False)
     segs = [("前台应用 X", 0.38, "blue_l"), ("Agent 权重", 0.27, "peach_l"), ("KV", 0.15, "peach_m"),
             ("其余", 0.20, "grey_m")]
     bx = dx
     for nm, frac, fill in segs:
-        sw = 204 * frac
-        box(s, (bx, dy + 16, sw, 32), nm, fill=fill, line="grey_d", style="caption", inset=1)
-        bx += sw
-    lib.poly(s, [(dx + 2, dy + 52), (dx + 2, dy + 58), (dx + 202, dy + 58), (dx + 202, dy + 52)], color="red",
-         width=1.25)
-    text(s, (dx, dy + 60, 204, 16), "!!统一记账 · 协同回收!!", style="caption", align="center", check=False)
-    wx = dx + 204 * 0.38 + 204 * 0.27 / 2
-    arrow(s, (wx, dy + 95), (wx, dy + 80), color="dark")
-    box(s, (dx, dy + 95, 204, 22), "闪存（UFS）：权重按需换入", fill="blue_l", style="caption")
+        box(s, (bx, dy + 18, W * frac, 34), nm, fill=fill, line="grey_d", inset=1)
+        bx += W * frac
+    lib.poly(s, [(dx + 2, dy + 56), (dx + 2, dy + 62), (dx + W - 2, dy + 62), (dx + W - 2, dy + 56)], color="red",
+             width=1.25)
+    text(s, (dx, dy + 64, W, 16), "!!统一记账 · 协同回收!!", style="detail", align="center", check=False)
+    wx = dx + W * 0.38 + W * 0.27 / 2
+    arrow(s, (wx, dy + 101), (wx, dy + 84), color="dark")
+    box(s, (dx, dy + 101, W, 24), "闪存（UFS）：权重按需换入", fill="blue_l")
 
 
 @page
 def overview(prs):
-    s = new_slide(prs, "Agent 处于爆发期：", "端侧运行需要推理服务化、执行沙箱服务化、X + Agent 内存协同管理",
+    s = new_slide(prs, "Agent OS 趋势洞察：",
+                  "Agent 需求暴增，端侧需推理服务化、执行沙箱化、X+Agent 内存协同管理",
                   crumb=CRUMB + " › 概括")
 
-    # ---- 左：问题一 Agent 是否处于爆发期
-    ix, iy, iw, ih = lib.panel(s, (32, 104, 624, 582), "问题一　Agent 是否处于爆发期")
-    text(s, (ix, iy - 2, iw, 20), "**① 用量**：大模型的 token 用量一年增长 !!7–10 倍!!", style="body", check=False)
-    cw = (iw - 20) / 2
-    _bar_chart(s, (ix, iy + 22, cw, 160), "**Google 全产品每月处理的 token**（万亿）", [
-        ("2024-04", 9.7, "9.7"), ("2025-05", 480, "480"), ("2025-07", 980, "980"), ("2025-10", 1300, "1300"),
-        ("2026-05", 3200, "3200")], "25 个月约 !!330 倍!!，近一年约 7 倍")
-    _bar_chart(s, (ix + cw + 20, iy + 22, cw, 160), "**豆包大模型日均 token 调用量**（万亿）", [
-        ("2024-05", 0.12, "0.12"), ("2025-06", 16.4, "16.4"), ("2025-09", 30, "30"), ("2026-01", 60, "约 60"),
-        ("2026-03", 120, "120"), ("2026-06", 180, "180")], "两年超 !!1500 倍!!，近一年超 10 倍")
-
-    py = iy + 188
-    text(s, (ix, py, iw, 20), "**② 产品**：2026 年 7–9 月，三款 Agent 产品相继上线", style="body", check=False)
-    text(s, (ix + 420, py + 2, iw - 420, 18), "~~产品本身均未公开日活~~", style="caption", align="right",
-         check=False)
-    tl = py + 46
-    arrow(s, (ix, tl), (ix + iw, tl), color="red", width=2.0)
-    prods = [
-        ("2026-07", "阶跃 Step AOS", "整机 Agent 手机；端侧小模型加云端大模型",
-         "阶跃模型曾居 OpenRouter 周调用量第一（2026-03）"),
-        ("2026-08", "xAI Grok Bot", "账号级常驻云端电脑；200 美元/月",
-         "Grok 月活 3 个月由 !!3500 万增至 1.17 亿!!"),
-        ("2026-09", "OpenAI dot", "每个 Agent 一台云端电脑；随 Pro 档提供",
-         "ChatGPT 周活 !!10 亿!!；Codex 周用户 2 个月由 !!500 万增至 800 万!!"),
-    ]
-    g = 10
-    pw = (iw - 2 * g) / 3
-    for i, (date, name, form, metric) in enumerate(prods):
-        px = ix + i * (pw + g)
-        lib.rect(s, (px + pw / 2 - 6, tl - 6, 12, 12), "red", kind="oval")
-        text(s, (px + pw / 2 - 40, tl - 24, 80, 16), f"@@{date}@@", style="caption", align="center", check=False)
-        round_card(s, (px, tl + 10, pw, 124), radius=10)
-        text(s, (px + 8, tl + 14, pw - 16, 20), f"**{name}**", style="body", color="primary_text", check=False)
-        text(s, (px + 8, tl + 36, pw - 16, 36), form, style="detail")
-        rect(s, (px + 8, tl + 75, pw - 16, 1), "grey_line")
-        text(s, (px + 8, tl + 78, pw - 16, 54), metric, style="detail")
-
-    ky = tl + 142
-    text(s, (ix, ky, iw, 20), "**③ 交易与强度**：Agent 开始替用户付款，单个用户的用量成倍上升", style="body",
-         check=False)
-    kpis = [("3 亿笔", "支付宝 AI 付累计笔数\n（2026-05）"),
-            ("4 倍 / 15 倍", "Agent、多 Agent 的 token\n消耗为对话的倍数"),
-            ("320 亿/分钟", "Google 模型 API 的 token\n速率（2026-Q3，同比超 4 倍）")]
-    for i, (val, lab) in enumerate(kpis):
-        kx = ix + i * (pw + g)
-        rect(s, (kx, ky + 24, pw, 58), "grey_l")
-        text(s, (kx + 4, ky + 26, pw - 8, 26), f"!!{val}!!", style="heading", align="center", valign="middle",
-             check=False)
-        text(s, (kx + 4, ky + 52, pw - 8, 30), lab, style="caption", align="center")
-
-    cy = ky + 92
-    cb = (ix, cy, iw, iy + ih - cy)
-    outline(s, cb, line="grey_d", width=1.5, dash=True)
-    text(s, (cb[0] + 6, cy, 60, cb[3]), "观点", style="label_big", align="center", valign="middle", check=False)
-    text(s, (cb[0] + 72, cy + 4, iw - 82, cb[3] - 8),
+    # ---- 上：背景　Agent 应用爆发式增长
+    ix, iy, iw, ih = lib.panel(s, (32, 104, 1216, 214), "背景：Agent 应用爆发式增长")
+    text(s, (ix, iy - 2, iw, 20),
          "@@Agent 处于爆发期，市场广阔@@：用户基盘已达十亿级，token 用量一年增长 7–10 倍，Agent 开始替用户付款；"
-         "用户数增速放缓而用量仍在加速，增量主要来自 Agent 与推理模型（判断）",
-         style="body", valign="middle")
-
-    # ---- 右：问题二 端侧 Agent 运行需要什么
-    rx, ry, rw, rh = lib.panel(s, (672, 104, 576, 582), "问题二　端侧 Agent 运行需要什么")
-    text(s, (rx, ry - 2, rw, 40),
-         "Agent 要**想**、要**做**，还要与正在使用的应用**共存**。Agent OS 的三个趋势，是把这三件事从应用各自处理"
-         "转为由系统统一提供", style="body", check=False)
-    trends = [
-        ("推理服务化", _diagram_inference, "从每个应用自带模型，转为系统托管底座模型、按会话分配算力",
-         "业界：Apple Foundation Models、Android AICore 均由系统托管端侧模型"),
-        ("执行沙箱服务化", _diagram_sandbox, "从应用级权限，转为系统按会话隔离、按每次调用判定权限",
-         "业界：dot、Grok Bot 每个 Agent 一台云端电脑；Windows 为 Agent 设独立账户与会话"),
-        ("X + Agent 内存协同管理", _diagram_memory, "从应用与模型各管各的，转为前台应用（X）与 Agent 统一记账、协同回收",
-         "业界：Apple、Google 以 12GB 内存为准入门槛；AFM 3 权重放闪存、按请求换入"),
+         "用户数增速放缓，用量成倍增长", style="body", check=False)
+    tl = iy + 46
+    arrow(s, (ix, tl), (ix + iw, tl), color="red", width=2.0)
+    ch, cw = 126, 204
+    prods = [
+        ("2026-08", "xAI Grok Bot", "账号级常驻云端电脑；\n200 美元/月", "Grok 月活：3 个月由 !!3500 万增至 1.17 亿!!",
+         "grok_bot.png"),
+        ("2026-09", "OpenAI dot", "每个 Agent 一台云端电脑；\n随 Pro 档提供",
+         "ChatGPT 周活 !!10 亿!!；Codex 周用户 2 个月由 !!500 万增至 800 万!!", "openai_dots.png"),
+        ("2026-10", "阶跃手机开售", "整机 Agent 手机；\n3999 元起，10-16 首销",
+         "Step AOS 于 7 月发布：\n系统级 Agent，端侧小模型加云端大模型", "stepx_neo.png"),
     ]
-    ty, th, tg = ry + 44, 136, 6
-    for i, (name, draw, shift, evid) in enumerate(trends):
-        y = ty + i * (th + tg)
-        round_card(s, (rx, y, rw, th), radius=10)
-        rect(s, (rx + 8, y + 8, 220, th - 16), "bg", line="grey_line")
-        draw(s, rx + 16, y + 8)
-        tx, tw = rx + 238, rw - 248
-        badge(s, tx + 11, y + 18, i + 1, d=22)
-        text(s, (tx + 28, y + 7, tw - 28, 22), f"!!{name}!!", style="lead_strong", valign="middle", check=False)
-        text(s, (tx, y + 34, tw, 44), shift, style="body")
-        text(s, (tx, y + 86, tw, 42), evid, style="detail", color="grey_d")
+    # 图片按卡片高度等比缩放；先算总宽，再把余量均分到组间
+    aspect = {"grok_bot.png": 104 / 118, "openai_dots.png": 89 / 115, "stepx_neo.png": 248 / 109}
+    total = sum(cw + 10 + ch * aspect[p[4]] for p in prods)
+    m = 8
+    gap = (iw - 2 * m - total) / 2
+    px = ix + m
+    for date, name, form, metric, img in prods:
+        cy = tl + 10
+        lib.rect(s, (px + cw / 2 - 6, tl - 6, 12, 12), "red", kind="oval")
+        text(s, (px + cw / 2 - 50, tl - 24, 100, 16), f"@@{date}@@", style="detail", align="center", check=False)
+        round_card(s, (px, cy, cw, ch), radius=10)
+        text(s, (px + 8, cy + 4, cw - 16, 20), f"**{name}**", style="body", color="primary_text", check=False)
+        text(s, (px + 8, cy + 25, cw - 16, 40), form, style="detail")
+        rect(s, (px + 8, cy + 67, cw - 16, 1), "grey_line")
+        text(s, (px + 8, cy + 70, cw - 16, 54), metric, style="detail", gap_pt=0)
+        iw_ = _picture(s, img, px + cw + 10, cy, ch)
+        px += cw + 10 + iw_ + gap
 
-    cy2 = ty + 3 * (th + tg) + 2
-    cb2 = (rx, cy2, rw, ry + rh - cy2)
-    outline(s, cb2, line="grey_d", width=1.5, dash=True)
-    text(s, (cb2[0] + 6, cy2, 60, cb2[3]), "观点", style="label_big", align="center", valign="middle", check=False)
-    text(s, (cb2[0] + 72, cy2 + 6, rw - 82, 22), "三个趋势对应本次汇报的@@三项系统服务@@", style="body", check=False)
-    sw = (rw - 82 - 2 * 8) / 3
-    for j, svc in enumerate(["推理服务", "执行与沙箱", "内存与资源"]):
-        box(s, (cb2[0] + 72 + j * (sw + 8), cy2 + 32, sw, cb2[3] - 40), f"**{svc}**", fill="peach_l", line="red",
-            line_width=1.25, color="accent", style="body")
+    # ---- 中：Agent OS 系统服务演进趋势
+    _glow(s, (160, 317, 960, 60))
+    text(s, (340, 332, 600, 28), "Agent OS 系统服务演进趋势", style="panel_title", align="center", valign="middle",
+         check=False)
 
-    footnote(s, "来源：报告第一部分「概括」（GT1–GT7、AN1）。token 数据为厂商自报、经媒体转述，横轴为披露时点、间隔不等；"
-                "豆包 2024-05 为媒体按倍数反推；Grok 月活为上市文件的二手转述。", y=694, w=1120)
+    # ---- 下：三个趋势，各配一张示意图，并对应一项系统服务
+    trends = [
+        ("趋势一：推理服务化", _diagram_inference, "从每个应用自带模型，转为@@系统托管底座模型、按会话分配算力@@",
+         "业界：Apple Foundation Models、Android AICore 均由系统托管端侧模型", "推理服务"),
+        ("趋势二：执行沙箱化", _diagram_sandbox, "从应用级权限，转为@@系统按会话隔离、按每次调用判定权限@@",
+         "业界：dot、Grok Bot 每个 Agent 一台云端电脑；Windows 为 Agent 设独立账户与会话", "执行与沙箱"),
+        ("趋势三：X+Agent 内存协同管理", _diagram_memory,
+         "从应用与模型各管各的，转为@@前台应用（X）与 Agent 统一记账、协同回收@@",
+         "业界：Apple、Google 以 12GB 内存为准入门槛；AFM 3 权重放闪存、按请求换入", "内存与资源"),
+    ]
+    g = 16
+    pw = (lib.WIDTH - 2 * g) / 3
+    for i, (head, draw, shift, evid, svc) in enumerate(trends):
+        tx, ty, tw, th = lib.panel(s, (lib.LEFT + i * (pw + g), 382, pw, 300), head)
+        rect(s, (tx, ty, tw, 142), "grey_l", kind="rounded", radius=8)
+        draw(s, tx + (tw - 320) / 2, ty + 8)
+        text(s, (tx, ty + 150, tw, 44), shift, style="body")
+        text(s, (tx, ty + 198, tw, 36), evid, style="detail", color="grey_d")
+        box(s, (tx, ty + th - 30, tw, 28), f"对应系统服务：**{svc}**", fill="peach_l", line="red", line_width=1.25,
+            color="accent", style="body")
+
+    footnote(s, "来源：报告「概括」（GT1–GT7、AN1）。token 增长为 Google、豆包的厂商自报数据（经媒体转述）；"
+                "「替用户付款」指支付宝 AI 付累计 3 亿笔（2026-05）；Grok 月活为二手转述；三款产品均未公开日活。",
+             y=690, w=1140)
 
 
 # ---------------------------------------------------------------- 1.1.1 业界三条路线
