@@ -1,4 +1,4 @@
-"""第二部分 · 瓶颈分析：执行沙箱（报告 2.4.2）。版式：solution.problem-arch-callouts。
+"""第二部分 · 瓶颈分析：执行沙箱（报告 2.5.2）。版式：solution.problem-arch-callouts。
 中央架构图在本模块自绘（当前手机上的 Agent 执行架构，以 Android 为主、注明 iOS 对应机制）；
 两侧问题卡、扫描卡、连线、底部通栏与编号用 pages.bn_* 部件。"""
 
@@ -111,5 +111,5 @@ def bottleneck_sandbox(prs):
               "@@会话级隔离与状态底座@@（对应 ①②）、@@策略引擎与数据标签@@（对应 ③④）、@@出口代理与凭证托管@@（对应 ⑤）")
     bn_badges(s, targets, [("1", "app"), ("2", "lmkd"), ("3", "call"), ("4", "ext_in"), ("5", "net")])
 
-    lib.footnote(s, "来源：报告 2.2.3 负载估算、2.4.2 瓶颈分析；P-C2 原型对比笔记；iOS 对应机制为 App Intents、App 沙箱与 Keychain。"
+    lib.footnote(s, "来源：报告 2.2.3 负载估算、2.5.2 瓶颈分析；P-C2 原型对比笔记；iOS 对应机制为 App Intents、App 沙箱与 Keychain。"
                     "确认批准率与 Cube 数据为厂商口径。", y=694)

@@ -15,7 +15,7 @@ CRUMB = "二、场景与负载瓶颈"
 @page
 def scene_section(prs):
     lib.section_slide(prs, "二、", "场景与负载瓶颈",
-                      "今天手机 Agent 的负载形态；以「贴身秘书」为参考负载量化四个组件的需求；当代操作系统的能力缺口与四组件瓶颈")
+                      "今天手机 Agent 的负载形态；以「贴身秘书」为参考负载量化需求；每个领域的体验与商业化问题；能力缺口与三项系统服务的瓶颈")
 
 
 # ---------------------------------------------------------------- 2.1 现状
@@ -103,7 +103,7 @@ def status_quo(prs):
     fx = tx + tw + 26
     fw = 1240 - fx
     text(s, (fx, y0 + 8, fw, 20), "**未来：常驻代理，端侧同时承载四类负载**", style="body", color="accent", check=False)
-    loads = ["常驻的模型\n与它的 KV", "长时间存活、\n可暂停恢复的\n执行环境", "持续增长的\n个人记忆", "被 Agent\n拉起的 App"]
+    loads = ["常驻的模型\n与它的 KV", "长时间存活、\n可暂停恢复的\n执行环境", "Agent 持有的\n个人记忆", "被 Agent\n拉起的 App"]
     g = 8
     lw = (fw - 3 * g) / 4
     for i, ld in enumerate(loads):
@@ -119,7 +119,7 @@ def status_quo(prs):
 
 @page
 def reference_load(prs):
-    s = new_slide(prs, "参考负载「贴身秘书」：", "单个常驻主 Agent、低并发，四个组件的需求由同一组任务原型推出",
+    s = new_slide(prs, "参考负载「贴身秘书」：", "单个常驻主 Agent、低并发，各项需求由同一组任务原型推出",
                   crumb=CRUMB + " › 参考负载")
     # 设定与约束
     outline(s, (32, 88, 1216, 120), line="grey_line")
@@ -137,7 +137,7 @@ def reference_load(prs):
 
     # T1–T5 任务原型
     ty = 218
-    text(s, (32, ty, 1216, 20), "**五类任务原型：四个组件的负载都从这一组原型推出**", style="body", color="accent", check=False)
+    text(s, (32, ty, 1216, 20), "**五类任务原型：三项系统服务与记忆的负载都从这一组原型推出**", style="body", color="accent", check=False)
     cols = ["原型", "例子", "交互性", "每天次数（估算）", "主要特征"]
     rows = [
         ["T1 即时指令", "「把明天 9 点的会推迟半小时并通知参会人」", "前台，用户在等", "8–10", "轮数少，有发消息类写操作"],
@@ -193,5 +193,5 @@ def reference_load(prs):
          "- **口径**：四份负载笔记中各原型的次数略有出入（如 T2 取 1.5 与 3），本页给区间；后续结论为数量级判断，对次数不敏感\n"
          "- !!最大的数据缺口!!：公开资料中没有任何一份手机上「秘书类」Agent 的使用轨迹；@@实测数据可直接替换本页的估算参数@@",
          style="detail", gap_pt=4)
-    footnote(s, "来源：报告 2.2.1；通知实测见参考资料 W12（Pielot 等，MobileHCI 2018）；四个组件的完整推导见 notes/L-C1～L-C4；"
+    footnote(s, "来源：报告 2.2.1；通知实测见参考资料 W12（Pielot 等，MobileHCI 2018）；各项负载的完整推导见 notes/L-C1～L-C4；"
                 "峰值驻留与缺口为估算，见报告 2.2.5。", y=694, w=1120)

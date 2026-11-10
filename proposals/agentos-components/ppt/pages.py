@@ -333,3 +333,97 @@ def bn_badges(slide, targets, order):
     """最后画编号圆点，压在连线之上。order = [(编号, 目标键)]。"""
     for n, key in order:
         badge(slide, targets[key][0], targets[key][1], n)
+
+
+# ---------------------------------------------------------------- 体验与商业化问题页（第二部分，负载与瓶颈之间）
+
+CHAIN = ["复杂场景与负载", "用户体验与商业化问题", "技术瓶颈", "关键技术"]
+
+
+def chain_strip(slide, y=88, active=1):
+    """论证链条：四个环节，当前环节浅橙底加红框。"""
+    n = len(CHAIN)
+    gap = 26
+    w = (1216 - gap * (n - 1)) / n
+    for i, name in enumerate(CHAIN):
+        x = 32 + i * (w + gap)
+        if i == active:
+            box(slide, (x, y, w, 24), f"**{name}**", fill="peach_l", line="red", line_width=1.25, color="accent",
+                style="body")
+        else:
+            box(slide, (x, y, w, 24), name, fill="grey_l", style="body")
+        if i < n - 1:
+            arrow(slide, (x + w + 4, y + 12), (x + w + gap - 4, y + 12), color="grey_d", width=1.25)
+
+
+def ux_page(prs, spec):
+    """体验与商业化问题页：左侧问题卡（因果链），右侧证据表，底部「对系统服务提出的要求」。"""
+    s = new_slide(prs, spec["title"], spec["suffix"], crumb=spec["crumb"])
+    chain_strip(s)
+    top, bottom = 122, spec.get("band_y", 594)
+    # 左：问题卡
+    LX, LW = 32, spec.get("left_w", 600)
+    text(s, (LX, top, LW, 22), f"**{spec['left_title']}**", style="emphasis", color="accent", check=False)
+    probs = spec["problems"]
+    n = len(probs)
+    cg = 8
+    cy0 = top + 26
+    ch = (bottom - 8 - cy0 - cg * (n - 1)) / n
+    pst = "body" if all(measure(b, LW - 48, "body", gap_pt=2) <= ch - 32 for _, b in probs) else "detail"
+    for i, (head, body) in enumerate(probs):
+        y = cy0 + i * (ch + cg)
+        round_card(s, (LX, y, LW, ch), radius=10)
+        badge(s, LX + 18, y + ch / 2, i + 1, d=22)
+        text(s, (LX + 36, y + 4, LW - 44, 22), f"**{head}**", style="body", check=False)
+        text(s, (LX + 36, y + 28, LW - 44, ch - 32), body, style=pst, gap_pt=2)
+        if spec.get("chain_arrows") and i < n - 1:
+            arrow(s, (LX + 18, y + ch / 2 + 13), (LX + 18, y + ch + cg + ch / 2 - 13), color="red", width=1.25)
+    # 右：证据表
+    RX = LX + LW + 16
+    RW = 1248 - RX
+
+    def right_h(st):
+        tot = 0
+        for it in spec["right"]:
+            if it[0] == "table":
+                tot += 24 + table_height(RW, it[2], it[3], it[4], style=st, pad=(4, 2)) + 10
+            else:
+                tot += measure(it[1], RW - 16, st) + 12 + 10
+        return tot
+
+    rst = "body" if top + right_h("body") <= bottom + 4 else "detail"
+    y = top
+    for item in spec["right"]:
+        if item[0] == "table":
+            _, ttl, cols, rows, ratios = item
+            text(s, (RX, y, RW, 22), f"**{ttl}**", style="emphasis", color="accent", check=False)
+            y += 24
+            th = table_height(RW, cols, rows, ratios, style=rst, pad=(4, 2))
+            table(s, (RX, y, RW, th), cols, rows, widths=ratios, style=rst, pad=(4, 2), fit=False,
+                  align=["left"] * len(cols))
+            y += th + 10
+        else:  # ("note", md)
+            nh = measure(item[1], RW - 16, rst) + 12
+            rect(s, (RX, y, RW, nh), "blue_l")
+            text(s, (RX + 8, y + 6, RW - 16, nh - 12), item[1], style=rst, valign="middle")
+            y += nh + 10
+    if y - 10 > bottom - 6:
+        _warn(f"体验页右栏溢出 {y - 10:.0f}>{bottom - 6}")
+    # 底：对系统服务提出的要求
+    bh = 686 - bottom
+    outline(s, (32, bottom, 1216, bh), line="grey_d", width=1.25, dash=True)
+    text(s, (36, bottom, 84, bh), "对系统\n的要求", style="emphasis", color="accent", align="center",
+         valign="middle", check=False)
+    asks = spec["asks"]
+    k = len(asks)
+    x0, gap = 128, 12
+    cw = (1240 - x0 - gap * (k - 1)) / k
+    for i, (name, body) in enumerate(asks):
+        x = x0 + i * (cw + gap)
+        if i:
+            rect(s, (x - gap / 2, bottom + 8, 0.75, bh - 16), "grey_m")
+        md = f"@@{name}@@：{body}"
+        text(s, (x, bottom + 4, cw, bh - 8), md, style="body" if measure(md, cw, "body") <= bh - 8 else "detail",
+             valign="middle")
+    footnote(s, spec["source"], y=694, w=1130)
+    return s

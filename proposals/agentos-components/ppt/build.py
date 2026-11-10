@@ -1,4 +1,4 @@
-"""Agent OS 四组件汇报 deck 的构建入口。
+"""Agent OS 三项系统服务汇报 deck 的构建入口（2026-11-09 第三版）。
 
 底版是空白演示文稿（不使用任何外部母版）；各页面模块按汇报顺序 import，用 registry.page 登记。
 运行（在 ppt_templates 的 uv 环境里）：
@@ -22,14 +22,14 @@ MODULES = [
     "p0_front",                                                    # 封面、摘要
     "p1_insight",                                                  # 一、洞察
     "p2_scene",                                                    # 二、章节页、现状、参考负载
-    "p2_load_inf", "p2_load_sbx", "p2_load_mem", "p2_load_mm",     # 负载量化
+    "p2_load_inf", "p2_load_sbx", "p2_load_mm",                    # 负载量化，各附一页体验与商业化问题
     "p2_gap",                                                      # 当代操作系统的能力缺口
-    "p2_bn_inf", "p2_bn_sbx", "p2_bn_mem", "p2_bn_mm",             # 瓶颈分析
+    "p2_bn_inf", "p2_bn_sbx", "p2_bn_mm",                          # 瓶颈分析
     "p3_overall",                                                  # 三、章节页、总体架构、会话档位
-    "p3_inf", "p3_sbx", "p3_mem", "p3_mm",                         # 各组件架构与关键技术
+    "p3_inf", "p3_sbx", "p3_mm",                                   # 各项系统服务的架构与关键技术
     "p4_plan",                                                     # 四、规划与投入
 ]
-OUT = HERE / "AgentOS四组件-汇报.pptx"
+OUT = HERE / "AgentOS三项系统服务-汇报.pptx"
 
 
 def build(modules=None, only=None):

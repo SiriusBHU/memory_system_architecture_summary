@@ -139,14 +139,14 @@ def trend_page(prs, spec):
 @page
 def insight_section(prs):
     lib.section_slide(prs, "一、", "洞察",
-                      "业界 Agent OS 的三条路线；端侧 Agent OS 的能力蓝图；推理、沙箱、记忆、内存管理四个组件的技术趋势")
+                      "业界 Agent OS 的三条路线；端侧 Agent OS 的能力蓝图与三项系统服务；业界进展与技术趋势")
 
 
 # ---------------------------------------------------------------- 1.1.1 业界三条路线
 
 @page
 def three_routes(prs):
-    s = new_slide(prs, "业界三条路线的共同指向：", "端侧需要在手机上提供推理、隔离执行、持久记忆与专属内存",
+    s = new_slide(prs, "业界三条路线的共同指向：", "端侧要在手机上为 Agent 提供推理与执行，并与应用共享芯片和内存",
                   crumb=CRUMB + " › 业界路线")
     cols = ["", "路线一　云端常驻 Agent", "路线二　OS 内建的系统级 Agent", "路线三　整机重构的 Agent 手机"]
     rows = [
@@ -205,16 +205,16 @@ def three_routes(prs):
     text(s, (40, iy, 76, ih), "对我们\n的启示", style="label_big", align="center", valign="middle", check=False)
     text(s, (124, iy + 8, 396, ih - 16),
          "云端 Agent 以每用户一台云端虚拟机提供这四项能力，代价是每月数十至数百美元。"
-         "@@端侧 Agent OS 需要在手机上提供同样的四项能力@@，并与用户正在使用的 App 共享同一块芯片和同一块内存，"
-         "这是 Agent OS 的系统层问题。",
+         "端侧的记忆由各 Agent 自己持有；@@推理与执行要由系统提供@@，"
+         "而且要与用户正在使用的 App 共享同一块芯片和同一块内存，这是 Agent OS 的系统层问题。",
          style="body", valign="middle")
     # 能力 → 经典 OS 部件 → 本次投入的组件
     gx, lw = 532, 100
     bw = (1240 - gx - lw - 3 * 8) / 4
     rows3 = [
         ("所需能力", ["推理算力的分配", "隔离的执行环境", "持久的状态与记忆", "专属内存"], "plain"),
-        ("经典 OS 部件", ["调度", "进程隔离", "文件系统", "虚拟内存"], "grey"),
-        ("本次投入组件", ["推理服务", "执行沙箱", "记忆服务", "内存管理"], "new"),
+        ("经典 OS 部件", ["处理器", "进程隔离", "文件系统", "虚拟内存"], "grey"),
+        ("端侧的归属", ["推理服务", "执行与沙箱", "~Agent 层自有", "内存与资源"], "new"),
     ]
     rh, rg = 26, 14
     top = iy + (ih - 3 * rh - 2 * rg) / 2
@@ -223,7 +223,9 @@ def three_routes(prs):
         text(s, (gx, yy, lw - 8, rh), f"**{lab}**", style="detail", align="right", valign="middle", check=False)
         for j, it in enumerate(items):
             bx = gx + lw + j * (bw + 8)
-            if kind == "new":
+            if kind == "new" and it.startswith("~"):
+                box(s, (bx, yy, bw, rh), it[1:], fill="green_l", line="grey_d", style="body")
+            elif kind == "new":
                 box(s, (bx, yy, bw, rh), f"**{it}**", fill="peach_l", line="red", line_width=1.25, color="accent",
                     style="body")
             elif kind == "grey":
@@ -236,96 +238,153 @@ def three_routes(prs):
                 "2100 多项为厂商口径（H1）；AFM 3（A1）与 token 倍数（AN1）为一手资料。", y=694, w=1120)
 
 
-# ---------------------------------------------------------------- 1.1.2–1.1.3 能力蓝图与覆盖度
+# ---------------------------------------------------------------- 1.1.2 能力蓝图：为什么是三项系统服务
 
 @page
 def blueprint(prs):
-    s = new_slide(prs, "端侧 Agent OS 能力蓝图：", "推理、沙箱、记忆、内存管理属于 OS 职责，业界端侧覆盖最薄弱",
+    s = new_slide(prs, "端侧 Agent OS 能力蓝图：", "Agent 只需推理与执行，加上与应用共存，系统服务收为三项",
                   crumb=CRUMB + " › 能力蓝图")
     # 左：能力蓝图
-    LX, LW = 32, 612
-    ix, iy, iw, _ = lib.panel(s, (LX, 104, LW, 316), "能力蓝图")
-    text(s, (ix, iy - 4, iw, 38),
-         "@@目标形态@@：常驻的个人 Agent，在用户授权范围内代为办事；出现异常时影响限定在授权范围内；"
-         "记忆内容用户可查看、可删除；不影响正在使用的 App 的流畅度，不导致其被终止", style="detail")
-    name_w, prov_w, g = 84, 112, 6
+    LX, LW = 32, 628
+    ix, iy, iw, ih = lib.panel(s, (LX, 104, LW, 582), "能力蓝图")
+    text(s, (ix, iy - 4, iw, 44),
+         "@@目标形态@@：常驻的个人 Agent，在用户授权范围内代为办事。**想得快**：前台秒级响应，长任务上下文不丢；"
+         "**做得稳**：异常影响限定在授权范围内，能定责、能撤销；**不打扰**：不影响正在使用的 App", style="detail")
+    name_w, prov_w, g = 84, 100, 6
     mod_x = ix + name_w + g
     mod_w = iw - name_w - prov_w - 2 * g
     layers = [
-        ("交互与感知", [("**交互**：语音、文本、多模态入口；生成式 UI", False),
-                    ("**感知**：屏幕内容、通知与消息事件", False)], "应用框架", 40),
-        ("智能", [("**意图与编排**：意图理解、规划与编排、工具选择、自我纠错", False)], "Agent 框架（模型 + 运行时）", 32),
-        ("能力接口", [("应用与系统能力的函数化声明：App Intents、AppFunctions、MCP、Skill", False)], "应用生态 + 系统", 40),
-        ("系统服务", [("**推理**\n推理服务", True), ("**执行与沙箱**\n执行沙箱", True), ("**记忆**\n记忆服务", True),
-                  ("**内存与资源**\n内存管理", True)], "!!OS（本次投入）!!", 48),
-        ("内核与硬件", [("CPU / GPU / NPU 调度、memcg、驱动、存储、TEE", False)], "内核与芯片", 28),
+        ("交互与感知", [("**交互**：语音、文本、多模态入口；生成式 UI", "plain"),
+                    ("**感知**：屏幕内容、通知与消息事件", "plain")], "应用框架", 56),
+        ("智能\n（Agent 层）", [("**System Agent**\n意图与编排 · @@记忆@@\n以 MCP / A2A 对外提供记忆读取", "agent"),
+                           ("**应用 Agent**（微信、抖音等）\n意图与编排 · @@各自的记忆@@", "agent")],
+         "Agent 框架\n（模型 + 运行时）", 100),
+        ("能力接口", [("App Intents、AppFunctions、**MCP**、**A2A**、Skill", "plain")], "应用生态 + 系统", 44),
+        ("系统服务", [("**推理服务**\n想", "new"), ("**执行与沙箱**\n做", "new"), ("**内存与资源**\n与应用共存", "new")],
+         "!!OS（本次投入）!!", 100),
+        ("内核与硬件", [("CPU / GPU / NPU · LPDDR 与 PIM · UFS · memcg · TEE", "plain")], "内核与芯片", 44),
     ]
-    yy = iy + 38
+    yy = iy + 48
     for lname, mods, prov, h in layers:
-        box(s, (ix, yy, name_w, h), f"**{lname}**", fill="blue_m", style="detail")
+        box(s, (ix, yy, name_w, h), "\n".join(f"**{t}**" for t in lname.split("\n")), fill="blue_m",
+            style="detail")
         n = len(mods)
         mw = (mod_w - g * (n - 1)) / n
-        for j, (md, new) in enumerate(mods):
+        for j, (md, kind) in enumerate(mods):
             b = (mod_x + j * (mw + g), yy, mw, h)
-            if new:
-                box(s, b, md, fill="peach_l", line="red", line_width=1.25, color="accent", style="detail")
+            if kind == "new":
+                box(s, b, md, fill="peach_l", line="red", line_width=1.25, color="accent", style="body")
+            elif kind == "agent":
+                box(s, b, md, fill="green_l", line="grey_d", style="detail")
             else:
                 box(s, b, md, fill="bg", line="grey_d", style="detail")
         text(s, (mod_x + mod_w + g, yy, prov_w, h), prov, style="caption", color="grey_d", align="center",
              valign="middle")
-        yy += h + 6
-    box(s, (ix, yy, iw, 22), "**横切面**：安全与隐私（权限、数据标签、审计）；可观测与计量 —— 由 OS 贯穿各层",
+        yy += h + 8
+    box(s, (ix, yy, iw, 30), "**横切面**：安全与隐私（身份、权限、密钥、审计）由安全体系提供；可观测与计量由 OS 贯穿各层",
         fill="purple_l", style="detail")
+    yy += 30 + 10
+    nb = (ix, yy, iw, iy + ih - yy)
+    outline(s, nb, line="grey_d", width=1.25, dash=True)
+    text(s, (nb[0] + 10, nb[1] + 4, nb[2] - 20, nb[3] - 8),
+         "@@记忆放在 Agent 层@@：记忆本体由各 Agent 自己持有；别的 Agent 需要读取用户上下文时，"
+         "经 System Agent 的 MCP / A2A 接口获取，**每次读取由执行与沙箱判定权限**",
+         style="detail", valign="middle")
 
-    # 左下：三条判据
-    cy = 436
-    text(s, (LX, cy, LW, 20), "**为什么是这四个组件：三条判据，满足任意一条就必须由 OS 提供**", style="body",
-         color="accent", check=False)
-    crit = [
-        ["跨主体共享的资源", "一个底座模型、一块 NPU、一块 DRAM 被多个会话和多个 App 共享；单个 App 无法获知其他主体的占用，因而无法统一分配与回收",
-         "推理服务\n内存管理"],
-        ["需要特权策略执行的信任边界", "Agent 以用户身份行事，读入不可信内容；隔离、出口控制、凭证托管必须在 Agent 之外由系统执行；由 Agent 自我约束，一旦被注入即告失效",
-         "执行沙箱"],
-        ["跨应用、跨时间的全局状态", "个人上下文分散在各个 App 中；统一的索引、授权和遗忘，只有系统能做", "记忆服务"],
+    # 右：为什么系统服务只需要三项
+    RX, RW = 680, 568
+    text(s, (RX, 96, RW, 22), "**为什么系统服务只需要三项**", style="emphasis", color="accent", check=False)
+    text(s, (RX, 120, RW, 22), "Agent 替用户办事，底层只做两件事：@@想@@和@@做@@；在手机上，它还要@@与应用共存@@",
+         style="body", check=False)
+    cards = [
+        ("想", "推理服务", [
+            "一个底座模型、一块 NPU、一块 DRAM，同时服务多个会话与多个应用",
+            "单个 Agent 看不到别人的占用；模型也不可能每个应用带一份",
+            "要做的是：长上下文推得动，NPU 与 PIM 等新算力用得上"]),
+        ("做", "执行与沙箱", [
+            "Agent 以用户身份经 MCP 调用应用与工具，也经 A2A 被外部 Agent 调用",
+            "读入内容 70%–100% 来自第三方；每次调用能否放行，必须在 Agent 之外由系统判定",
+            "没有它，应用方不敢开放接口，Agent 做不了交易"]),
+        ("共存", "内存与资源", [
+            "Agent 叠加在用户正在用的应用之上，二者共用同一块芯片和内存",
+            "前台 Agent 与应用之间的内存、IO 与回收顺序，只有系统能协调",
+            "分两个模块：通用内存管理优化；推理服务内存管理（权重、KV、专家）"]),
     ]
-    heads = ["判据", "为什么应用与 Agent 框架做不到", "对应组件"]
-    ratios = [0.95, 2.6, 0.62]
-    th = table_height(LW, heads, crit, ratios, style="detail", header_style="detail")
-    table(s, (LX, cy + 22, LW, th), heads, crit, widths=ratios, style="detail", header_style="detail", hot_col=2,
-          align=["left", "left", "center"], fit=False)
-    text(s, (LX, cy + 28 + th, LW, 40),
-         "交互与编排变化快，差异化在模型和产品层，由应用框架与 Agent 框架承担，@@不在本次投入范围@@", style="detail")
+    cy, ch, cg = 150, 128, 10
+    for i, (verb, svc, pts) in enumerate(cards):
+        y = cy + i * (ch + cg)
+        round_card(s, (RX, y, RW, ch), radius=10)
+        box(s, (RX + 10, y + 10, 96, ch - 20), f"**{verb}**\n\n!!{svc}!!", fill="peach_l", line="red",
+            line_width=1.25, style="body")
+        text(s, (RX + 116, y + 6, RW - 126, ch - 12), "\n".join(f"- {p}" for p in pts), style="detail",
+             valign="middle", gap_pt=4)
+    by = cy + 3 * (ch + cg)
+    bb = (RX, by, RW, 686 - by)
+    outline(s, bb, line="grey_d", width=1.25, dash=True)
+    text(s, (RX + 8, by + 2, 64, bb[3] - 4), "!!其余能力!!\n!!不放在 OS!!", style="body", align="center", valign="middle",
+         check=False)
+    text(s, (RX + 78, by + 4, RW - 86, bb[3] - 8),
+         "- **交互与编排**：变化快，差异化在模型与产品层，由应用框架与 Agent 框架承担\n"
+         "- **记忆**：与 Agent 能力绑定，各 Agent 自有；Siri、Gemini、小艺的记忆都随助手提供",
+         style="detail", valign="middle", gap_pt=3)
+    footnote(s, "来源：报告 1.1.2。第三方内容占比为报告 2.2.3 的估算；业界记忆的归属见下一页。", y=694, w=1120)
 
-    # 右：业界覆盖度
-    RX, RW = 660, 588
-    text(s, (RX, 92, RW, 20), "**业界在这四个方面做得怎么样**", style="body", color="accent", check=False)
-    cols = ["方面", "Apple / iOS", "Google / Android", "华为 / HarmonyOS", "云端 Agent"]
-    rows = [
-        ["推理服务", "系统级：Foundation Models 向第三方开放端侧模型；AFM 3 按请求换入",
-         "系统级：AICore 托管 Gemini Nano；NPU Manager 做模型级准入与抢占", "有端侧大模型，系统服务形态未公开",
-         "GPU 集群服务，成熟"],
-        ["执行沙箱", "App 沙箱成熟；经 App Intents 由 Siri 编排；!!无会话级执行边界!!",
-         "App 沙箱成熟；AppFunctions 尚在预览；!!无会话级边界!!", "应用沙箱 + 意图框架；「动态沙箱」未见官方文档",
-         "每个 Agent 一台 VM（dot）或多 bot 共用（Grok）；带外审核"],
-        ["记忆服务", "端侧语义索引与个人上下文；第三方读取受限", "个人上下文随 Gemini 提供，系统级开放程度有限", "小艺记忆，公开资料少",
-         "有记忆；dot 单条不可查看或删除，Grok 保留策略未公开"],
-        ["内存管理", "Jetsam + 内存压缩；以 12GB 内存作为准入门槛", "LMKD + memcg；Memory Limiter 只计匿名页与 swap，!!dma-buf / NPU 内存在外!!",
-         "ESWAP 等机制，Agent 场景资料少", "不适用：资源独占"],
-    ]
-    ratios = [0.5, 1.05, 1.12, 0.86, 1.0]
-    th = table_height(RW, cols, rows, ratios, style="detail", pad=(4, 2))
-    table(s, (RX, 116, RW, th), cols, rows, widths=ratios, style="detail", pad=(4, 2),
-          align=["left"] * 5, fills={(i, 4): "grey_l" for i in range(0, 5)}, fit=False)
-    ry = 506
-    text(s, (RX, ry, RW, 20), "**读表**", style="body", color="accent", check=False)
-    text(s, (RX, ry + 20, RW, 686 - ry - 20),
-         "- @@推理服务走得最远@@：Apple 与 Google 已把模型做成系统服务，但只到模型级的托管与抢占，没有会话级调度\n"
-         "- @@执行沙箱与记忆服务@@：端侧仍停留在 App 级的旧边界，没有为 Agent 会话建立新边界\n"
-         "- @@内存管理最薄弱@@：模型内存在多数平台上不可见、不可记账\n"
-         "- 四个组件各满足至少一条判据，且端侧覆盖不足，@@这是选定它们作为本次投入的依据@@",
-         style="body", gap_pt=4)
-    footnote(s, "来源：报告 1.1.2（能力蓝图、三条判据）、1.1.3（覆盖度简述），详细对比见四个组件的原型对比表。"
-                "报告的蓝图未单列「感知」，此处按屏幕内容、通知与消息事件的采集归入应用框架。", y=694, w=1120)
+
+# ---------------------------------------------------------------- 1.1.3 业界覆盖度
+
+COV_COLS = ["系统服务", "要素", "Apple / iOS", "Google / Android", "华为 / HarmonyOS", "云端 Agent"]
+COV_ROWS = [
+    ["推理服务", "系统级模型服务", "● Foundation Models 向第三方开放端侧模型", "● AICore 托管 Gemini Nano；NPU Manager 做模型级准入",
+     "◐ 有端侧大模型，服务形态未公开", "● GPU 集群服务"],
+    ["", "长上下文", "◐ 端侧示例窗口 8192 token", "○ Prompt API 窗口约 4000 token", "○ 未公开", "● 数十万至百万 token"],
+    ["", "稀疏模型与闪存分层", "● AFM 3：20B 稀疏，权重在 NAND，每请求换入 1–4B", "○ 未公开", "○ 未公开", "—"],
+    ["", "PIM 等新型算力", "○ 未见", "○ 未见", "○ 未见", "◐ 数据中心 HBM-PIM 原型，未规模商用"],
+    ["执行与沙箱", "应用接入", "● App Intents，Siri 操作第三方应用的唯一途径", "◐ AppFunctions 私有预览；Computer Control 限预装助手",
+     "● HMAF，2100 多项 Skill（厂商口径）", "◐ 云端浏览器与云电脑"],
+    ["", "按会话、按调用的权限判定", "○ 只有 App 级权限", "◐ 首次操作需授权，交易时交还用户", "◐ 高风险操作需确认；转账支付由系统阻断（媒体）",
+     "◐ 环境外独立审核；10 步任务链越权 19.7%（二手）"],
+    ["", "隔离、快照与恢复", "◐ App 沙箱，无 Agent 会话边界", "◐ App 沙箱；AVF 未用于 Agent", "◐ 应用沙箱；「动态沙箱」无官方文档",
+     "● 每个 Agent 一台 VM"],
+    ["", "出口与凭证托管", "○ 未见", "○ 未见", "○ 未见", "◐ 密码与付款交回用户"],
+    ["内存与资源", "模型内存记账", "○ 未公开", "○ Memory Limiter 不计 dma-buf / NPU 内存", "○ 未公开", "—"],
+    ["", "与应用共存的回收", "◐ Jetsam + 内存压缩；以 12GB 作为准入门槛", "◐ LMKD + memcg；抢占只能卸载整个模型",
+     "◐ ESWAP；HyperSpace Memory（厂商口径）", "— 资源独占"],
+    ["", "KV 与前缀缓存", "○ 未公开", "◐ 前缀缓存按应用、按会话保存", "○ 未公开", "● 前缀缓存已商用并单独计价"],
+    ["记忆（Agent 层）", "由谁持有", "Siri 个人上下文，基于系统语义索引", "Gemini 个人上下文", "小艺记忆", "dot、Grok Bot 各自持有"],
+]
+COV_GROUP = {0: "blue_l", 4: "green_l", 8: "purple_l", 11: "grey_l"}
+
+
+@page
+def coverage(prs):
+    s = new_slide(prs, "业界在三项系统服务上的进展：", "模型托管已普及，长上下文、会话级权限判定与模型内存记账普遍缺失",
+                  crumb=CRUMB + " › 业界进展")
+    ratios = [0.6, 0.95, 1.2, 1.25, 1.15, 1.1]
+    rows = [[r[0], r[1]] + [cell(c) for c in r[2:]] for r in COV_ROWS]
+    fills = {}
+    grp = None
+    for i, r in enumerate(COV_ROWS):
+        grp = COV_GROUP.get(i, grp)
+        fills[(i + 1, 0)] = grp
+        for j, c in enumerate(r[2:], 2):
+            if c.strip()[:1] in _FILL:
+                fills[(i + 1, j)] = _FILL[c.strip()[0]]
+    ty = 92
+    th = table_height(1216, COV_COLS, rows, ratios, style="detail", pad=(4, 1))
+    table(s, (32, ty, 1216, th), COV_COLS, rows, widths=ratios, style="detail", pad=(4, 1), fills=fills,
+          align=["center", "left", "left", "left", "left", "left"], fit=False)
+    _symbol_sizes(s)
+    cy = ty + th * 1.04 + 8
+    if 686 - cy < 70:
+        lib._warn(f"读表结论区过矮 {686 - cy:.0f}px")
+    conclusion_band(s, cy, [
+        ("推理服务", "模型托管已普及；长上下文、稀疏模型与 PIM 等新算力，除 Apple 的稀疏模型外都未进入端侧系统服务"),
+        ("执行与沙箱", "接入方式收敛到函数接口加系统托管的 GUI；按会话、按调用的权限判定普遍缺失，只能整类禁止或逐次确认"),
+        ("内存与资源", "模型内存不可见、不可记账；与应用共存只能靠卸载整个模型或终止进程"),
+        ("记忆", "各家都随助手提供，印证「记忆在 Agent 层，系统只管读取权限」的划分"),
+    ])
+    footnote(s, LEGEND + "来源：报告 1.1.3。Computer Control 为 Android 开发者文档（2026-11-09 抓取）；HarmonyOS 的确认与阻断为媒体报道；"
+                         "越权率为二手转述；PIM 进展见 R2 笔记。", y=694, w=1130)
 
 
 # ---------------------------------------------------------------- 1.2.1 推理
