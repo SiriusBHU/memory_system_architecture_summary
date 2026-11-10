@@ -158,24 +158,26 @@ def _picture(s, name, x, y, h):
     return pic.width / lib.px_to_emu(1)
 
 
-def _glow(s, b):
-    """标题上方的浅灰光晕：自顶部中点向外渐隐为白色，衔接「背景」与「演进趋势」。"""
-    shp = rect(s, b, "bg", kind="oval")
+def _fan(s, b):
+    """背景框下沿展开的浅灰渐变扇面，衔接「背景」与「演进」：自上而下由透明到浅灰再到透明。"""
+    shp = rect(s, b, "bg", kind="triangle")
     sp_pr = shp._element.spPr
     for tag in ("a:solidFill", "a:noFill", "a:gradFill"):
         for el in sp_pr.findall(qn(tag)):
             sp_pr.remove(el)
     grad = parse_xml(
         f'<a:gradFill {nsdecls("a")} rotWithShape="1"><a:gsLst>'
-        '<a:gs pos="0"><a:srgbClr val="D9D9D9"/></a:gs>'
-        '<a:gs pos="100000"><a:srgbClr val="FFFFFF"/></a:gs></a:gsLst>'
-        '<a:path path="circle"><a:fillToRect l="50000" t="0" r="50000" b="100000"/></a:path></a:gradFill>')
+        '<a:gs pos="0"><a:srgbClr val="D9D9D9"><a:alpha val="0"/></a:srgbClr></a:gs>'
+        '<a:gs pos="43000"><a:srgbClr val="D9D9D9"/></a:gs>'
+        '<a:gs pos="69000"><a:srgbClr val="F2F2F2"/></a:gs>'
+        '<a:gs pos="100000"><a:srgbClr val="F2F2F2"><a:alpha val="0"/></a:srgbClr></a:gs>'
+        '</a:gsLst><a:lin ang="5400000" scaled="0"/></a:gradFill>')
     sp_pr.find(qn("a:prstGeom")).addnext(grad)
     shp.line.fill.background()
 
 
 def _diagram_inference(s, dx, dy, W=320):
-    """推理服务化：多个应用与 Agent 共用系统托管的一个底座模型。"""
+    """推理服务化：多个应用与 Agent 共用系统托管的一个底座模型，跑在异构多 IP 上。"""
     g = 12
     bw = (W - 2 * g) / 3
     for i, nm in enumerate(["应用 A", "应用 B", "Agent"]):
@@ -185,7 +187,7 @@ def _diagram_inference(s, dx, dy, W=320):
     box(s, (dx, dy + 48, W, 42), "**系统推理服务**\n一个底座模型，按会话分配算力", fill="peach_l", line="red",
         line_width=1.25, color="accent")
     arrow(s, (dx + W / 2, dy + 91), (dx + W / 2, dy + 101), color="dark", head=False)
-    box(s, (dx, dy + 101, W, 24), "NPU · GPU · PIM", fill="blue_l")
+    box(s, (dx, dy + 101, W, 24), "异构多 IP 计算架构", fill="blue_l")
 
 
 def _diagram_sandbox(s, dx, dy, W=320):
@@ -206,7 +208,7 @@ def _diagram_sandbox(s, dx, dy, W=320):
 
 
 def _diagram_memory(s, dx, dy, W=320):
-    """X + Agent 内存协同管理：前台应用与 Agent 的权重、KV 共用一块 DRAM，统一记账、协同回收。"""
+    """X+Agent 内存协同管理：前台应用与 Agent 的权重、KV 共用一块 DRAM，统一记账、协同回收。"""
     text(s, (dx, dy, W, 15), "DRAM（12GB 机型）", style="caption", color="grey_d", check=False)
     segs = [("前台应用 X", 0.38, "blue_l"), ("Agent 权重", 0.27, "peach_l"), ("KV", 0.15, "peach_m"),
             ("其余", 0.20, "grey_m")]
@@ -219,14 +221,21 @@ def _diagram_memory(s, dx, dy, W=320):
     text(s, (dx, dy + 64, W, 16), "!!统一记账 · 协同回收!!", style="detail", align="center", check=False)
     wx = dx + W * 0.38 + W * 0.27 / 2
     arrow(s, (wx, dy + 101), (wx, dy + 84), color="dark")
-    box(s, (dx, dy + 101, W, 24), "闪存（UFS）：权重按需换入", fill="blue_l")
+    box(s, (dx, dy + 101, W, 24), "zRAM + UFS：按需换入", fill="blue_l")
 
 
 @page
 def overview(prs):
-    s = new_slide(prs, "Agent OS 趋势洞察：",
-                  "Agent 需求暴增，端侧需推理服务化、执行沙箱化、X+Agent 内存协同管理",
+    s = new_slide(prs, "Agent OS 趋势洞察",
+                  "：用户Agent 需求暴增，端侧需推理服务化、执行沙箱化、X+Agent 内存协同管理",
                   crumb=CRUMB + " › 概括")
+    # 后半句以冒号开头，标题与后半句之间不留全角空格
+    for sh in s.shapes:
+        if sh.has_text_frame and sh.text_frame.text.startswith("Agent OS 趋势洞察"):
+            for r in sh.text_frame.paragraphs[0].runs:
+                if r.text.startswith("　"):
+                    r.text = r.text[1:]
+            break
 
     # ---- 上：背景　Agent 应用爆发式增长
     ix, iy, iw, ih = lib.panel(s, (32, 104, 1216, 214), "背景：Agent 应用爆发式增长")
@@ -241,8 +250,8 @@ def overview(prs):
          "grok_bot.png"),
         ("2026-09", "OpenAI dot", "每个 Agent 一台云端电脑；\n随 Pro 档提供",
          "ChatGPT 周活 !!10 亿!!；Codex 周用户 2 个月由 !!500 万增至 800 万!!", "openai_dots.png"),
-        ("2026-10", "阶跃手机开售", "整机 Agent 手机；\n3999 元起，10-16 首销",
-         "Step AOS 于 7 月发布：\n系统级 Agent，端侧小模型加云端大模型", "stepx_neo.png"),
+        ("2026-10", "阶跃手机开售", "整机 Agent 手机\nStep AOS 发布\n系统级 Agent\n端侧小模型加云端大模型", None,
+         "stepx_neo.png"),
     ]
     # 图片按卡片高度等比缩放；先算总宽，再把余量均分到组间
     aspect = {"grok_bot.png": 104 / 118, "openai_dots.png": 89 / 115, "stepx_neo.png": 248 / 109}
@@ -255,42 +264,52 @@ def overview(prs):
         lib.rect(s, (px + cw / 2 - 6, tl - 6, 12, 12), "red", kind="oval")
         text(s, (px + cw / 2 - 50, tl - 24, 100, 16), f"@@{date}@@", style="detail", align="center", check=False)
         round_card(s, (px, cy, cw, ch), radius=10)
-        text(s, (px + 8, cy + 4, cw - 16, 20), f"**{name}**", style="body", color="primary_text", check=False)
-        text(s, (px + 8, cy + 25, cw - 16, 40), form, style="detail")
-        rect(s, (px + 8, cy + 67, cw - 16, 1), "grey_line")
-        text(s, (px + 8, cy + 70, cw - 16, 54), metric, style="detail", gap_pt=0)
+        text(s, (px + 8, cy + 4, cw - 16, 20), f"**{name}**", style="body", color="primary_text", align="center",
+             check=False)
+        if metric:
+            text(s, (px + 8, cy + 25, cw - 16, 40), form, style="detail")
+            rect(s, (px + 8, cy + 67, cw - 16, 1), "grey_line")
+            text(s, (px + 8, cy + 70, cw - 16, 54), metric, style="detail")
+        else:
+            text(s, (px + 8, cy + 25, cw - 16, 96), form, style="detail", gap_pt=0)
         iw_ = _picture(s, img, px + cw + 10, cy, ch)
         px += cw + 10 + iw_ + gap
 
-    # ---- 中：Agent OS 系统服务演进趋势
-    _glow(s, (160, 317, 960, 60))
-    text(s, (340, 332, 600, 28), "Agent OS 系统服务演进趋势", style="panel_title", align="center", valign="middle",
+    # ---- 中：Agent OS 系统服务演进
+    _fan(s, (lib.LEFT, 317, lib.WIDTH, 54))
+    text(s, (340, 332, 600, 28), "Agent OS 系统服务演进", style="panel_title", align="center", valign="middle",
          check=False)
 
-    # ---- 下：三个趋势，各配一张示意图，并对应一项系统服务
+    # ---- 下：三个趋势，每个只放三样：一句话演进、一张图、产品化进展
     trends = [
-        ("趋势一：推理服务化", _diagram_inference, "从每个应用自带模型，转为@@系统托管底座模型、按会话分配算力@@",
-         "业界：Apple Foundation Models、Android AICore 均由系统托管端侧模型", "推理服务"),
-        ("趋势二：执行沙箱化", _diagram_sandbox, "从应用级权限，转为@@系统按会话隔离、按每次调用判定权限@@",
-         "业界：dot、Grok Bot 每个 Agent 一台云端电脑；Windows 为 Agent 设独立账户与会话", "执行与沙箱"),
+        ("趋势一：推理服务化", _diagram_inference, "从每个应用自带模型，转为@@系统托管底座模型、按会话分配算力@@", [
+            "@@Apple Foundation Models@@：系统端侧模型向应用开放",
+            "@@Android AICore@@：系统托管 Gemini Nano，超 1.4 亿台",
+            "@@阶跃 Step AOS@@：端侧小模型加云端大模型，按任务分工"]),
+        ("趋势二：执行沙箱化", _diagram_sandbox, "从应用级权限，转为@@系统按会话隔离、按每次调用判定权限@@", [
+            "@@OpenAI dot、Grok Bot@@：每个 Agent 一台云端电脑",
+            "@@NVIDIA OpenShell@@：开源 Agent 沙箱运行时，默认拒绝",
+            "@@腾讯云 CubeSandbox@@：每会话独立内核，创建 <60ms"]),
         ("趋势三：X+Agent 内存协同管理", _diagram_memory,
-         "从应用与模型各管各的，转为@@前台应用（X）与 Agent 统一记账、协同回收@@",
-         "业界：Apple、Google 以 12GB 内存为准入门槛；AFM 3 权重放闪存、按请求换入", "内存与资源"),
+         "从应用与模型各管各的，转为@@前台应用（X）与 Agent 统一记账、协同回收@@", [
+             "@@Apple AFM 3@@：权重存闪存，每个请求换入 1–4B 参数",
+             "@@Android 17@@：按应用 memcg 限额，超限先压入 zRAM",
+             "@@Apple、Google@@：12GB 内存为端侧 Agent 门槛"]),
     ]
     g = 16
     pw = (lib.WIDTH - 2 * g) / 3
-    for i, (head, draw, shift, evid, svc) in enumerate(trends):
-        tx, ty, tw, th = lib.panel(s, (lib.LEFT + i * (pw + g), 382, pw, 300), head)
-        rect(s, (tx, ty, tw, 142), "grey_l", kind="rounded", radius=8)
-        draw(s, tx + (tw - 320) / 2, ty + 8)
-        text(s, (tx, ty + 150, tw, 44), shift, style="body")
-        text(s, (tx, ty + 198, tw, 36), evid, style="detail", color="grey_d")
-        box(s, (tx, ty + th - 30, tw, 28), f"对应系统服务：**{svc}**", fill="peach_l", line="red", line_width=1.25,
-            color="accent", style="body")
+    for i, (head, draw, shift, evid) in enumerate(trends):
+        tx, ty, tw, th = lib.panel(s, (lib.LEFT + i * (pw + g), 382, pw, 300), head, title_style="heading")
+        text(s, (tx, ty, tw, 44), shift, style="body")
+        rect(s, (tx, ty + 50, tw, 134), "grey_l", kind="rounded", radius=8)
+        draw(s, tx + (tw - 320) / 2, ty + 54)
+        text(s, (tx, ty + 192, tw, 16), "**产品化进展**", style="detail")
+        text(s, (tx, ty + 210, tw, 60), "\n".join("- " + e for e in evid), style="detail", gap_pt=2)
 
     footnote(s, "来源：报告「概括」（GT1–GT7、AN1）。token 增长为 Google、豆包的厂商自报数据（经媒体转述）；"
-                "「替用户付款」指支付宝 AI 付累计 3 亿笔（2026-05）；Grok 月活为二手转述；三款产品均未公开日活。",
-             y=690, w=1140)
+                "「替用户付款」指支付宝 AI 付累计 3 亿笔（2026-05）；Grok 月活为二手转述；三款产品均未公开日活。\n"
+                "产品化进展见报告第一部分 1.1.3、1.2 节与第二部分 [W9][W16]；AICore 装机量、CubeSandbox 创建时延为厂商自报。",
+             y=687, w=1140, h=28)
 
 
 # ---------------------------------------------------------------- 1.1.1 业界三条路线
