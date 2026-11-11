@@ -2,7 +2,8 @@
 
 各组件的页面模块只写内容 spec，统一调用这里的函数，保证全套风格一致：
   kt_page      关键技术单页（solution-kickoff-difficulties：挑战与目标 / 三分区方案架构 / 三个技术难题 / 交付节奏）
-  arch_page    组件目标架构（solution-arch-overview：核心挑战与架构理念 / 双分区 + 共享层 / 关键技术）
+  arch_kt_page 系统服务目标架构（与 kt_page 同一版式：挑战与目标 / 专属架构图 / 难题 / 综合交付线），2026-11-11 起使用
+  arch_page    旧版组件目标架构（solution-arch-overview：核心挑战与架构理念 / 双分区 + 共享层 / 关键技术），已不再调用
   load_page    负载量化（result-sim-tables-read：本页回答的问题 / 分析方法 / 分栏指标表与关键结论）
   bn_*         瓶颈分析（problem-arch-callouts）的部件：中央架构图由页面模块自绘，两侧卡片与连线用 bn_side 等
 文字规则：正式的汇报语言；!!…!! 深红加粗（关键数字），@@…@@ 蓝色加粗（关键结论），**…** 加粗。
@@ -161,6 +162,83 @@ def kt_page(prs, spec):
     milestones(s, (696, 574, 552, 108), spec["milestones"])
     footnote(s, spec["source"], y=694, w=1100)
     return s
+
+
+# ---------------------------------------------------------------- 系统服务目标架构页（与关键技术页同一版式）
+
+ZH_NUM = "一二三四五"
+CIRCLED = "①②③④⑤"
+
+
+def goal_paragraphs(challenges, goals):
+    """挑战与目标沿用关键技术页的两段式：「挑战：① …；② …。」「目标：① …；② …」，段内分点、不换行。"""
+    ch = "!!挑战：!!" + "；".join(f"{CIRCLED[i]} {t}" for i, t in enumerate(challenges)) + "。"
+    g = "!!目标：!!" + "；".join(f"{CIRCLED[i]} @@{t}@@" for i, t in enumerate(goals))
+    return ch, g
+
+
+def goal_card(slide, b, ch, g):
+    """架构页左上卡（与关键技术页相同）：浅灰圆角卡内两段文字，纵向居中。"""
+    x, y, w, h = b
+    round_card(slide, b)
+    hc, hg = measure(ch, w - 24, "body", line=1.5), measure(g, w - 24, "body", line=1.5)
+    total = hc + hg + 10
+    if total > h - 10:
+        _warn(f"挑战与目标溢出 {total:.0f}>{h - 10:.0f}px")
+    yy = y + max(5, (h - total) / 2)
+    text(slide, (x + 12, yy, w - 24, hc + 2), ch, style="body", check=False, line=1.5)
+    text(slide, (x + 12, yy + hc + 10, w - 24, hg + 2), g, style="body", check=False, line=1.5)
+
+
+def tech_cards(slide, b, items, gap=12, style="body"):
+    """架构页右侧的关键技术卡：items = [(关键技术名, "- **子技术**：说明\\n…")]，每项 2–3 个子技术；
+    卡高按内容分配，余量平均分给各卡，卡内文字纵向居中，避免卡底留空。"""
+    x, y, w, h = b
+    needs = [measure(md, w - 26, style, 3) + 40 for _, md in items]
+    extra = h - gap * (len(items) - 1) - sum(needs)
+    if extra < 0:
+        _warn(f"关键技术卡溢出 {-extra:.0f}px")
+    add = max(0.0, extra) / len(items)
+    for i, (name, md) in enumerate(items):
+        ch = needs[i] + add
+        round_card(slide, (x, y, w, ch))
+        text(slide, (x + 13, y + 6, w - 26, 24), f"关键技术{ZH_NUM[i]}：{name}", style="emphasis", color="accent",
+             valign="middle", check=False)
+        text(slide, (x + 13, y + 32, w - 26, ch - 36), md, style=style, gap_pt=3 + min(6.0, add / 6), valign="middle",
+             check=False)
+        y += ch + gap
+
+
+def arch_kt_page(prs, spec):
+    """系统服务目标架构页，与关键技术页同一版式。spec 字段：
+      crumb, title, suffix
+      challenges / goals：各 3–4 条句子（不加浓缩词），排成一段、段内用 ①②③ 分点；第 i 条对应关键技术 i；
+        目标只写在这里，右侧不再重复
+      draw：draw(slide, (x, y, w, h))，在左下区域画该服务专属的架构图，图中红色圆形编号对应关键技术编号
+      techs：[(关键技术名, 子技术 md)]，3–4 项，每项 2–3 个子技术，按「通过……，采用……，达成……」写到两行左右
+      milestones：交付线 [(交付件 md, 日期)]，按各服务实际写：设计文档的名称、原型、增量穿刺、代码合入、落入版本
+      页脚不放来源。"""
+    s = new_slide(prs, spec["title"], spec["suffix"], crumb=spec["crumb"])
+    n = len(spec["techs"])
+    ch, g = goal_paragraphs(spec["challenges"], spec["goals"])
+    need = measure(ch, 616, "body", line=1.5) + measure(g, 616, "body", line=1.5) + 10 + 14
+    top_h = max(190, need)
+    goal_card(s, (32, 88, 640, top_h), ch, g)
+    dy = 88 + top_h + 12
+    spec["draw"](s, (32, dy, 640, 704 - dy))
+    tech_cards(s, (696, 88, 552, 504), spec["techs"], gap=10 if n <= 3 else 8, style=spec.get("tech_style", "body"))
+    m = len(spec["milestones"])
+    milestones(s, (696, 600, 552, 104), spec["milestones"], box_w=176 if m <= 3 else 128, box_h=58, style="detail",
+               bold=False)
+    return s
+
+
+def legend(slide, x, y, items):
+    """架构图图例：items = [(fill, line, dash, 文字)]，横向排列。"""
+    for fill, line, dash, label in items:
+        rect(slide, (x, y + 3, 14, 10), fill, line=line, line_width=1.0, dash=dash)
+        text(slide, (x + 18, y, 160, 16), label, style="caption", check=False)
+        x += 18 + len(label) * 12 + 18
 
 
 # ---------------------------------------------------------------- 组件架构页（solution-arch-overview）

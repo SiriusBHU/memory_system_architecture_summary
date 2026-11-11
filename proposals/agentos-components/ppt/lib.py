@@ -43,7 +43,8 @@ S["colors"].update({
     "green_l": "#EBF1DE", "green_m": "#D7E4BD",
     "beige": "#EEECE1", "beige_m": "#DDD9C4",
     "grey_l": "#F2F2F2", "grey_m": "#D9D9D9", "grey_d": "#7F7F7F", "grey_line": "#BFBFBF",
-    "dark": "#404040", "red": "#C00000", "blue": "#0000FF",
+    "dark": "#404040", "red": "#A00000", "blue": "#0000FF",
+    "accent": "#A00000", "highlight_strong": "#A00000",   # 深红：标题、编号、关键数字（2026-11-11 由 #C00000 加深）
 })
 S["text_styles"].update({
     "panel_title": {"size": 18, "bold": True, "color": "primary_text"},
@@ -175,8 +176,10 @@ def lines_of(s: str, width_px: float, size_pt: float, indent_em: float = 0) -> i
     return max(1, math.ceil(text_em(s) * size_px * 1.02 / avail))
 
 
-def para_height(s: str, width_px: float, size_pt: float, indent_em: float = 0) -> float:
-    return lines_of(s, width_px, size_pt, indent_em) * size_pt * PX_PER_PT * LINE
+def para_height(s: str, width_px: float, size_pt: float, indent_em: float = 0, line=None) -> float:
+    """line：行距倍数（如 1.5），按单倍行距约 1.2 倍字号折算；None 为默认行距。"""
+    factor = LINE if line is None else 1.2 * line
+    return lines_of(s, width_px, size_pt, indent_em) * size_pt * PX_PER_PT * factor
 
 
 def _warn(msg):
@@ -223,13 +226,15 @@ def _paragraphs(md: str):
     return out
 
 
-def _fill_tf(tf, md, style, color, align, gap_pt, head_style=None, head_color=None):
+def _fill_tf(tf, md, style, color, align, gap_pt, head_style=None, head_color=None, line=None):
     paras = _paragraphs(md)
     size = SIZES[style]
     em = px_to_emu(size * PX_PER_PT)
     for i, (kind, level, txt) in enumerate(paras):
         p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
         p.alignment = ALIGN[align]
+        if line:
+            p.line_spacing = line
         p_pr = p._p.get_or_add_pPr()
         if i and gap_pt:
             p_pr.append(parse_xml(f'<a:spcBef {nsdecls("a")}><a:spcPts val="{int(gap_pt * 100)}"/></a:spcBef>'))
@@ -247,28 +252,29 @@ def _fill_tf(tf, md, style, color, align, gap_pt, head_style=None, head_color=No
     return paras
 
 
-def measure(md, width, style="body", gap_pt=3, head_style=None):
+def measure(md, width, style="body", gap_pt=3, head_style=None, line=None):
     size = SIZES[style]
     h = 0
     for i, (kind, level, txt) in enumerate(_paragraphs(md)):
         s = SIZES[head_style] if (kind == "head" and head_style) else size
         indent = (level + 1) * 0.95 if kind == "bullet" else 0
-        h += para_height(plain(txt), width, s, indent)
+        h += para_height(plain(txt), width, s, indent, line)
         if i:
             h += gap_pt * PX_PER_PT
     return h
 
 
 def text(slide, box, md, style="body", color=None, align="left", valign="top", gap_pt=3, inset=0,
-         head_style=None, head_color=None, check=True, fill=None):
+         head_style=None, head_color=None, check=True, fill=None, line=None):
+    """line：行距倍数（如 1.5），None 为默认行距。"""
     x, y, w, h = box
     tb = slide.shapes.add_textbox(*emu_box(box))
     if fill:
         tb.fill.solid()
         tb.fill.fore_color.rgb = rgb(S, fill)
     _setup_frame(tb.text_frame, valign, inset)
-    _fill_tf(tb.text_frame, md, style, color, align, gap_pt, head_style, head_color)
-    need = measure(md, w - 2 * inset, style, gap_pt, head_style) + 2 * inset
+    _fill_tf(tb.text_frame, md, style, color, align, gap_pt, head_style, head_color, line)
+    need = measure(md, w - 2 * inset, style, gap_pt, head_style, line) + 2 * inset
     if check and need > h + max(6, 0.12 * h):
         _warn(f"文字可能溢出 {need:.0f}>{h:.0f}px：{plain(md)[:24]}…")
     return need
@@ -629,8 +635,9 @@ def difficulty_cards(slide, b, items, gap=14, style="body"):
         y += ch + gap
 
 
-def milestones(slide, b, items):
-    """立项页「交付节奏」：红色时间轴 + 三角节点，上方交付件、下方日期。items = [(交付件, 日期)]。"""
+def milestones(slide, b, items, box_w=164, box_h=54, style="body", bold=True):
+    """立项页「交付节奏」：红色时间轴 + 三角节点，上方交付件、下方日期。items = [(交付件, 日期)]。
+    综合交付线（一页汇总多项技术）可加宽交付件框并改用 10 号字。"""
     x, y, w, h = b
     n = len(items)
     gap = 8
@@ -638,7 +645,8 @@ def milestones(slide, b, items):
     add_shape(slide, S, (x + 2, y + 70, w - 4, 4), "red")
     for i, (deliv, date) in enumerate(items):
         cx = x + i * (cw + gap) + cw / 2
-        box(slide, (cx - 82, y + 6, 164, 54), f"**{deliv}**", fill="grey_l", line="text", style="body")
+        box(slide, (cx - box_w / 2, y + 60 - box_h, box_w, box_h), f"**{deliv}**" if bold else deliv, fill="grey_l",
+            line="text", style=style)
         add_shape(slide, S, (cx - 12, y + 60, 24, 19), "red", kind="triangle")
         text(slide, (cx - 70, y + 82, 140, 22), f"@@{date}@@", style="body", align="center", check=False)
 

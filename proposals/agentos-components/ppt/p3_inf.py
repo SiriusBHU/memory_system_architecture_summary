@@ -3,58 +3,135 @@
 → 关键技术三（硬件亲和的模型架构寻优）。会话级调度由其他团队负责，只在架构中体现。
 """
 
-from pages import arch_page, kt_page
+from lib import arrow, badge, box, poly, rect, text
+from pages import arch_kt_page, kt_page, legend
 from registry import page
 
 CRUMB = "三、架构与关键技术 › 推理服务"
 SRC = "报告 3-推理"
 
 
+NEW = dict(fill="peach_l", line="red", line_width=1.25, color="accent")
+OLD = dict(fill="bg", line="grey_d")
+
+
+def _draw_inference(s, b):
+    """推理服务专属架构图：左为在线推理通路（请求 → 长序列引擎 → 异构融合层 → 计算单元，底部为带宽墙），
+    右为离线的模型准入回路（与模型团队联合），准入的底座部署回引擎。"""
+    x0, y0, w, h = b
+    lw = 468                      # 左侧在线通路宽度
+    rx, rw = x0 + lw + 12, w - lw - 12
+    # 请求方 → 接口与会话级调度（其他团队）
+    names = ["System Agent", "应用 Agent", "应用的 AI 功能"]
+    bw = (lw - 20) / 3
+    for i, nm in enumerate(names):
+        bx = x0 + i * (bw + 10)
+        box(s, (bx, y0 + 4, bw, 26), nm, style="detail", **OLD)
+        arrow(s, (bx + bw / 2, y0 + 31), (bx + bw / 2, y0 + 41), color="dark")
+    box(s, (x0, y0 + 42, lw, 24), "推理服务接口 · 会话级调度（其他团队负责）", fill="grey_l", line="grey_d", style="detail")
+    arrow(s, (x0 + lw / 2, y0 + 67), (x0 + lw / 2, y0 + 77), color="dark")
+
+    # 长序列引擎（难题一）
+    ey = y0 + 78
+    rect(s, (x0, ey, lw, 104), "grey_l", kind="rounded", radius=8)
+    text(s, (x0 + 10, ey + 4, 300, 20), "**长序列引擎**：只算新增、少读 KV", style="detail", color="accent", check=False)
+    badge(s, x0 + lw - 14, ey + 14, 1, d=20)
+    sw = (lw - 16 - 36) / 3
+    stages = ["**上下文裁剪**\n精确引用 token 不可淘汰", "**增量 prefill**\nNPU 固定分块与图预编译",
+              "**decode**\nKV 选择读取、8-bit 降精度"]
+    for i, md in enumerate(stages):
+        sx = x0 + 8 + i * (sw + 18)
+        box(s, (sx, ey + 28, sw, 68), md, style="detail", **NEW)
+        if i < 2:
+            arrow(s, (sx + sw + 1, ey + 62), (sx + sw + 17, ey + 62), color="dark", width=1.25)
+    arrow(s, (x0 + lw / 2, ey + 105), (x0 + lw / 2, ey + 115), color="dark")
+
+    # 异构融合层（难题二）
+    fy = ey + 116
+    rect(s, (x0, fy, lw, 84), "grey_l", kind="rounded", radius=8)
+    text(s, (x0 + 10, fy + 4, 300, 20), "**异构融合层**：按算术强度分派", style="detail", color="accent", check=False)
+    badge(s, x0 + lw - 14, fy + 14, 2, d=20)
+    hw = (lw - 16 - 10) / 2
+    box(s, (x0 + 8, fy + 28, hw, 48), "**算子路由表**\nGEMM 走 NPU，GEMV 走 PIM", style="detail", **NEW)
+    box(s, (x0 + 18 + hw, fy + 28, hw, 48), "**带宽仲裁**\n前台优先、后台按配额回填", style="detail",
+        **NEW)
+
+    # 计算单元
+    hy = fy + 96
+    units = [("CPU", False), ("GPU", False), ("NPU", False), ("LPDDR-PIM\n（规划）", True),
+             ("UFS-PIM\n（预研）", True)]
+    uw = (lw - 24) / 5
+    for i, (nm, plan) in enumerate(units):
+        ux = x0 + i * (uw + 6)
+        arrow(s, (ux + uw / 2, fy + 85), (ux + uw / 2, hy - 1), color="dark")
+        if plan:
+            box(s, (ux, hy, uw, 42), nm, fill="peach_l", line="red", line_width=1.25, dash=True, color="accent",
+                style="caption", inset=1)
+        else:
+            box(s, (ux, hy, uw, 42), nm, style="detail", **OLD)
+
+    # 带宽墙
+    by = hy + 52
+    text(s, (x0, by, 70, 18), "**带宽墙**", style="detail", valign="middle", check=False)
+    bx, bwid = x0 + 72, lw - 72
+    rect(s, (bx, by + 2, bwid, 15), "bg", line="grey_d", line_width=0.75)
+    rect(s, (bx, by + 2, bwid * 0.68, 15), "pink_m")
+    text(s, (bx, by + 1, bwid * 0.68, 17), "单流 decode 约占 LPDDR5X 峰值 68%", style="caption", align="center",
+         valign="middle", check=False)
+    text(s, (bx + bwid * 0.68, by + 1, bwid * 0.32, 17), "24K 时超过峰值", style="caption", color="accent",
+         align="center", valign="middle", check=False)
+
+    # 模型准入（离线，难题三）
+    rect(s, (rx, y0 + 4, rw, by + 18 - y0 - 4), "grey_l", kind="rounded", radius=8)
+    text(s, (rx + 8, y0 + 8, rw - 30, 34), "**离线模型准入**\n与模型团队联合", style="detail", color="accent",
+         check=False)
+    badge(s, rx + rw - 14, y0 + 18, 3, d=20)
+    cx, cw = rx + 8, rw - 16
+    flow = [("候选底座（模型团队）", 26, False), ("**选型准入卡**\n每 token KV、注意力结构、专家布局", 62, True),
+            ("**带宽与闪存代价模型**\n预测首 token、decode、峰值内存", 62, True), ("**NPU 在环评测**\n设备农场实测", 46, True),
+            ("准入底座，部署到引擎", 26, False)]
+    yy = y0 + 50
+    for i, (md, hh, new) in enumerate(flow):
+        box(s, (cx, yy, cw, hh), md, style="detail", **(NEW if new else OLD))
+        if i < len(flow) - 1:
+            arrow(s, (cx + cw / 2, yy + hh + 1), (cx + cw / 2, yy + hh + 11), color="dark")
+        yy += hh + 12
+    # 准入的底座部署回长序列引擎
+    dy = yy - 12 - 13
+    poly(s, [(cx, dy), (rx - 6, dy), (rx - 6, ey + 62), (x0 + lw + 1, ey + 62)], head=True, color="red", width=1.25)
+
+    legend(s, x0, y0 + h - 18, [("peach_l", "red", False, "本次新增"), ("peach_l", "red", True, "规划或预研"),
+                                ("bg", "grey_d", False, "已有能力或其他团队负责")])
+
+
 @page
 def arch_inference(prs):
-    arch_page(prs, dict(
+    arch_kt_page(prs, dict(
         crumb=CRUMB + " › 目标架构",
         title="推理服务目标架构：", suffix="长序列引擎与异构融合层，让长上下文推得动、新算力用得上",
-        takeaway="目标：23–32K 上下文在端侧推得动，NPU 与 PIM 推开带宽墙，底座模型按手机预算准入",
         challenges=[
-            ("长上下文推不动", "窗口 4–8K；24K 时 KV 约占每 token 访存的 45%"),
-            ("带宽墙推不开", "decode 占 LPDDR 峰值约 68%，PIM 没有系统支持"),
-            ("模型与手机不匹配", "每 token KV 相差可达 12 倍，NPU 不在搜索环"),
+            "长程任务上下文达 23–32K，端侧窗口只有 4–8K，追加后整段重算",
+            "单流 decode 占 LPDDR5X 峰值约 68%，PIM 尚无系统支持",
+            "每 token KV 随模型结构相差可达 12 倍，硬件在环搜索只做到 CPU 在环",
         ],
-        principles=[
-            ("只算新增", "增量 prefill 与上下文裁剪（对应挑战一）"),
-            ("按强度分派", "GEMV 走 PIM（对应挑战二）"),
-            ("预算前置", "内存与闪存预算约束选型（对应挑战三）"),
+        goals=[
+            "工具返回追加后首 token ≤1.5 秒，24K decode ≥35 token/秒",
+            "NPU 与 GPU 协同 ≥1.3 倍，PIM 路径 3B decode ≥100 token/秒（仿真或样片）",
+            "候选底座每 token KV ≤35KiB，100% 提供 NPU 实测",
         ],
-        partitions=[
-            ("分区一：长序列引擎", [
-                ("prefill", [("增量 prefill 与块对齐", True), ("NPU 固定分块与图预编译", True)]),
-                ("上下文", [("Agent 上下文裁剪", True), ("精确引用保护", True)]),
-                ("decode", [("KV 选择性读取", True), ("KV 8-bit 降精度", True)]),
-            ]),
-            ("分区二：异构融合层", [
-                ("路由", [("算子路由表：按算术强度分派", True), ("NPU 与 GPU 张量级协同", True)]),
-                ("带宽", [("带宽仲裁：前台优先、后台回填", True)]),
-                ("新算力", [("LPDDR-PIM 区与数据放置", True), ("UFS-PIM 冷专家卸载（预研）", True)]),
-            ]),
-        ],
-        shared=[
-            ("共享层一\n模型准入", [("选型准入卡", True), ("带宽与闪存代价模型", True), ("NPU 在环评测", True)]),
-            ("共享层二\n平台硬件", [("会话级调度（其他团队）", False), ("NPU HAL", False), ("CPU / GPU / NPU", False),
-                                 ("LPDDR-PIM（规划）", False), ("UFS", False)]),
-        ],
+        draw=_draw_inference,
         techs=[
-            ("Agent 超长序列推理的优化", "增量 prefill、NPU 分块、上下文裁剪、KV 选择与降精度",
-             "追加后首 token ≤1.5 秒；24K decode ≥35 token/秒"),
-            ("LPDDR-PIM、NPU、UFS-PIM 异构融合", "算子按强度分派、带宽仲裁；PIM 与芯片团队联合定义接口",
-             "协同 ≥1.3 倍；PIM 路径 decode ≥100 token/秒"),
-            ("硬件亲和的模型架构寻优", "准入卡、代价模型与 NPU 在环评测，与模型团队联合",
-             "每 token KV ≤35KiB；候选 100% 有 NPU 实测"),
+            ("Agent 超长序列推理的优化",
+             "- **增量 prefill 与 NPU 固定分块**：按稳定前缀、历史与工具返回拆解上下文，前缀命中时只算新增部分；按 256 token 固定分块并预编译，KV 块与 NPU 分块对齐\n- **上下文裁剪与 KV 选择**：先遮蔽过期的工具返回、再选择性读取 KV，精确引用标记为不可淘汰"),
+            ("LPDDR-PIM、NPU、UFS-PIM 异构融合",
+             "- **算子路由与带宽仲裁**：按算术强度分派，prefill 的 GEMM 走 NPU 与 GPU，decode 的 GEMV 走 PIM；按带宽配额调度，前台关键交互时后台让出总线\n- **PIM 内存区与联合接口**：权重一次布局成 PIM 友好格式，与芯片团队以仿真定义系统接口"),
+            ("硬件亲和的模型架构寻优",
+             "- **选型准入卡与代价模型**：每 token KV、注意力结构与专家布局写入准入卡；代价模型按读取字节与带宽预测 decode 时延，作为搜索约束\n- **NPU 在环评测**：设备农场实测，冻结已训练权重、只搜注意力布局，与模型团队联合选型"),
         ],
-        badges=[("p1", 0, 0, 1), ("p1", 1, 0, 1), ("p1", 2, 0, 1), ("p2", 0, 0, 2), ("p2", 1, 0, 2), ("p2", 2, 0, 2),
-                ("s", 0, 0, 3)],
-        source=f"来源：{SRC} 3.2；目标为建议值，依据见 3.3；负载、体验问题与瓶颈见报告 2.2.2、2.3.1、2.5.1；"
-               "会话级调度由其他团队负责。",
+        milestones=[("**推理服务设计说明书**\n含长上下文真机基线", "2027.03"),
+                    ("**长序列引擎原型**\n增量 prefill 与裁剪", "2027.06"),
+                    ("**PIM 增量穿刺**\n仿真平台与系统接口", "2027.09"),
+                    ("**落入版本**\n随年底版本首发", "2027.12")],
     ))
 
 

@@ -3,7 +3,8 @@
 """
 
 import lib
-from pages import arch_page, kt_page
+from lib import arrow, badge, box, layer_row, outline, poly, rect, text
+from pages import arch_kt_page, kt_page, legend
 from registry import page
 
 CRUMB = "三、架构与关键技术 › 执行沙箱"
@@ -85,51 +86,112 @@ def value_sandbox(prs):
                     "AgentDojo 见参考资料 W6；dot 越权率为二手转述。", y=694, w=1130)
 
 
+NEW = dict(fill="peach_l", line="red", line_width=1.25, color="accent")
+OLD = dict(fill="bg", line="grey_d")
+
+
+def _draw_sandbox(s, b):
+    """执行沙箱专属架构图：中间是每个会话一个的沙箱实例（执行边界），左侧入站网关（A2A），右侧出站网关（MCP）与
+    出口代理；三道关口都由上方 Agent 进程之外的策略决策带外判定（虚线）；底座复用安全体系。"""
+    x0, y0, w, h = b
+    # 策略决策（带外）
+    rect(s, (x0, y0 + 4, w, 78), "grey_l", kind="rounded", radius=8)
+    text(s, (x0 + 10, y0 + 7, 420, 20), "**策略决策**：在 Agent 进程之外判定每一次调用", style="detail", color="accent",
+         check=False)
+    badge(s, x0 + w - 14, y0 + 17, 2, d=20)
+    mods = ["**策略引擎**\n三维定档、参数化权限", "**标签引擎**\n来源标签签发与传播", "**判定缓存**\n策略版本钉住",
+            "**审计**\n决策日志与哈希链"]
+    mw = (w - 16 - 18) / 4
+    for i, md in enumerate(mods):
+        box(s, (x0 + 8 + i * (mw + 6), y0 + 30, mw, 44), md, style="detail", **NEW)
+
+    my = y0 + 94                     # 中间一层的顶边
+    # 左：外部 Agent → 入站网关（A2A）→ 系统能力与记忆
+    lw = 150
+    box(s, (x0 + 30, my + 4, lw - 30, 26), "外部 Agent", style="detail", **OLD)
+    arrow(s, (x0 + 90, my + 31), (x0 + 90, my + 43), color="dark")
+    text(s, (x0 + 94, my + 30, 50, 14), "@@A2A@@", style="caption", check=False)
+    box(s, (x0, my + 44, lw, 70), "**入站网关（A2A）**\n核验调用方；按用途给最少数据，带标签返回", style="detail", **NEW)
+    badge(s, x0 + lw, my + 44, 2, d=18)
+    arrow(s, (x0 + 75, my + 115), (x0 + 75, my + 127), color="dark")
+    box(s, (x0, my + 128, lw, 66), "系统能力与\nSystem Agent 记忆\n（结构化接口）", style="detail", **OLD)
+
+    # 中：会话沙箱实例
+    cx, cw = x0 + 166, 300
+    outline(s, (cx, my, cw, 222), line="red", width=1.5, dash=True)
+    text(s, (cx + 8, my + 4, cw - 16, 20), "!!会话沙箱实例!!：每个会话一个执行边界", style="detail", check=False)
+    pw = (cw - 16 - 12) / 3
+    for i, nm in enumerate(["解释器", "工具进程", "被调应用"]):
+        box(s, (cx + 8 + i * (pw + 6), my + 28, pw, 26), nm, style="detail", **OLD)
+    rows = [("**分级隔离**：默认进程级，必要时升级 pVM", True),
+            ("**冻结 · 快照 · 恢复**：订阅档位事件，先快照后回收", True),
+            ("**实例池与模板**：进程级实例创建 ≤50 毫秒", False)]
+    yy = my + 66
+    for md, mark in rows:
+        box(s, (cx + 8, yy, cw - 16, 40), md, style="detail", **NEW)
+        if mark:
+            badge(s, cx + cw - 8, yy, 1, d=18)
+        yy += 50
+
+    # 右：出站网关（MCP）→ 应用与工具；出口代理 → 互联网服务
+    rx, rw = x0 + 482, 142
+    box(s, (rx, my, rw, 62), "**出站网关（MCP）**\n按参数判定\n效果预演与撤销令牌", style="detail", **NEW)
+    badge(s, rx + rw, my, 2, d=18)
+    arrow(s, (rx + rw / 2, my + 63), (rx + rw / 2, my + 75), color="dark")
+    box(s, (rx, my + 76, rw, 26), "应用与工具", style="detail", **OLD)
+    box(s, (rx, my + 118, rw, 62), "**出口代理**（含 DNS）\n白名单；凭证代为注入", style="detail", **NEW)
+    badge(s, rx + rw, my + 118, 3, d=18)
+    arrow(s, (rx + rw / 2, my + 181), (rx + rw / 2, my + 193), color="dark")
+    box(s, (rx, my + 194, rw, 26), "互联网服务", style="detail", **OLD)
+    # 沙箱 → 出站网关、出口代理
+    arrow(s, (cx + cw + 1, my + 31), (rx - 1, my + 31), color="dark", width=1.25)
+    arrow(s, (cx + cw + 1, my + 149), (rx - 1, my + 149), color="dark", width=1.25)
+
+    # 带外判定（虚线）：策略决策 → 三道关口
+    arrow(s, (x0 + 14, y0 + 83), (x0 + 14, my + 43), color="red", dash=True)
+    arrow(s, (rx + 40, y0 + 83), (rx + 40, my - 1), color="red", dash=True)
+    poly(s, [(x0 + w - 4, y0 + 83), (x0 + w - 4, my + 149), (rx + rw + 1, my + 149)], head=True, color="red",
+         dash=True)
+
+    # 底座：安全体系（复用）
+    layer_row(s, x0, my + 232, w, 44, "安全体系\n（复用）",
+              [("签名与身份", False), ("权限框架", False), ("Keystore / StrongBox", False), ("TEE 与证明", False),
+               ("SELinux / seccomp", False), ("AVF / pKVM", False)])
+
+    ly = y0 + h - 18
+    legend(s, x0, ly, [("peach_l", "red", False, "本次新增"), ("bg", "grey_d", False, "已有能力（复用安全体系）")])
+    arrow(s, (x0 + 290, ly + 8), (x0 + 318, ly + 8), color="red", dash=True)
+    text(s, (x0 + 322, ly, 200, 16), "策略带外判定", style="caption", check=False)
+
+
 @page
 def arch_sandbox(prs):
-    arch_page(prs, dict(
-        crumb=CRUMB + " › 组件架构",
+    arch_kt_page(prs, dict(
+        crumb=CRUMB + " › 目标架构",
         title="执行沙箱目标架构：", suffix="建在安全体系之上的执行管控层，MCP 出站与 A2A 入站都在 Agent 之外判定",
-        takeaway="目标：对外动作与外部 Agent 的入站访问都经沙箱判定；信任基础复用安全体系",
         challenges=[
-            ("边界粒度不匹配", "隔离以 App 为单位，会话跨多个进程且无快照与恢复"),
-            ("权限静态且无标签", "判定不了单次调用与入站读取，不可信内容无标签"),
-            ("出口与凭证未托管", "网络按 UID 管控，凭证对 Agent 进程可见"),
+            "隔离以 App 为单位，会话跨多个进程且没有快照，内存紧张时任务状态丢失",
+            "静态权限判定不了单次调用，A2A 入站只能按应用整类授权",
+            "网络按应用 UID 管控，无法按会话放行或拦截，凭证对 Agent 进程可见",
         ],
-        principles=[
-            ("边界跟随会话", "每个会话一个执行边界（对应挑战一）"),
-            ("带外判定", "策略判定放在 Agent 进程之外（对应挑战二）"),
-            ("执行不限、效果受控", "一切效果经系统接口流出（对应挑战三）"),
+        goals=[
+            "进程级实例创建 ≤50 毫秒，会话切回 ≤1 秒，内存压力下状态丢失 0 次",
+            "判定 P99 ≤1 毫秒，逐次确认 ≤6%，入站身份核验 100%",
+            "出网经代理 100%（含 DNS），凭证进入沙箱 0 次，代理时延 ≤10 毫秒",
         ],
-        partitions=[
-            ("分区一：策略决策（Agent 之外）", [
-                ("装配", [("接口面装配器：按委托令牌投影接口面", True), ("系统确认界面", True)]),
-                ("判定", [("策略引擎：三维定档、参数化权限", True), ("标签引擎：来源标签签发与传播", True)]),
-                ("网关", [("出站网关（MCP）：效果预演与撤销令牌", True), ("入站网关（A2A）：调用方核验、数据最小化", True)]),
-            ]),
-            ("分区二：隔离与出口（会话实例）", [
-                ("隔离", [("隔离级别选择：进程级为主，pVM 为辅", True), ("实例池与模板", True)]),
-                ("状态", [("冻结、快照与恢复引擎", True), ("生命周期适配器：订阅档位事件", True)]),
-                ("出口", [("出口代理：按会话白名单，含 DNS", True), ("凭证托管：按端点注入，密钥库复用", True)]),
-            ]),
-        ],
-        shared=[
-            ("共享层一\n会话底座", [("会话对象：主体、档位、标签、账本", True), ("判定缓存与策略版本钉住", True),
-                                ("审计：决策日志与哈希链", True)]),
-            ("共享层二\n安全体系", [("签名与身份", False), ("权限框架", False), ("Keystore / StrongBox", False),
-                                     ("TEE 与证明", False), ("SELinux / seccomp", False), ("AVF / pKVM", False)]),
-        ],
+        draw=_draw_sandbox,
         techs=[
-            ("会话级隔离与状态底座", "默认进程级、按需升级 pVM；冻结、快照与恢复接入档位事件",
-             "实例创建 ≤50 毫秒；切回 ≤1 秒；内存压力下状态丢失 0 次"),
-            ("MCP / A2A 调用的权限判定与数据标签", "出站按参数判定；入站核验调用方、按用途给最少数据；来源标签签发与传播",
-             "判定 P99 ≤1 毫秒；逐次确认 ≤6%；入站核验 100%"),
-            ("出口代理与凭证托管", "会话级网络身份与七层代理（含 DNS）；密钥库复用安全体系，按端点代为注入",
-             "出网经代理 100%；凭证进入沙箱 0 次；代理时延 ≤10 毫秒"),
+            ("会话级隔离与状态底座",
+             "- **分级隔离与实例池**：默认以进程级隔离承载解释器、工具进程与被调应用，并按模板预热池化；执行任意代码或处理不可信文件时，以模板快照拉起 pVM\n- **先快照、后回收**：回收压力到来时先挂起，快照完成后再释放；切回时与 KV 换入并行恢复"),
+            ("MCP / A2A 调用的权限判定",
+             "- **三维定档与参数化判定**：按外部性、可逆性、敏感度给接口定档，出站调用按参数判定；判定结果按「策略版本 + 输入哈希」缓存，会话创建时钉住版本\n- **两级标签与入站网关**：默认会话级污点；入站由系统核验调用方，数据按用途裁剪并带标签"),
+            ("出口代理与凭证托管",
+             "- **会话网络身份与七层代理**：套接字经 eBPF 钩子或独立网络命名空间导向系统代理，按「域名 × 方法 × 路径」白名单判定，DNS 一律由代理解析并审计\n- **凭证托管**：密钥库复用安全体系，按端点代为注入，沙箱只持占位符"),
         ],
-        badges=[("p2", 0, 0, 1), ("p2", 1, 0, 1), ("p1", 1, 0, 2), ("p1", 1, 1, 2), ("p2", 2, 0, 3), ("p2", 2, 1, 3)],
-        source="来源：报告 3-沙箱 3.2；目标为建议值，依据见 3.3；安全体系以 Android 为例，iOS 对应 Keychain / Secure Enclave，"
-               "HarmonyOS 对应 HUKS。",
+        milestones=[("**沙箱安全设计规格**\n含威胁模型与策略", "2027.03"),
+                    ("**会话沙箱原型**\n实例与出站策略", "2027.06"),
+                    ("**入站与出口穿刺**\n网关与凭证托管", "2027.09"),
+                    ("**落入版本**\n含 pVM 分级隔离", "2027.12")],
     ))
 
 
