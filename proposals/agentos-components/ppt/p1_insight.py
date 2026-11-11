@@ -250,7 +250,7 @@ def overview(prs):
          "grok_bot.png"),
         ("2026-09", "OpenAI dot", "每个 Agent 一台云端电脑；\n随 Pro 档提供",
          "ChatGPT 周活 !!10 亿!!；Codex 周用户 2 个月由 !!500 万增至 800 万!!", "openai_dots.png"),
-        ("2026-10", "阶跃手机开售", "整机 Agent 手机\nStep AOS 发布\n系统级 Agent\n端侧小模型加云端大模型", None,
+        ("2026-10", "阶跃手机开售", "2026-07 发布 Step AOS\n2026-10 整机开售\n整机 Agent 手机\n系统级 Agent\n端侧小模型加云端大模型", None,
          "stepx_neo.png"),
     ]
     # 图片按卡片高度等比缩放；先算总宽，再把余量均分到组间
