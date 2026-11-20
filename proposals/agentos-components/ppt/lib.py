@@ -19,13 +19,17 @@ import re
 from pathlib import Path
 
 from pptx import Presentation
-from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE
+from pptx.enum.shapes import MSO_CONNECTOR, MSO_SHAPE, MSO_SHAPE_TYPE
+from pptx.shapes.connector import Connector
 from pptx.enum.text import MSO_ANCHOR
 from pptx.oxml import parse_xml
 from pptx.oxml.ns import nsdecls, qn
 from pptx.util import Emu, Pt
 
-from ppt_templates.draw import ALIGN, _setup_frame, add_run, add_shape, emu_box, rgb
+from ppt_templates.draw import ALIGN, SHAPES as _SHAPES, _setup_frame, add_run, add_shape, emu_box, rgb
+
+# 架构图用到的额外形状：梯形（存储金字塔）、箭头形（流水线阶段）、环形
+_SHAPES.update({"trapezoid": MSO_SHAPE.TRAPEZOID, "chevron": MSO_SHAPE.CHEVRON, "donut": MSO_SHAPE.DONUT})
 from ppt_templates.geometry import px_to_emu
 from ppt_templates.loader import find_repo_root, load_style
 from ppt_templates.render import _render_frame
@@ -177,8 +181,9 @@ def lines_of(s: str, width_px: float, size_pt: float, indent_em: float = 0) -> i
 
 
 def para_height(s: str, width_px: float, size_pt: float, indent_em: float = 0, line=None) -> float:
-    """line：行距倍数（如 1.5），按单倍行距约 1.2 倍字号折算；None 为默认行距。"""
-    factor = LINE if line is None else 1.2 * line
+    """line：行距倍数（如 1.5）。PowerPoint 中微软雅黑的单倍行距约 1.32 倍字号（LibreOffice 预览约 1.2 倍），
+    按 PowerPoint 折算，避免在 PowerPoint 中溢出；None 为默认行距。"""
+    factor = LINE if line is None else 1.32 * line
     return lines_of(s, width_px, size_pt, indent_em) * size_pt * PX_PER_PT * factor
 
 
@@ -318,6 +323,28 @@ def arrow(slide, p1, p2, color="dark", width=1.0, head=True, dash=False, both=Fa
     if head:
         ln.append(parse_xml(f'<a:tailEnd {nsdecls("a")} type="triangle" w="med" len="med"/>'))
     return conn
+
+
+def stretch_y(slide, start, y0, f):
+    """把第 start 个起新加的形状以 y0 为基线纵向拉伸 f 倍：框与连线按比例变高，字号不变；
+    圆形编号保持正圆、只移动圆心。用于架构图按设计高度画好后填满实际可用高度。"""
+    if abs(f - 1) < 1e-3:
+        return
+    base = px_to_emu(y0)
+    for shp in list(slide.shapes)[start:]:
+        if isinstance(shp, Connector):
+            by, ey = shp.begin_y, shp.end_y
+            shp.begin_y = int(base + (by - base) * f)
+            shp.end_y = int(base + (ey - base) * f)
+            continue
+        top, hgt = shp.top, shp.height
+        is_round = (shp.shape_type == MSO_SHAPE_TYPE.AUTO_SHAPE and shp.auto_shape_type == MSO_SHAPE.OVAL
+                    and abs(shp.width - hgt) < px_to_emu(1))
+        if is_round:
+            shp.top = int(base + (top + hgt / 2 - base) * f - hgt / 2)
+        else:
+            shp.top = int(base + (top - base) * f)
+            shp.height = int(hgt * f)
 
 
 def poly(slide, pts, head=False, **kw):

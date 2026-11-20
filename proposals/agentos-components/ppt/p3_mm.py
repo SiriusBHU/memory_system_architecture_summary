@@ -3,8 +3,8 @@
   模块二 推理服务内存管理（前缀与 KV、MoE 专家与权重、模型加载）：目标架构 + 四项关键技术（2026-11-09 改版）
 """
 
-from lib import arrow, badge, box, layer_row, rect, text
-from pages import arch_kt_page, kt_page, legend
+from lib import arrow, badge, box, layer_row, outline, poly, rect, text
+from pages import arch_kt_page, key_box, kt_page
 from registry import page
 
 CRUMB_A = "三、架构与关键技术 › 通用内存管理"
@@ -16,122 +16,136 @@ SRC_MM = "报告 3-内存管理"
 
 NEW = dict(fill="peach_l", line="red", line_width=1.25, color="accent")
 OLD = dict(fill="bg", line="grey_d")
+NEU = dict(fill="bg", line="grey_d")
+CTX = dict(fill="grey_l", line="grey_line")
 
 
 def _draw_general(s, b):
-    """通用内存管理专属架构图：左为内存使用方及其按会话档位的水线，中为统一账本、水线决策与回收仲裁，
-    右为主动回收（常驻系统服务）与冷热识别、预取（应用匿名页）两条执行线，底部为已有的内核机制。"""
+    """X+Agent 智慧化内存管理专属架构图（2026-11-11 第二版）：画全局关系，只突出本次要做的三处。
+    顶部为场景与五类内存使用方；中部为内存与资源服务：会话档位事件与 PSI 输入，① 会话级账本与 MemCG 水线、
+    ② 常驻服务主动回收、③ 冷热分析与预取换出；底部为已有内核机制，三处各自落到对应机制上。"""
     x0, y0, w, h = b
-    lx, lw = x0, 214
-    mx, mw = x0 + 232, 186
-    rx, rw = x0 + 436, 204
+    e = max(0.0, (h - 330) / 3)
+    box(s, (x0, y0, w, 26), "**场景**：用户在用前台应用 X，Agent 会话同时执行并随时调起其他应用，12GB 机型峰值内存紧张", fill="blue_l", line=None, style="detail", align="left", inset=8)
+    uy = y0 + 36 + e
+    users = ["前台应用 X", "交互 Agent 会话", "后台 / 挂起会话", "常驻系统服务", "后台缓存应用"]
+    uw = (w - 4 * 8) / 5
+    for i, nm in enumerate(users):
+        ux = x0 + i * (uw + 8)
+        box(s, (ux, uy, uw, 26), nm, style="detail", **NEU)
+        arrow(s, (ux + uw / 2, uy + 27), (ux + uw / 2, uy + 37 + e), color="grey_d")
 
-    # 左：内存使用方与水线
-    text(s, (lx, y0 + 4, lw, 18), "**内存使用方**：按会话档位设水线", style="detail", color="accent", check=False)
-    users = [("前台应用 X", "min 保底", dict(fill="green_m", line="grey_d"), None),
-             ("交互会话\n（用户正在等待）", "min 保底", dict(fill="green_m", line="grey_d"), None),
-             ("后台会话", "low 软保护", dict(fill="blue_m", line="grey_d"), None),
-             ("挂起会话", "high 压制", dict(fill="peach_m", line="grey_d"), None),
-             ("常驻系统服务", "主动回收", NEW, 2),
-             ("后台缓存应用", "冷热换出\n意图预取", NEW, 3)]
-    nw, tw, uh, ug = 126, 82, 38, 8
-    yy = y0 + 28
-    for name, tag, style, mark in users:
-        box(s, (lx, yy, nw, uh), name, style="detail", **OLD)
-        box(s, (lx + nw + 6, yy, tw, uh), "\n".join(f"**{t}**" for t in tag.split("\n")), style="detail", **style)
-        if mark:
-            badge(s, lx + nw + 6 + tw, yy, mark, d=18)
-        arrow(s, (lx + lw + 1, yy + uh / 2), (lx + lw + 8, yy + uh / 2), color="grey_d", head=False)
-        yy += uh + ug
-    bus_x = lx + lw + 8
-    arrow(s, (bus_x, y0 + 28 + uh / 2), (bus_x, yy - ug - uh / 2), color="grey_d", head=False)
+    fy = uy + 38 + e
+    fh = 172
+    outline(s, (x0, fy, w, fh), line="grey_d", width=1.0)
+    text(s, (x0 + 8, fy + 3, 260, 16), "**Agent OS 内存与资源服务**", style="caption", color="grey_d", check=False)
+    box(s, (x0 + 8, fy + 22, w - 16, 24), "输入：会话档位事件（推理服务、执行沙箱） · PSI 压力信号 · 分配归属",
+        style="caption", **CTX)
+    kw = (w - 16 - 2 * 10) / 3
+    ky = fy + 62
+    keys = [(1, "会话级账本与 MemCG 水线", "统一记账 · 水线自适应"),
+            (2, "常驻服务主动回收", "场景关联 · 空闲回收 · 预加载"),
+            (3, "冷热分析与预取换出", "SPE 热证据 · 意图预取")]
+    for i, (n, t, sub) in enumerate(keys):
+        kx = x0 + 8 + i * (kw + 10)
+        arrow(s, (kx + kw / 2, fy + 47), (kx + kw / 2, ky - 1), color="grey_d")
+        key_box(s, (kx, ky, kw, 62), n, t, sub)
+    box(s, (x0 + 8, ky + 72, w - 16, 26), "回收仲裁：按会话档位决定回收顺序，前台与交互会话保底", style="caption", **CTX)
 
-    # 中：统一账本与水线
-    text(s, (mx, y0 + 4, mw, 18), "**统一账本与水线**", style="detail", color="accent", check=False)
-    mids = [("**分配钩子**：匿名页、NPU HAL、dma-buf", 42),
-            ("**统一账本**：按会话归属，代分配记入请求会话", 46),
-            ("**水线决策**：按档位算 min / low / high", 46),
-            ("**回收仲裁**：按档位排序", 40),
-            ("写入 memcg 水线；调整 LMKD 查杀顺序", 40)]
-    yy = y0 + 28
-    tops = []
-    for i, (md, hh) in enumerate(mids):
-        box(s, (mx, yy, mw, hh), md, style="detail", **NEW)
-        tops.append((yy, hh))
-        if i < len(mids) - 1:
-            arrow(s, (mx + mw / 2, yy + hh + 1), (mx + mw / 2, yy + hh + 11), color="dark")
-        yy += hh + 12
-    ly_, lh_ = tops[1]
-    badge(s, mx + mw, ly_, 1, d=18)
-    badge(s, mx + mw, tops[2][0], 1, d=18)
-    arrow(s, (bus_x, ly_ + lh_ / 2), (mx - 1, ly_ + lh_ / 2), color="dark", width=1.25)
+    # 内核与硬件（已有）：三处各自落到对应机制
+    kyy = fy + fh + 12 + e
+    mods = ["memcg", "PSI", "LMKD", "zRAM", "DAMON", "dma-buf heap", "ARM SPE"]
+    cells = layer_row(s, x0, kyy, w, 44, "内核\n（已有）", [(m, False) for m in mods])
+    targets = {0: [0, 2], 1: [3, 4], 2: [6, 3]}
+    for i, idx in targets.items():
+        kx = x0 + 8 + i * (kw + 10) + kw / 2
+        for j in idx[:1]:
+            c = cells[j]
+            poly(s, [(kx, fy + fh - 1), (kx, kyy - 6), (c[0] + c[2] / 2, kyy - 6), (c[0] + c[2] / 2, kyy - 1)],
+                 head=True, color="grey_d", width=0.75)
 
-    # 右：两条执行线
-    def lane(y, hh, title, mark, rows):
-        rect(s, (rx, y, rw, hh), "grey_l", kind="rounded", radius=8)
-        text(s, (rx + 8, y + 4, rw - 30, 18), title, style="detail", color="accent", check=False)
-        badge(s, rx + rw - 12, y + 13, mark, d=18)
-        yy = y + 26
-        for j, (md, bh) in enumerate(rows):
-            box(s, (rx + 8, yy, rw - 16, bh), md, style="detail", **NEW)
-            if j < len(rows) - 1:
-                arrow(s, (rx + rw / 2, yy + bh + 1), (rx + rw / 2, yy + bh + 7), color="dark")
-            yy += bh + 8
-        return y + hh
 
-    e1 = lane(y0 + 4, 148, "**主动回收**：常驻系统服务", 2,
-              [("服务与场景关联矩阵", 26), ("空闲窗口回收：memory.reclaim、DAMOS", 40), ("事件预加载：档位升级前加载", 26)])
-    e2 = lane(y0 + 160, 152, "**冷热识别与预取**", 3,
-              [("热证据 SPE ＋ 冷证据 页表与年龄", 40), ("预取集合与换出配额", 26), ("批量换入 · 主动换出 · .so 锁优化", 40)])
-    # 回收仲裁 → 两条执行线
-    ay, ah = tops[3]
-    jx = rx - 9
-    arrow(s, (mx + mw + 1, ay + ah / 2), (jx, ay + ah / 2), color="dark", head=False)
-    arrow(s, (jx, y0 + 76), (jx, ay + ah / 2), color="dark", head=False)
-    arrow(s, (jx, y0 + 76), (rx - 1, y0 + 76), color="dark")
-    arrow(s, (jx, ay + ah / 2), (rx - 1, ay + ah / 2), color="dark")
+# ---------------------------------------------------------------- 关键技术卡右侧的示意图
 
-    # 底部：内核与硬件（已有）
-    ky = y0 + 322
-    ey, eh = tops[4]
-    arrow(s, (mx + mw / 2, ey + eh + 1), (mx + mw / 2, ky - 1), color="dark")
-    arrow(s, (rx + rw / 2, e2 + 1), (rx + rw / 2, ky - 1), color="dark")
-    layer_row(s, x0, ky, w, 44, "内核\n（已有）",
-              [("memcg", False), ("PSI", False), ("LMKD", False), ("zRAM", False), ("DAMON", False),
-               ("dma-buf heap", False), ("ARM SPE", False)])
-    legend(s, x0, y0 + h - 18, [("peach_l", "red", False, "本次新增"), ("bg", "grey_d", False, "已有机制"),
-                                ("green_m", "grey_d", False, "min 保底"), ("blue_m", "grey_d", False, "low 软保护"),
-                                ("peach_m", "grey_d", False, "high 压制")])
+def _fig_watermark(s, b):
+    """关键技术一示意：不同档位的会话设不同水线：前台与交互 min 保底，后台 low，挂起 high。"""
+    x, y, w, h = b
+    rect(s, b, "bg", line="grey_line", kind="rounded", radius=6)
+    bars = [("前台", 0.75, "green_m", 0.55), ("后台", 0.5, "blue_m", 0.35), ("挂起", 0.3, "peach_m", 0.15)]
+    base, top = y + h - 22, y + 14
+    bw = (w - 24) / 3
+    for i, (nm, lvl, fill, mark) in enumerate(bars):
+        bx = x + 8 + i * (bw + 4)
+        rect(s, (bx, base - (base - top) * lvl, bw, (base - top) * lvl), fill, line="grey_d", line_width=0.5)
+        my_ = base - (base - top) * mark
+        arrow(s, (bx - 2, my_), (bx + bw + 2, my_), color="red", width=1.0, head=False)
+        text(s, (bx - 4, base + 3, bw + 8, 12), nm, style="footnote", color="grey_d", align="center", check=False)
+    text(s, (x, y + 1, w, 12), "红线：各档水线", style="footnote", color="accent", align="center", check=False)
+
+
+def _fig_idle(s, b):
+    """关键技术二示意：一天中的活跃时段与空闲窗口，主动回收只在空闲窗口执行。"""
+    x, y, w, h = b
+    rect(s, b, "bg", line="grey_line", kind="rounded", radius=6)
+    text(s, (x, y + 4, w, 12), "活跃与空闲窗口", style="footnote", align="center", check=False)
+    segs = [(0.0, 0.18, True), (0.18, 0.32, False), (0.32, 0.55, True), (0.55, 0.7, False), (0.7, 0.85, True),
+            (0.85, 1.0, False)]
+    lx, lw_ = x + 6, w - 12
+    ty = y + 26
+    for a, c, busy in segs:
+        rect(s, (lx + a * lw_, ty, (c - a) * lw_ - 1, 18), "grey_m" if busy else "blue_l", line=None)
+        if not busy:
+            arrow(s, (lx + (a + c) / 2 * lw_, ty + 20), (lx + (a + c) / 2 * lw_, ty + 40), color="red", width=1.0)
+    text(s, (x, ty + 42, w, 12), "空闲时回收冷页", style="footnote", color="accent", align="center", check=False)
+    box(s, (x + 6, ty + 62, w - 12, 18), "升级前预加载", fill="peach_l", line="grey_d", style="footnote", inset=0)
+
+
+def _fig_heat(s, b):
+    """关键技术三示意：页面三态（热、冷、未知），预取只用热证据，换出必须有冷证据。"""
+    x, y, w, h = b
+    rect(s, b, "bg", line="grey_line", kind="rounded", radius=6)
+    pat = ["HHUCC", "HUCCU", "UHHCC", "CCUHH", "HCCUC"]
+    fills = {"H": "peach_m", "C": "blue_m", "U": "grey_m"}
+    cs = (w - 20) / 5
+    for r, row in enumerate(pat):
+        for c, k in enumerate(row):
+            rect(s, (x + 10 + c * cs, y + 8 + r * (cs * 0.7), cs - 3, cs * 0.7 - 3), fills[k], line=None)
+    ly = y + 8 + 5 * cs * 0.7 + 4
+    for i, (k, nm) in enumerate([("H", "热"), ("C", "冷"), ("U", "未知")]):
+        lx = x + 8 + i * (w - 16) / 3
+        rect(s, (lx, ly + 2, 9, 9), fills[k], line=None)
+        text(s, (lx + 10, ly, 26, 12), nm, style="footnote", color="grey_d", check=False)
+    text(s, (x, ly + 16, w, 24), "热页预取\n冷页才换出", style="footnote", color="accent", align="center", check=False)
 
 
 @page
 def arch_general(prs):
     arch_kt_page(prs, dict(
         crumb=CRUMB_A + " › 目标架构",
-        title="通用内存管理目标架构：", suffix="会话级记账、按档位的 memcg 水线、主动回收与冷热预取",
-        challenges=[
-            "权重与 KV 驻留在 dma-buf 与 NPU 缓冲，限额只统计匿名页与 swap 且没有保底",
-            "新增常驻服务空闲比例达 60%–90%（估算），回收只在压力出现后按 LRU 选页",
-            "Agent 连续调起多个应用时，冷启动反复缺页",
-        ],
-        goals=[
-            "模型内存可归属 ≥95%，12GB 峰值下前台与交互会话零回收",
-            "待机时常驻服务内存降低 ≥0.8GB（估算），误回收率 ≤10%",
-            "叠加场景冷启动 −15%～−30%，后台存活 +30%～+80%，rmap 锁 P99 <50 毫秒",
-        ],
+        title='X+Agent 智慧化内存管理',
+        suffix='：会话级冷热分析，MemCG 水线自适应，支撑多前台内存主动回收与预取',
+        challenge_goal="!!挑战与目标：!!① 针对!!前台应用与 Agent 同时在用!!，权重与 KV 在 dma-buf 与 NPU 缓冲中不计入限额，分档只有上限、没有保底，通过会话账本与水线自适应，构建统一记账，实现@@前台与 Agent 互不挤占@@；"
+                       "② 针对新增常驻服务空闲比例达 60%–90%（估算），通过场景关联与空闲回收，构建主动回收，实现@@为前台与 Agent 腾出内存@@；③ 针对回收只在压力出现后按 LRU 选页、调起应用时冷启动反复缺页，"
+                       "通过冷热识别与意图预取，构建预取换出，实现@@应用启动更快、后台多存活@@",
         draw=_draw_general,
+        tech_line=1.5,
+        milestone_h=44,
         techs=[
             ("会话级记账与 memcg 水线自适应",
-             "- **统一账本与代分配归账**：在匿名页与 dma-buf 的分配、导出处挂钩，NPU HAL 上报私有内存；推理服务代多个会话分配的 KV 按 cgroup 句柄记入请求会话\n- **按档位自适应水线**：交互设 min、后台设 low、挂起设 high，水线随 PSI 在线调整"),
+             "- **会话级统一账本**：在匿名页与 dma-buf 分配处挂钩，NPU HAL 上报私有内存，KV 记入请求会话，@@模型内存可归属 ≥ 95%@@\n"
+             "- **MemCG 水线自适应**：交互会话与前台设 min 保底，后台设 low、挂起设 high，随 PSI 调整，@@前台与交互会话零回收@@"),
             ("系统服务与常驻进程的主动回收",
-             "- **服务与场景关联建模**：跟踪推理、沙箱、记忆等常驻服务的匿名页、驻留模型与访问时间，按场景关联度而非访问时间选择回收对象\n- **空闲窗口回收与预加载**：空闲时以 memory.reclaim 回收冷页，档位升级前预加载"),
+             "- **服务与场景关联建模**：统计各常驻服务在不同场景下的访问，结合会话档位与事件，按场景关联度选回收对象，@@误回收率 ≤ 10%@@\n"
+             "- **空闲窗口回收与预加载**：切走、待机、夜间以 memory.reclaim 回收冷页，档位升级前预加载，@@待机常驻内存降低 ≥ 0.8GB@@"),
             ("匿名页冷热识别与预取换出",
-             "- **冷热双证据**：以 SPE 采样的访存地址为热证据，以页表 Accessed 位与 MGLRU / DAMON 年龄双确认冷页；预取只用热证据，换出必须有冷证据\n- **意图预取与锁优化**：规划阶段提前换入将调起应用的热页，rmap trylock 批处理"),
+             "- **会话级冷热分析**：SPE 采样给热证据，页表 Accessed 位与 MGLRU 年龄确认冷页，形成三态，@@后台存活 +30%～+80%@@\n"
+             "- **意图预取与批量换入**：Agent 规划阶段预知将调起的应用，提前批量换入热页，冷页按配额换出，@@冷启动 −15%～−30%@@"),
         ],
-        milestones=[("**记账与回收方案**\n含冷启动基线报告", "2027.03"),
-                    ("**统一账本增量穿刺**\n只记账、不限额", "2027.06"),
-                    ("**代码合入**\n水线、回收与预取", "2027.09"),
-                    ("**落入版本**\n全天回放验收后发布", "2027.12")],
+        milestones=[
+                    ('**会话级统一账本原型验证**', '2027.03'),
+                    ('**主动回收与冷热预取增量穿刺**', '2027.06'),
+                    ('**多前台内存协同回放验证**', '2027.09'),
+        ],
     ))
 
 
@@ -293,125 +307,137 @@ def kt_anon_prefetch(prs):
 # ================================================================ 模块二：推理服务内存管理（2026-11-09 改版：四项关键技术）
 
 def _draw_model(s, b):
-    """推理服务内存管理专属架构图：按「计算 / DRAM / UFS」三级存储画出前缀缓存树、KV 块池、专家页池与权重零拷贝通路；
-    KV 与专家共用一份预算、在线划分；KV 冷块与专家在 DRAM 与 UFS 之间换入换出；底部为按会话记账。"""
+    """推理服务内存主动管理专属架构图（2026-11-11 第二版）：按「计算 / DRAM / UFS」三级存储画全局关系，只突出三处：
+    ① 前缀树与 KV 块池、② 专家页池（与 KV 联合预算）、③ 零拷贝加载通路；其余为中性。"""
     x0, y0, w, h = b
-    cx0 = x0 + 68                               # 内容区左边
-    P, K, E, Z = (cx0, 150), (x0 + 226, 172), (x0 + 406, 146), (x0 + 560, 80)
-    tiers = [("**计算**", y0 + 4, 36), ("**DRAM**", y0 + 50, 194), ("**UFS**", y0 + 288, 38)]
-    for lab, ty, th in tiers:
-        box(s, (x0, ty, 60, th), lab, fill="blue_m", style="detail")
-
+    e = max(0.0, (h - 330) / 3)
+    box(s, (x0, y0, w, 26), "**场景**：多个 Agent 会话共用一个 MoE 底座，会话频繁切走切回，系统提示与工具定义高度重复",
+        fill="blue_l", line=None, style="detail", align="left", inset=8)
+    cx0 = x0 + 64
+    K, E, Z = (cx0, 250), (cx0 + 260, 190), (cx0 + 460, w - 64 - 460)     # 三列：KV、专家、权重
+    tiers = [("**计算**", 36), ("**DRAM**", 118), ("**UFS**", 44)]
+    ty = y0 + 36 + e
+    ys = []
+    for lab, th in tiers:
+        box(s, (x0, ty, 56, th), lab, fill="grey_m", line=None, style="detail")
+        ys.append((ty, th))
+        ty += th + 34 + e / 2
+    (cy, ch_), (dy, dh), (uy, uh) = ys
     # 计算层
-    box(s, (P[0], y0 + 4, K[0] + K[1] - P[0], 36), "推理运行时：按会话发起请求", style="detail", **OLD)
-    box(s, (E[0], y0 + 4, E[1], 36), "GPU / CPU", style="detail", **OLD)
-    box(s, (Z[0], y0 + 4, Z[1], 36), "**NPU**", style="detail", **OLD)
-
+    box(s, (K[0], cy, K[1], ch_), "推理运行时：按会话发起请求", style="detail", **NEU)
+    box(s, (E[0], cy, E[1], ch_), "专家路由（推理侧复用）", style="detail", **NEU)
+    box(s, (Z[0], cy, Z[1], ch_), "**NPU**", style="detail", **NEU)
     # DRAM 层
-    dy = y0 + 50
-    rect(s, (cx0, dy, x0 + w - cx0, 194), "grey_l")
-    # 前缀缓存树（难题一）
-    text(s, (P[0] + 4, dy + 4, P[1] - 26, 18), "!!前缀缓存树!!", style="detail", check=False)
-    badge(s, P[0] + P[1] - 10, dy + 13, 1, d=18)
-    chain = ["根：系统提示", "分支：skill 与工具集", "叶：会话尾部"]
-    yy = dy + 26
-    for i, nm in enumerate(chain):
-        box(s, (P[0] + 8, yy, P[1] - 16, 24), nm, style="caption", **NEW)
-        if i < 2:
-            arrow(s, (P[0] + P[1] / 2, yy + 25), (P[0] + P[1] / 2, yy + 31), color="dark")
-        yy += 32
-    box(s, (P[0] + 8, yy + 2, P[1] - 16, 48), "**带版本缓存键**\n按信任域分区", style="caption", **NEW)
-
-    # KV 块池（难题二）
-    text(s, (K[0] + 4, dy + 4, K[1] - 26, 18), "!!KV 块池!!：按代价分层", style="detail", check=False)
-    badge(s, K[0] + K[1] - 10, dy + 13, 2, d=18)
-
-    def blocks(x, y, n, fill, bh=14, cols=8, gap=4, size=14):
-        for k in range(n):
-            r, c = divmod(k, cols)
-            rect(s, (x + c * (size + gap), y + r * (bh + gap), size, bh), fill, line="grey_d", line_width=0.5)
-
-    text(s, (K[0] + 6, dy + 26, K[1] - 12, 14), "热块：活跃会话", style="caption", check=False)
-    blocks(K[0] + 8, dy + 42, 8, "pink_m")
-    text(s, (K[0] + 6, dy + 62, K[1] - 12, 14), "温块：停放、降位宽", style="caption", check=False)
-    blocks(K[0] + 8, dy + 78, 8, "peach_m", bh=8)
-    text(s, (K[0] + 6, dy + 94, K[1] - 12, 30), "会话 KV 句柄：停放与恢复，与沙箱恢复并行", style="caption", check=False)
-
-    # 专家页池（难题四）
-    text(s, (E[0] + 4, dy + 4, E[1] - 26, 18), "!!专家页池!!", style="detail", check=False)
-    badge(s, E[0] + E[1] - 10, dy + 13, 4, d=18)
-    text(s, (E[0] + 6, dy + 26, E[1] - 12, 14), "热专家驻留", style="caption", check=False)
-    blocks(E[0] + 8, dy + 42, 14, "blue_m", cols=7)
-    text(s, (E[0] + 6, dy + 80, E[1] - 12, 30), "冷专家保留低位宽副本兜底", style="caption", check=False)
-
-    # KV 与专家联合预算（难题四）
-    sep = E[0] - 4
-    arrow(s, (sep, dy + 24), (sep, dy + 140), color="red", dash=True, head=False)
-    arrow(s, (sep - 22, dy + 130), (sep + 22, dy + 130), color="red", both=True)
-    box(s, (K[0], dy + 150, E[0] + E[1] - K[0], 36), "**专家与 KV 联合预算**：同一账本、在线划分", style="detail",
-        **NEW)
-
-    # 权重零拷贝通路（难题三）
-    box(s, (Z[0], dy + 56, Z[1], 62), "**页缓存映射**\n经 IOMMU\n零拷贝", style="detail", **NEW)
-    badge(s, Z[0] + Z[1] - 4, dy + 56, 3, d=18)
-
+    rect(s, (cx0, dy, x0 + w - cx0, dh), "grey_l")
+    key_box(s, (K[0] + 6, dy + 8, K[1] - 12, 62), 1, "前缀树与 KV 块池", "前缀树 · 版本化键 · 热温两代")
+    key_box(s, (E[0] + 6, dy + 8, E[1] - 12, 62), 2, "专家页池", "多策略替换 · 按请求预热")
+    key_box(s, (Z[0] + 4, dy + 8, Z[1] - 8, 62), 3, "零拷贝映射", "IOMMU 直通 NPU")
+    box(s, (K[0] + 6, dy + 80, K[1] + E[1] - 2, 28), "专家与 KV 联合预算：同一账本，按边际收益在线划分", style="caption",
+        **CTX)
     # UFS 层
-    uy = y0 + 288
-    box(s, (K[0], uy, K[1], 38), "**KV 停放区**（冷块）", style="detail", **NEW)
-    box(s, (E[0], uy, E[1], 38), "**专家文件**（按簇读取）", style="detail", **NEW)
-    box(s, (Z[0], uy, Z[1], 38), "**页对齐**\n权重文件", style="detail", **NEW)
+    box(s, (K[0], uy, K[1], uh), "**KV 停放区**（冷块）", style="detail", **NEU)
+    box(s, (E[0], uy, E[1], uh), "**专家文件**（按簇读取）", style="detail", **NEU)
+    box(s, (Z[0], uy, Z[1], uh), "**页对齐权重**", style="detail", **NEU)
+    # 层间通路
+    arrow(s, (K[0] + K[1] / 2, cy + ch_ + 1), (K[0] + K[1] / 2, dy - 1), color="grey_d", both=True)
+    arrow(s, (E[0] + E[1] / 2, cy + ch_ + 1), (E[0] + E[1] / 2, dy - 1), color="grey_d")
+    arrow(s, (Z[0] + Z[1] / 2, dy - 1), (Z[0] + Z[1] / 2, cy + ch_ + 1), color="grey_d", width=1.25)
+    gy0, gy1 = dy + dh + 1, uy - 1
+    arrow(s, (K[0] + 70, gy0), (K[0] + 70, gy1), color="grey_d")
+    text(s, (K[0] + 74, gy0 + 4, 80, 12), "冷块写出", style="footnote", color="grey_d", check=False)
+    arrow(s, (K[0] + 180, gy1), (K[0] + 180, gy0), color="grey_d")
+    text(s, (K[0] + 184, gy0 + 4, 60, 12), "切回换入", style="footnote", color="grey_d", check=False)
+    arrow(s, (E[0] + E[1] / 2, gy1), (E[0] + E[1] / 2, gy0), color="grey_d")
+    text(s, (E[0] + E[1] / 2 + 4, gy0 + 4, 60, 12), "按簇换入", style="footnote", color="grey_d", check=False)
+    arrow(s, (Z[0] + Z[1] / 2, gy1), (Z[0] + Z[1] / 2, gy0), color="grey_d", width=1.25)
+    text(s, (Z[0] + Z[1] / 2 + 4, gy0 + 4, 60, 12), "映射", style="footnote", color="grey_d", check=False)
+    # 与通用内存管理联动
+    box(s, (x0, uy + uh + 10 + e / 2, w, 24), "**内存与资源服务**：KV、专家与权重按会话记账，停放、恢复、被回收事件联动",
+        style="caption", **CTX)
 
-    # DRAM 与 UFS 之间的换入换出
-    gy0, gy1 = dy + 195, uy - 1
-    arrow(s, (K[0] + 44, gy0), (K[0] + 44, gy1), color="dark", width=1.25)
-    text(s, (K[0] + 48, gy0 + 12, 64, 16), "冷块换出", style="caption", check=False)
-    arrow(s, (K[0] + 130, gy1), (K[0] + 130, gy0), color="dark", width=1.25)
-    text(s, (K[0] + 60, gy0 + 26, 66, 16), "≤1 秒换入", style="caption", align="right", check=False)
-    arrow(s, (E[0] + E[1] / 2, gy1), (E[0] + E[1] / 2, gy0), color="dark", width=1.25)
-    text(s, (E[0] + E[1] / 2 + 4, gy0 + 12, 60, 16), "按簇换入", style="caption", check=False)
-    zx = Z[0] + Z[1] / 2
-    arrow(s, (zx, uy - 1), (zx, dy + 119), color="red", width=2.0)
-    arrow(s, (zx, dy + 55), (zx, y0 + 41), color="red", width=2.0)
 
-    # 按会话记账（与通用内存管理联动）
-    box(s, (x0, uy + 48, w, 26), "**按会话记账**：KV、专家与权重计入统一账本，回收事件与通用内存管理联动", style="detail", **NEW)
-    legend(s, x0, y0 + h - 18, [("peach_l", "red", False, "本次新增"), ("bg", "grey_d", False, "已有能力"),
-                                ("pink_m", "grey_d", False, "热块"), ("peach_m", "grey_d", False, "温块"),
-                                ("blue_m", "grey_d", False, "热专家")])
+# ---------------------------------------------------------------- 关键技术卡右侧的示意图
+
+def _fig_prefix(s, b):
+    """关键技术一示意：三级前缀树（系统提示 → 工具集 → 会话尾部），共享前缀只算一次。"""
+    x, y, w, h = b
+    rect(s, b, "bg", line="grey_line", kind="rounded", radius=6)
+    cx = x + w / 2
+    box(s, (cx - 30, y + 8, 60, 18), "系统提示", fill="peach_m", line="grey_d", style="footnote", inset=0)
+    for i, bx in enumerate((x + 6, x + w / 2 + 2)):
+        bw = w / 2 - 8
+        arrow(s, (cx, y + 27), (bx + bw / 2, y + 40), color="grey_d", width=0.5, head=False)
+        box(s, (bx, y + 40, bw, 18), "工具集", fill="peach_l", line="grey_d", style="footnote", inset=0)
+        for j in range(2):
+            lx = bx + j * (bw / 2) + 1
+            arrow(s, (bx + bw / 2, y + 59), (lx + bw / 4 - 1, y + 72), color="grey_d", width=0.5, head=False)
+            rect(s, (lx, y + 72, bw / 2 - 2, 14), "grey_l", line="grey_d", line_width=0.5)
+    text(s, (x, y + 88, w, 12), "会话尾部", style="footnote", color="grey_d", align="center", check=False)
+    text(s, (x, y + 104, w, 24), "前缀命中只算新增\n版本变化整树作废", style="footnote", color="accent", align="center",
+         check=False)
+
+
+def _fig_hitrate(s, b):
+    """关键技术二示意：同等缓存容量下 LRU 与多策略在线选择的专家命中率对比（示意，非实测）。"""
+    x, y, w, h = b
+    rect(s, b, "bg", line="grey_line", kind="rounded", radius=6)
+    text(s, (x, y + 4, w, 12), "专家命中率（示意）", style="footnote", align="center", check=False)
+    base, top = y + h - 26, y + 22
+    bars = [("LRU", 0.45, "grey_m"), ("多策略", 0.88, "peach_m")]
+    bw = (w - 30) / 2
+    for i, (nm, v, fill) in enumerate(bars):
+        bx = x + 10 + i * (bw + 10)
+        rect(s, (bx, base - (base - top) * v, bw, (base - top) * v), fill, line="grey_d", line_width=0.5)
+        text(s, (bx - 6, base + 3, bw + 12, 12), nm, style="footnote", color="grey_d", align="center", check=False)
+    arrow(s, (x + 6, base), (x + w - 6, base), color="grey_d", width=0.75, head=False)
+
+
+def _fig_copy(s, b):
+    """关键技术三示意：原路径经页缓存、框架缓冲多次拷贝；新路径文件页直接映射给 NPU。"""
+    x, y, w, h = b
+    rect(s, b, "bg", line="grey_line", kind="rounded", radius=6)
+    text(s, (x, y + 3, w, 12), "原路径：2–3 份", style="footnote", color="grey_d", align="center", check=False)
+    old = ["文件", "页缓存", "框架缓冲", "NPU"]
+    bw = (w - 12)
+    for i, nm in enumerate(old):
+        yy = y + 17 + i * 15
+        box(s, (x + 6, yy, bw, 12), nm, fill="grey_l", line="grey_line", style="footnote", inset=0)
+    ny = y + 17 + 4 * 15 + 6
+    text(s, (x, ny, w, 12), "新路径：0 份拷贝", style="footnote", color="accent", align="center", check=False)
+    box(s, (x + 6, ny + 14, (bw - 14) / 2, 16), "文件", fill="grey_l", line="grey_d", style="footnote", inset=0)
+    arrow(s, (x + 6 + (bw - 14) / 2 + 1, ny + 22), (x + 6 + (bw + 14) / 2 - 1, ny + 22), color="red", width=1.0)
+    box(s, (x + 6 + (bw + 14) / 2, ny + 14, (bw - 14) / 2, 16), "NPU", fill="peach_m", line="grey_d", style="footnote",
+        inset=0)
 
 
 @page
 def arch_model(prs):
     arch_kt_page(prs, dict(
         crumb=CRUMB_B + " › 目标架构",
-        title="推理服务内存管理目标架构：", suffix="前缀与 KV 的生命周期、KV 分层、加载零拷贝与 MoE 专家缓存",
-        challenges=[
-            "每次调用约带 2K 系统提示与工具定义，缓存不含版本",
-            "峰值 KV 1.3GB 且被钉住，丢弃后重算需 6–14 秒",
-            "权重在页缓存、框架缓冲与 NPU 缓冲中存在 2–3 份",
-            "MoE 要达到 20 token/秒，专家命中率需约 80%",
-        ],
-        goals=[
-            "前缀命中率 ≥90%，缓存错用 0 次",
-            "停放会话 ≤1 秒恢复，KV 压缩 ≥2.5 倍",
-            "NPU 路径额外拷贝 0 份，冷加载达顺序读带宽的 60%–70%",
-            "专家命中率稳态 ≥85%，同容量较 LRU 提升 ≥30%",
-        ],
+        title='推理服务内存主动管理',
+        suffix='：KV Prefix 命中优化与冷热分层，MoE 专家缓存优化，模型翻译加速 10%',
+        challenge_goal="!!挑战与目标：!!① 针对每次调用都带约 2K 系统提示与工具定义，前缀缓存不含版本，峰值 KV 1.3GB 且被钉住，丢弃后!!重算需 6–14 秒!!，通过版本化前缀树与冷热分层，构建 KV 缓存，"
+                       "实现@@会话切回秒级恢复@@；② 针对 MoE 逐 token 路由达到 20 token/秒需专家命中率约 80%，通过多策略替换与按请求预热，构建专家缓存，实现@@MoE 底座在端侧流畅运行@@；"
+                       "③ 针对权重在多级缓冲中存在 2–3 份，通过页对齐格式与零拷贝映射，构建加载通路，实现@@模型加载更快、不拖慢前台@@",
         draw=_draw_model,
+        tech_line=1.5,
+        milestone_h=44,
         techs=[
-            ("KV 生命周期与前缀命中率",
-             "- **三级前缀树与带版本缓存键**：系统提示、skill 与工具集、会话尾部分级缓存，缓存键含全部版本要素\n- **信任域分区**：公开前缀全局共享，私有前缀只在同一会话内共享"),
-            ("KV 分页与冷热分层",
-             "- **块池与三代分层**：KV 切成定长块，热块驻留 DRAM、温块降位宽、冷块写出到 UFS 停放区\n- **按代价决定去向**：恢复概率高于约 6% 才写出，日写入计入账本"),
+            ("KV Prefix 命中优化与冷热分层",
+             "- **三级前缀树与版本化缓存键**：系统提示、工具集、会话尾部分级缓存，缓存键带版本，私有前缀不跨会话，@@前缀命中率 ≥ 90%@@\n"
+             "- **KV 块池与三代分层**：热块驻留 DRAM、温块降位宽、冷块写出 UFS，按恢复概率决定去向，@@停放会话 ≤ 1 秒恢复@@"),
+            ("MoE 专家缓存优化",
+             "- **多策略在线选择**：按最近窗口命中率在 LRU、LFU 与学习型替换间切换，冷专家留低位宽副本，@@同容量较 LRU 提升 ≥ 30%@@\n"
+             "- **按请求预热与联合预算**：prefill 前预热专家集，与推理侧路由复用联动，专家与 KV 同一账本划分，@@命中率稳态 ≥ 85%@@"),
             ("模型加载 IO 零拷贝",
-             "- **页对齐格式与零拷贝映射**：权重按层或专家分段、可直接映射，文件页经 IOMMU 映射给 NPU\n- **IO 让步**：加载与专家换入可让步，前台冷启动时让出带宽"),
-            ("MoE 专家命中率提升",
-             "- **多策略在线选择**：按最近窗口命中率在 LRU、LFU 与学习型替换间切换，冷专家低位宽兜底\n- **联合预算**：prefill 前预热专家集，专家与 KV 一本账"),
+             "- **页对齐权重格式**：权重按层或专家分段存放，可直接文件映射并按需缺页，映射页可被回收、无需常驻，@@模型加载加速 ≥ 10%@@\n"
+             "- **NPU 零拷贝映射**：文件页经 IOMMU 映射到 dma-buf 供 NPU 使用，加载 IO 遇前台冷启动让出带宽，@@NPU 路径额外拷贝 0 份@@"),
         ],
-        milestones=[("**KV 与专家缓存设计**\n含命中率基线", "2027.03"),
-                    ("**KV 管理原型**\n前缀树与 KV 块池", "2027.06"),
-                    ("**MoE 专家缓存穿刺**\n联合预算划分", "2027.09"),
-                    ("**落入版本**\n随年底系统版本发布", "2027.12")],
+        milestones=[
+                    ('**前缀树与 KV 分层原型验证**', '2027.03'),
+                    ('**MoE 专家缓存增量穿刺**', '2027.06'),
+                    ('**零拷贝加载联调验证**', '2027.09'),
+        ],
     ))
 
 

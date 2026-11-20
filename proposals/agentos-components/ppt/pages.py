@@ -177,60 +177,89 @@ def goal_paragraphs(challenges, goals):
     return ch, g
 
 
-def goal_card(slide, b, ch, g):
-    """架构页左上卡（与关键技术页相同）：浅灰圆角卡内两段文字，纵向居中。"""
+def goal_card(slide, b, ch, g=None):
+    """架构页左上卡（与关键技术页相同）：浅灰圆角卡内两段文字（g 为 None 时为合并后的一段），纵向居中。"""
     x, y, w, h = b
     round_card(slide, b)
-    hc, hg = measure(ch, w - 24, "body", line=1.5), measure(g, w - 24, "body", line=1.5)
-    total = hc + hg + 10
+    hc = measure(ch, w - 24, "body", line=1.5)
+    hg = measure(g, w - 24, "body", line=1.5) + 10 if g else 0
+    total = hc + hg
     if total > h - 10:
         _warn(f"挑战与目标溢出 {total:.0f}>{h - 10:.0f}px")
     yy = y + max(5, (h - total) / 2)
     text(slide, (x + 12, yy, w - 24, hc + 2), ch, style="body", check=False, line=1.5)
-    text(slide, (x + 12, yy + hc + 10, w - 24, hg + 2), g, style="body", check=False, line=1.5)
+    if g:
+        text(slide, (x + 12, yy + hc + 10, w - 24, hg - 8), g, style="body", check=False, line=1.5)
 
 
-def tech_cards(slide, b, items, gap=12, style="body"):
-    """架构页右侧的关键技术卡：items = [(关键技术名, "- **子技术**：说明\\n…")]，每项 2–3 个子技术；
-    卡高按内容分配，余量平均分给各卡，卡内文字纵向居中，避免卡底留空。"""
+def tech_cards(slide, b, items, gap=12, style="body", line=None, fig_w=90):
+    """架构页右侧的关键技术卡：items = [(关键技术名, "- **子技术**：说明\\n…"[, 示意图函数])]，每项 2–3 个子技术；
+    给了示意图函数时，正文收窄，右侧留 fig_w 宽画示意图：fig(slide, (x, y, w, h))。
+    line 为正文行距倍数（如 1.5）。卡高按内容分配，余量平均分给各卡，卡内文字纵向居中，避免卡底留空。"""
     x, y, w, h = b
-    needs = [measure(md, w - 26, style, 3) + 40 for _, md in items]
+    tw = [w - 26 - (fig_w + 10 if len(it) > 2 else 0) for it in items]
+    needs = [measure(it[1], tw[i], style, 3, line=line) + 40 for i, it in enumerate(items)]
     extra = h - gap * (len(items) - 1) - sum(needs)
     if extra < 0:
         _warn(f"关键技术卡溢出 {-extra:.0f}px")
     add = max(0.0, extra) / len(items)
-    for i, (name, md) in enumerate(items):
+    for i, it in enumerate(items):
+        name, md = it[0], it[1]
         ch = needs[i] + add
         round_card(slide, (x, y, w, ch))
         text(slide, (x + 13, y + 6, w - 26, 24), f"关键技术{ZH_NUM[i]}：{name}", style="emphasis", color="accent",
              valign="middle", check=False)
-        text(slide, (x + 13, y + 32, w - 26, ch - 36), md, style=style, gap_pt=3 + min(6.0, add / 6), valign="middle",
-             check=False)
+        text(slide, (x + 13, y + 32, tw[i], ch - 36), md, style=style, gap_pt=3 + min(6.0, add / 6), valign="middle",
+             check=False, line=line)
+        if len(it) > 2:
+            it[2](slide, (x + w - 13 - fig_w, y + 34, fig_w, ch - 42))
         y += ch + gap
 
 
 def arch_kt_page(prs, spec):
     """系统服务目标架构页，与关键技术页同一版式。spec 字段：
       crumb, title, suffix
-      challenges / goals：各 3–4 条句子（不加浓缩词），排成一段、段内用 ①②③ 分点；第 i 条对应关键技术 i；
-        目标只写在这里，右侧不再重复
+      challenge_goal（2026-11-12 起）：挑战与目标合并成一段，格式同原来两段（深红标签、①②③ 段内连写、1.5 倍行距），
+        每条写成「针对……（挑战原文），通过……，构建……，实现……（业务收益，不写技术指标）」，约 6 行，卡高与原来两段相同；
+        旧写法 challenge / goal 或 challenges / goals（挑战、目标各一段）仍可用
       draw：draw(slide, (x, y, w, h))，在左下区域画该服务专属的架构图，图中红色圆形编号对应关键技术编号
-      techs：[(关键技术名, 子技术 md)]，3–4 项，每项 2–3 个子技术，按「通过……，采用……，达成……」写到两行左右
+      techs：[(关键技术名, 子技术 md)]，每项 2 个子技术，每个子技术两行，句末带蓝色技术指标（2026-11-12 起不配示意图）
       milestones：交付线 [(交付件 md, 日期)]，按各服务实际写：设计文档的名称、原型、增量穿刺、代码合入、落入版本
       页脚不放来源。"""
-    s = new_slide(prs, spec["title"], spec["suffix"], crumb=spec["crumb"])
-    n = len(spec["techs"])
-    ch, g = goal_paragraphs(spec["challenges"], spec["goals"])
-    need = measure(ch, 616, "body", line=1.5) + measure(g, 616, "body", line=1.5) + 10 + 14
+    s = new_slide(prs, spec["title"], spec["suffix"])      # 汇报人去掉了右上角的位置导航
+    if spec["suffix"].startswith("："):          # 后半句以冒号开头时，去掉框架自动加的全角空格
+        for sh in s.shapes:
+            if sh.has_text_frame and sh.text_frame.text.startswith(spec["title"]):
+                for r in sh.text_frame.paragraphs[0].runs:
+                    if r.text.startswith("　"):
+                        r.text = r.text[1:]
+                break
+    if "challenge_goal" in spec:                   # 挑战与目标合并成一段
+        ch, g = spec["challenge_goal"], None
+    elif "challenge" in spec:                      # 直接给出带强调的两段（汇报人样页的写法）
+        ch, g = spec["challenge"], spec["goal"]
+    else:
+        ch, g = goal_paragraphs(spec["challenges"], spec["goals"])
+    # 合并成一段时也按两段的算法留出段间距，卡高与原来两段一致，架构图位置不变
+    need = measure(ch, 616, "body", line=1.5) + (measure(g, 616, "body", line=1.5) if g else 0) + 10 + 14
     top_h = max(190, need)
     goal_card(s, (32, 88, 640, top_h), ch, g)
     dy = 88 + top_h + 12
     spec["draw"](s, (32, dy, 640, 704 - dy))
-    tech_cards(s, (696, 88, 552, 504), spec["techs"], gap=10 if n <= 3 else 8, style=spec.get("tech_style", "body"))
+    mh = spec.get("milestone_h", 58)              # 交付件只写一行时用 44，卡片区随之加高
+    tech_cards(s, (696, 88, 552, 512 + (58 - mh)), spec["techs"], gap=8, style=spec.get("tech_style", "body"),
+               line=spec.get("tech_line"))
     m = len(spec["milestones"])
-    milestones(s, (696, 600, 552, 104), spec["milestones"], box_w=176 if m <= 3 else 128, box_h=58, style="detail",
+    milestones(s, (696, 608, 552, 104), spec["milestones"], box_w=176 if m <= 3 else 128, box_h=mh, style="detail",
                bold=False)
     return s
+
+
+def key_box(slide, b, n, title, sub, style="detail"):
+    """架构图里本次要做的模块：浅橙底深红框、右上角红色编号（对应关键技术编号），标题深红加粗、说明黑字。
+    架构图只有这几处用红色，其余为中性灰白。"""
+    box(slide, b, f"!!{title}!!\n{sub}", style=style, inset=4, fill="peach_l", line="red", line_width=1.5)
+    badge(slide, b[0] + b[2] - 2, b[1] + 2, n, d=20)
 
 
 def legend(slide, x, y, items):

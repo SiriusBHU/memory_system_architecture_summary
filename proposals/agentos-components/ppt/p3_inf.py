@@ -3,7 +3,7 @@
 → 关键技术三（硬件亲和的模型架构寻优）。会话级调度由其他团队负责，只在架构中体现。
 """
 
-from lib import arrow, badge, box, poly, rect, text
+from lib import arrow, badge, box, outline, poly, rect, text
 from pages import arch_kt_page, kt_page, legend
 from registry import page
 
@@ -13,125 +13,188 @@ SRC = "报告 3-推理"
 
 NEW = dict(fill="peach_l", line="red", line_width=1.25, color="accent")
 OLD = dict(fill="bg", line="grey_d")
+PLAN = dict(fill="peach_l", line="red", line_width=1.25, dash=True, color="accent")
+
+
+KEY = dict(fill="peach_l", line="red", line_width=1.5)          # 本次要做的部分：只有三处
+NEU = dict(fill="bg", line="grey_d")                              # 已有或其他团队的部分
+CTX = dict(fill="grey_l", line="grey_line")                       # 上下文与协同的系统服务
+
+
+def _key_box(s, b, n, title, sub):
+    """本次要做的模块：浅橙底深红框，红色编号，标题深红加粗、说明黑字。"""
+    box(s, b, f"!!{title}!!\n{sub}", style="detail", inset=4, **KEY)
+    badge(s, b[0] + b[2] - 2, b[1] + 2, n, d=20)
 
 
 def _draw_inference(s, b):
-    """推理服务专属架构图：左为在线推理通路（请求 → 长序列引擎 → 异构融合层 → 计算单元，底部为带宽墙），
-    右为离线的模型准入回路（与模型团队联合），准入的底座部署回引擎。"""
+    """推理服务专属架构图（2026-11-11 第二版）：画全局关系，只突出本次要做的三处。
+    顶部为场景；中部为请求方 → Agent OS（推理服务居中，执行与沙箱、内存与资源两项系统服务协同）；底部为计算与存储硬件；
+    右侧为离线的模型结构寻优：候选底座与端侧约束输入，导出的可入端底座部署回推理服务。"""
     x0, y0, w, h = b
-    lw = 468                      # 左侧在线通路宽度
-    rx, rw = x0 + lw + 12, w - lw - 12
-    # 请求方 → 接口与会话级调度（其他团队）
+    lw = 468
+    rx, rw = x0 + lw + 14, w - lw - 14
+    e = max(0.0, (h - 372) / 4)
+
+    # 场景
+    box(s, (x0, y0, w, 26), "**场景**：贴身秘书类长程任务，32K–128K 上下文，工具返回反复追加，MoE 底座逐 token 路由",
+        fill="blue_l", line=None, style="detail", align="left", inset=8)
+
+    # 请求方
+    ry = y0 + 36 + e
     names = ["System Agent", "应用 Agent", "应用的 AI 功能"]
-    bw = (lw - 20) / 3
+    nw = (lw - 20) / 3
     for i, nm in enumerate(names):
-        bx = x0 + i * (bw + 10)
-        box(s, (bx, y0 + 4, bw, 26), nm, style="detail", **OLD)
-        arrow(s, (bx + bw / 2, y0 + 31), (bx + bw / 2, y0 + 41), color="dark")
-    box(s, (x0, y0 + 42, lw, 24), "推理服务接口 · 会话级调度（其他团队负责）", fill="grey_l", line="grey_d", style="detail")
-    arrow(s, (x0 + lw / 2, y0 + 67), (x0 + lw / 2, y0 + 77), color="dark")
+        bx = x0 + i * (nw + 10)
+        box(s, (bx, ry, nw, 24), nm, style="detail", **NEU)
+        arrow(s, (bx + nw / 2, ry + 25), (bx + nw / 2, ry + 37 + e), color="grey_d")
 
-    # 长序列引擎（难题一）
-    ey = y0 + 78
-    rect(s, (x0, ey, lw, 104), "grey_l", kind="rounded", radius=8)
-    text(s, (x0 + 10, ey + 4, 300, 20), "**长序列引擎**：只算新增、少读 KV", style="detail", color="accent", check=False)
-    badge(s, x0 + lw - 14, ey + 14, 1, d=20)
-    sw = (lw - 16 - 36) / 3
-    stages = ["**上下文裁剪**\n精确引用 token 不可淘汰", "**增量 prefill**\nNPU 固定分块与图预编译",
-              "**decode**\nKV 选择读取、8-bit 降精度"]
-    for i, md in enumerate(stages):
-        sx = x0 + 8 + i * (sw + 18)
-        box(s, (sx, ey + 28, sw, 68), md, style="detail", **NEW)
-        if i < 2:
-            arrow(s, (sx + sw + 1, ey + 62), (sx + sw + 17, ey + 62), color="dark", width=1.25)
-    arrow(s, (x0 + lw / 2, ey + 105), (x0 + lw / 2, ey + 115), color="dark")
+    # Agent OS：推理服务居中，两项系统服务协同
+    fy = ry + 38 + e
+    fh = 212
+    outline(s, (x0, fy, lw, fh), line="grey_d", width=1.0)
+    text(s, (x0 + 8, fy + 3, 200, 16), "**Agent OS 系统服务**", style="caption", color="grey_d", check=False)
+    iw = 330
+    box(s, (x0 + 8, fy + 22, iw, 22), "推理服务接口 · 会话级调度（其他团队负责）", style="caption", **CTX)
+    outline(s, (x0 + 8, fy + 50, iw, fh - 58), line="dark", width=1.25)
+    text(s, (x0 + 16, fy + 53, 200, 18), "**推理服务**", style="detail", check=False)
+    _key_box(s, (x0 + 18, fy + 74, iw - 20, 56), 1, "超长序列推理引擎",
+             "草稿模型筛选 KV · 专家路由多级复用")
+    _key_box(s, (x0 + 18, fy + 138, iw - 20, 56), 2, "异构融合调度",
+             "算子按强度分派 · 权重 / KV 亲和排布")
+    sx, sw = x0 + iw + 18, lw - iw - 26
+    box(s, (sx, fy + 70, sw, 62), "**执行与沙箱**\n隔离与权限判定", style="caption", **CTX)
+    box(s, (sx, fy + 140, sw, 64), "**内存与资源**\n按会话记账与回收", style="caption", **CTX)
+    arrow(s, (x0 + 8 + iw + 1, fy + 101), (sx - 1, fy + 101), color="grey_d", dash=True, both=True)
+    arrow(s, (x0 + 8 + iw + 1, fy + 172), (sx - 1, fy + 172), color="grey_d", dash=True, both=True)
 
-    # 异构融合层（难题二）
-    fy = ey + 116
-    rect(s, (x0, fy, lw, 84), "grey_l", kind="rounded", radius=8)
-    text(s, (x0 + 10, fy + 4, 300, 20), "**异构融合层**：按算术强度分派", style="detail", color="accent", check=False)
-    badge(s, x0 + lw - 14, fy + 14, 2, d=20)
-    hw = (lw - 16 - 10) / 2
-    box(s, (x0 + 8, fy + 28, hw, 48), "**算子路由表**\nGEMM 走 NPU，GEMV 走 PIM", style="detail", **NEW)
-    box(s, (x0 + 18 + hw, fy + 28, hw, 48), "**带宽仲裁**\n前台优先、后台按配额回填", style="detail",
-        **NEW)
-
-    # 计算单元
-    hy = fy + 96
-    units = [("CPU", False), ("GPU", False), ("NPU", False), ("LPDDR-PIM\n（规划）", True),
-             ("UFS-PIM\n（预研）", True)]
-    uw = (lw - 24) / 5
-    for i, (nm, plan) in enumerate(units):
+    # 硬件：计算与存储（PIM 在存储侧）
+    hy = fy + fh + 12 + e
+    hw_ = [("**NPU**\nPrefill 计算", False), ("**CPU / GPU**\n其余算子", False),
+           ("**LPDDR + 2D-PIM**\n热专家与 KV", True), ("**UFS + UFS-PIM**\n多 Channel 冷专家", True)]
+    uw = (lw - 18) / 4
+    for i, (md, pim) in enumerate(hw_):
         ux = x0 + i * (uw + 6)
-        arrow(s, (ux + uw / 2, fy + 85), (ux + uw / 2, hy - 1), color="dark")
-        if plan:
-            box(s, (ux, hy, uw, 42), nm, fill="peach_l", line="red", line_width=1.25, dash=True, color="accent",
-                style="caption", inset=1)
-        else:
-            box(s, (ux, hy, uw, 42), nm, style="detail", **OLD)
-
-    # 带宽墙
-    by = hy + 52
-    text(s, (x0, by, 70, 18), "**带宽墙**", style="detail", valign="middle", check=False)
-    bx, bwid = x0 + 72, lw - 72
-    rect(s, (bx, by + 2, bwid, 15), "bg", line="grey_d", line_width=0.75)
-    rect(s, (bx, by + 2, bwid * 0.68, 15), "pink_m")
-    text(s, (bx, by + 1, bwid * 0.68, 17), "单流 decode 约占 LPDDR5X 峰值 68%", style="caption", align="center",
-         valign="middle", check=False)
-    text(s, (bx + bwid * 0.68, by + 1, bwid * 0.32, 17), "24K 时超过峰值", style="caption", color="accent",
-         align="center", valign="middle", check=False)
-
-    # 模型准入（离线，难题三）
-    rect(s, (rx, y0 + 4, rw, by + 18 - y0 - 4), "grey_l", kind="rounded", radius=8)
-    text(s, (rx + 8, y0 + 8, rw - 30, 34), "**离线模型准入**\n与模型团队联合", style="detail", color="accent",
+        box(s, (ux, hy, uw, 46), md, style="caption", inset=1, fill="bg", line="grey_d", dash=pim)
+    arrow(s, (x0 + 8 + iw / 2, fy + fh + 1), (x0 + 8 + iw / 2, hy - 1), color="grey_d", width=1.25)
+    text(s, (x0 + 8 + iw / 2 + 4, fy + fh + 1, 160, 12), "算子与数据下发到各 IP", style="footnote", color="grey_d",
          check=False)
-    badge(s, rx + rw - 14, y0 + 18, 3, d=20)
-    cx, cw = rx + 8, rw - 16
-    flow = [("候选底座（模型团队）", 26, False), ("**选型准入卡**\n每 token KV、注意力结构、专家布局", 62, True),
-            ("**带宽与闪存代价模型**\n预测首 token、decode、峰值内存", 62, True), ("**NPU 在环评测**\n设备农场实测", 46, True),
-            ("准入底座，部署到引擎", 26, False)]
-    yy = y0 + 50
-    for i, (md, hh, new) in enumerate(flow):
-        box(s, (cx, yy, cw, hh), md, style="detail", **(NEW if new else OLD))
-        if i < len(flow) - 1:
-            arrow(s, (cx + cw / 2, yy + hh + 1), (cx + cw / 2, yy + hh + 11), color="dark")
-        yy += hh + 12
-    # 准入的底座部署回长序列引擎
-    dy = yy - 12 - 13
-    poly(s, [(cx, dy), (rx - 6, dy), (rx - 6, ey + 62), (x0 + lw + 1, ey + 62)], head=True, color="red", width=1.25)
 
-    legend(s, x0, y0 + h - 18, [("peach_l", "red", False, "本次新增"), ("peach_l", "red", True, "规划或预研"),
-                                ("bg", "grey_d", False, "已有能力或其他团队负责")])
+    # 右侧：离线的模型结构寻优
+    cy = ry
+    box(s, (rx, cy, rw, 36), "**模型团队**\n候选底座", style="caption", **NEU)
+    arrow(s, (rx + rw / 2, cy + 37), (rx + rw / 2, cy + 47 + e), color="grey_d")
+    ky = cy + 48 + e
+    kh = 100
+    _key_box(s, (rx, ky, rw, kh), 3, "模型结构寻优", "Attn 结构选型\n专家架构寻优\n离线，与模型团队联合")
+    oy = ky + kh + 12 + e
+    box(s, (rx, oy, rw - 22, 40), "**可入端底座**\n结构组合导出", style="caption", **NEU)
+    arrow(s, (rx + (rw - 22) / 2, ky + kh + 1), (rx + (rw - 22) / 2, oy - 1), color="grey_d")
+    # 部署回推理服务
+    poly(s, [(rx, oy + 20), (x0 + lw + 6, oy + 20), (x0 + lw + 6, fy + 58), (x0 + 8 + iw + 1, fy + 58)], head=True,
+         color="grey_d", width=1.25)
+    text(s, (x0 + lw - 34, fy + 45, 40, 12), "部署", style="footnote", color="grey_d", check=False)
+    # 端侧约束：来自硬件
+    box(s, (rx, hy, rw, 46), "**端侧约束**\n算力 · 带宽 · 存储", style="caption", **CTX)
+    arrow(s, (x0 + lw + 1, hy + 23), (rx - 1, hy + 23), color="grey_d", dash=True)
+    arrow(s, (rx + rw - 10, hy - 1), (rx + rw - 10, ky + kh + 1), color="grey_d", dash=True)
+
+
+# ---------------------------------------------------------------- 关键技术卡右侧的示意图（形状绘制，可在 PowerPoint 中修改）
+
+def _fig_reuse(s, b):
+    """关键技术一示意：上为逐 Head 按 Attn Score 选 KV 块，下为专家在相邻 Step 间复用。"""
+    x, y, w, h = b
+    rect(s, b, "bg", line="grey_line", kind="rounded", radius=6)
+    text(s, (x, y + 2, w, 13), "逐 Head 选 KV", style="footnote", align="center", check=False)
+    pick = [{1, 4}, {0, 3, 5}, {2, 4}, {1, 5}]
+    cols, cs = 6, (w - 20) / 6
+    for r in range(4):
+        for c in range(cols):
+            sel = c in pick[r]
+            rect(s, (x + 10 + c * cs, y + 17 + r * 10, cs - 3, 7), "peach_m" if sel else "grey_m",
+                 line="red" if sel else None, line_width=0.75)
+    my = y + 17 + 4 * 10 + 6
+    text(s, (x, my, w, 13), "专家跨 Step 复用", style="footnote", align="center", check=False)
+    hot = {1, 3}
+    colw = (w - 20) / 3
+    for t in range(3):
+        cxx = x + 10 + t * colw + colw / 2 - 7
+        for e in range(4):
+            rect(s, (cxx, my + 15 + e * 10, 14, 7), "blue_m" if e in hot else "grey_m", line="grey_d", line_width=0.5)
+        text(s, (cxx - 6, my + 56, 26, 11), f"t{t}" if t else "t", style="footnote", color="grey_d", align="center",
+             check=False)
+    for e in hot:
+        arrow(s, (x + 10 + colw / 2 + 7, my + 18 + e * 10), (x + 10 + 2.5 * colw - 7, my + 18 + e * 10), color="blue",
+              width=0.75, head=False, dash=True)
+
+
+def _fig_dispatch(s, b):
+    """关键技术二示意：上为按算术强度分派算子，下为权重按 PIM Bank 亲和排布。"""
+    x, y, w, h = b
+    rect(s, b, "bg", line="grey_line", kind="rounded", radius=6)
+    rows = [("GEMM", "NPU", "blue_m"), ("GEMV", "PIM", "peach_m")]
+    for i, (op, ip, fill) in enumerate(rows):
+        yy = y + 8 + i * 24
+        box(s, (x + 6, yy, 40, 18), op, fill="grey_l", line="grey_d", style="footnote", inset=1)
+        arrow(s, (x + 47, yy + 9), (x + w - 47, yy + 9), color="dark", width=0.75)
+        box(s, (x + w - 46, yy, 40, 18), ip, fill=fill, line="grey_d", style="footnote", inset=1)
+    text(s, (x, y + 58, w, 13), "按 Bank 排布", style="footnote", align="center", check=False)
+    bw = (w - 20) / 4
+    for k in range(4):
+        bx = x + 10 + k * bw
+        rect(s, (bx, y + 73, bw - 4, h - 86), "bg", line="grey_d", line_width=0.5)
+        for t in range(4):
+            fill = "peach_m" if (t == k) else "blue_l"
+            rect(s, (bx + 3, y + 77 + t * ((h - 94) / 4), bw - 10, (h - 94) / 4 - 3), fill, line=None)
+        text(s, (bx - 2, y + h - 13, bw, 11), f"B{k}", style="footnote", color="grey_d", align="center", check=False)
+
+
+def _fig_pareto(s, b):
+    """关键技术三示意：候选结构的资源—性能散点与前沿，红点为选出的结构组合。"""
+    x, y, w, h = b
+    rect(s, b, "bg", line="grey_line", kind="rounded", radius=6)
+    ox, oy = x + 16, y + h - 20
+    arrow(s, (ox, oy), (x + w - 8, oy), color="grey_d", width=0.75)
+    arrow(s, (ox, oy), (ox, y + 10), color="grey_d", width=0.75)
+    text(s, (x + w - 50, oy + 3, 44, 12), "资源", style="footnote", color="grey_d", align="right", check=False)
+    text(s, (x + 2, y + 2, 40, 12), "性能", style="footnote", color="grey_d", check=False)
+    pw, ph = x + w - 8 - ox, oy - y - 10
+    pts = [(0.15, 0.25), (0.3, 0.3), (0.4, 0.55), (0.55, 0.4), (0.7, 0.62), (0.8, 0.5), (0.25, 0.45), (0.6, 0.72)]
+    for px_, py_ in pts:
+        rect(s, (ox + px_ * pw - 3, oy - py_ * ph - 3, 6, 6), "grey_m", kind="oval")
+    front = [(0.1, 0.3), (0.25, 0.48), (0.42, 0.62), (0.62, 0.76), (0.88, 0.84)]
+    poly(s, [(ox + a * pw, oy - c * ph) for a, c in front], color="red", width=1.25)
+    rect(s, (ox + 0.42 * pw - 5, oy - 0.62 * ph - 5, 10, 10), "red", kind="oval")
+    text(s, (ox + 0.42 * pw - 40, oy - 0.62 * ph - 22, 60, 12), "最优组合", style="footnote", color="accent",
+         align="center", check=False)
 
 
 @page
 def arch_inference(prs):
     arch_kt_page(prs, dict(
         crumb=CRUMB + " › 目标架构",
-        title="推理服务目标架构：", suffix="长序列引擎与异构融合层，让长上下文推得动、新算力用得上",
-        challenges=[
-            "长程任务上下文达 23–32K，端侧窗口只有 4–8K，追加后整段重算",
-            "单流 decode 占 LPDDR5X 峰值约 68%，PIM 尚无系统支持",
-            "每 token KV 随模型结构相差可达 12 倍，硬件在环搜索只做到 CPU 在环",
-        ],
-        goals=[
-            "工具返回追加后首 token ≤1.5 秒，24K decode ≥35 token/秒",
-            "NPU 与 GPU 协同 ≥1.3 倍，PIM 路径 3B decode ≥100 token/秒（仿真或样片）",
-            "候选底座每 token KV ≤35KiB，100% 提供 NPU 实测",
-        ],
+        title="Agent OS 推理服务能力提升",
+        suffix="：模型结构亲和设计/异构融合推理加速，支撑超长序列 30+TPS 推理",
+        challenge_goal="!!挑战与目标：!!① 针对端侧 Agent 对 !!32k~128k 超长上下文!!推理需求激增，Prefill 时延与 Decode KV 大小对端侧 NPU 算力 / 内存容量提出挑战，通过 KV 稀疏与缓存复用，"
+                       "构建超长序列推理引擎，实现@@长程任务端侧流畅完成@@；② 针对端侧异构计算 IP（UFS-PIM / 2D-PIM / NPU）缺乏统一调度、利用率低，通过算子亲和分派，构建异构融合调度，实现@@推理更快、"
+                       "续航更长@@；③ 针对模型需要针对性亲和设计，通过结构与专家寻优，构建硬件亲和底座，实现@@更强模型低成本入端@@",
         draw=_draw_inference,
+        tech_line=1.5,
+        milestone_h=44,
         techs=[
             ("Agent 超长序列推理的优化",
-             "- **增量 prefill 与 NPU 固定分块**：按稳定前缀、历史与工具返回拆解上下文，前缀命中时只算新增部分；按 256 token 固定分块并预编译，KV 块与 NPU 分块对齐\n- **上下文裁剪与 KV 选择**：先遮蔽过期的工具返回、再选择性读取 KV，精确引用标记为不可淘汰"),
-            ("LPDDR-PIM、NPU、UFS-PIM 异构融合",
-             "- **算子路由与带宽仲裁**：按算术强度分派，prefill 的 GEMM 走 NPU 与 GPU，decode 的 GEMV 走 PIM；按带宽配额调度，前台关键交互时后台让出总线\n- **PIM 内存区与联合接口**：权重一次布局成 PIM 友好格式，与芯片团队以仿真定义系统接口"),
+             "- **多级缓存复用架构**：专家路由按多层级、多 Token 跨 Step 共享，提升专家命中率，降低 IO 功耗，@@Decode ≥ 30 TPS@@\n"
+             "- **KV 稀疏与上下文压缩**：草稿模型 look ahead 推理，按 Attn Score 逐 Head 筛选 KV，@@MoE Chunk Prefill ≥ 1500 TPS@@"),
+            ("NPU/PIM 异构计算融合",
+             "- **算子路由与带宽仲裁**：按算术强度分派算子，算子输入与计算特征在多 IP 间亲和分配、带宽统一仲裁，@@推理性能提升 15%@@\n"
+             "- **权重 / KV 亲和排布**：按 PIM 计算形态与局部性要求排布权重 layout，减少数据搬运、提升带宽利用率，@@功耗优化 20%@@"),
             ("硬件亲和的模型架构寻优",
-             "- **选型准入卡与代价模型**：每 token KV、注意力结构与专家布局写入准入卡；代价模型按读取字节与带宽预测 decode 时延，作为搜索约束\n- **NPU 在环评测**：设备农场实测，冻结已训练权重、只搜注意力布局，与模型团队联合选型"),
+             "- **Attn 结构选型**：建模线性/稀疏注意力、层数与隐藏维度配比的资源-性能权衡，导出最优结构组合，@@32K 上下文 KV ≤ 1.1GiB@@\n"
+             "- **专家架构寻优**：依据端侧算力/带宽/存储，后训练寻优权重复用与专家路由策略，@@UFS 多 Channel 带宽利用率 > 80%@@"),
         ],
-        milestones=[("**推理服务设计说明书**\n含长上下文真机基线", "2027.03"),
-                    ("**长序列引擎原型**\n增量 prefill 与裁剪", "2027.06"),
-                    ("**PIM 增量穿刺**\n仿真平台与系统接口", "2027.09"),
-                    ("**落入版本**\n随年底版本首发", "2027.12")],
+        milestones=[("**超长序列推理原型验证**", "2027.03"), ("**NPU / PIM 异构融合计算仿真验证**", "2027.06"),
+                    ("**亲和架构仿真验证**", "2027.09")],
     ))
 
 

@@ -4,11 +4,10 @@
 """
 
 import re
-from pathlib import Path
 
 from pptx.oxml import parse_xml
 from pptx.oxml.ns import nsdecls, qn
-from pptx.util import Emu, Pt
+from pptx.util import Pt
 
 import lib
 from lib import arrow, badge, block_arrow, box, footnote, measure, new_slide, outline, plain, rect, round_card, table, \
@@ -148,16 +147,6 @@ def insight_section(prs):
 
 # ---------------------------------------------------------------- 概括：趋势洞察（背景 + 三个演进趋势）
 
-IMG = Path(__file__).parent / "img"
-
-
-def _picture(s, name, x, y, h):
-    """按高度插图、保持原比例，返回图片宽度（逻辑像素）。"""
-    pic = s.shapes.add_picture(str(IMG / name), Emu(lib.px_to_emu(x)), Emu(lib.px_to_emu(y)),
-                               height=Emu(lib.px_to_emu(h)))
-    return pic.width / lib.px_to_emu(1)
-
-
 def _fan(s, b):
     """背景框下沿展开的浅灰渐变扇面，衔接「背景」与「演进」：自上而下由透明到浅灰再到透明。"""
     shp = rect(s, b, "bg", kind="triangle")
@@ -226,6 +215,10 @@ def _diagram_memory(s, dx, dy, W=320):
 
 @page
 def overview(prs):
+    """洞察概括页（2026-11-12 按汇报人意见改）：
+    上为背景：一句话趋势 + 时间轴上的三款产品，各写一句话，不放网络截图；
+    下为三个演进趋势（汇报人改了框名与演进句，去掉了项目目标与页脚来源），每框依次是一句话演进、示意图（纵向拉伸填满）、
+    一句话产品化进展、瓶颈与痛点，版面占满到页底。"""
     s = new_slide(prs, "Agent OS 趋势洞察",
                   "：用户Agent 需求暴增，端侧需推理服务化、执行沙箱化、X+Agent 内存协同管理",
                   crumb=CRUMB + " › 概括")
@@ -237,79 +230,70 @@ def overview(prs):
                     r.text = r.text[1:]
             break
 
-    # ---- 上：背景　Agent 应用爆发式增长
-    ix, iy, iw, ih = lib.panel(s, (32, 104, 1216, 214), "背景：Agent 应用爆发式增长")
-    text(s, (ix, iy - 2, iw, 20),
-         "@@Agent 处于爆发期，市场广阔@@：用户基盘已达十亿级，token 用量一年增长 7–10 倍，Agent 开始替用户付款；"
-         "用户数增速放缓，用量成倍增长", style="body", check=False)
-    tl = iy + 46
+    # ---- 上：背景　Agent 应用爆发式增长（一句话趋势 + 三款产品各一句话）
+    bg_y, bg_h = 100, 156
+    ix, iy, iw, ih = lib.panel(s, (32, bg_y, 1216, bg_h), "背景：Agent 应用爆发式增长")
+    text(s, (ix, iy - 2, iw, 22),
+         "@@Agent 处于爆发期、市场广阔@@：用户基盘已达十亿级、增速放缓，token 用量一年增长 7–10 倍，"
+         "Agent 开始替用户付款", style="body")
+    tl = iy + 44
     arrow(s, (ix, tl), (ix + iw, tl), color="red", width=2.0)
-    ch, cw = 126, 204
     prods = [
-        ("2026-08", "xAI Grok Bot", "账号级常驻云端电脑；\n200 美元/月", "Grok 月活：3 个月由 !!3500 万增至 1.17 亿!!",
-         "grok_bot.png"),
-        ("2026-09", "OpenAI dot", "每个 Agent 一台云端电脑；\n随 Pro 档提供",
-         "ChatGPT 周活 !!10 亿!!；Codex 周用户 2 个月由 !!500 万增至 800 万!!", "openai_dots.png"),
-        ("2026-10", "阶跃手机开售", "2026-07 发布 Step AOS\n2026-10 整机开售\n整机 Agent 手机\n系统级 Agent OS\n端侧小模型加云端大模型", None,
-         "stepx_neo.png"),
+        ("2026-08", "xAI Grok Bot", "账号级常驻云端电脑，200 美元/月\nGrok 月活 3 个月由 !!3500 万增至 1.17 亿!!"),
+        ("2026-09", "OpenAI dot", "每个 Agent 一台云端电脑；ChatGPT 周活 !!10 亿!!\nCodex 周用户 2 个月由 !!500 万增至 800 万!!"),
+        ("2026-10", "阶跃手机开售", "7 月发布系统级 Agent OS（Step AOS）\n10 月整机开售；端侧小模型加云端大模型"),
     ]
-    # 图片按卡片高度等比缩放；先算总宽，再把余量均分到组间
-    aspect = {"grok_bot.png": 104 / 118, "openai_dots.png": 89 / 115, "stepx_neo.png": 248 / 109}
-    total = sum(cw + 10 + ch * aspect[p[4]] for p in prods)
-    m = 8
-    gap = (iw - 2 * m - total) / 2
-    px = ix + m
-    for date, name, form, metric, img in prods:
-        cy = tl + 10
+    m, g = 8, 16
+    cw = (iw - 2 * m - 2 * g) / 3
+    cy, ch = tl + 10, bg_y + bg_h - 8 - (tl + 10)
+    for i, (date, name, md) in enumerate(prods):
+        px = ix + m + i * (cw + g)
         lib.rect(s, (px + cw / 2 - 6, tl - 6, 12, 12), "red", kind="oval")
         text(s, (px + cw / 2 - 50, tl - 24, 100, 16), f"@@{date}@@", style="detail", align="center", check=False)
         round_card(s, (px, cy, cw, ch), radius=10)
-        text(s, (px + 8, cy + 4, cw - 16, 20), f"**{name}**", style="body", color="primary_text", align="center",
+        text(s, (px + 10, cy + 3, cw - 20, 22), f"**{name}**", style="body", color="primary_text", align="center",
              check=False)
-        if metric:
-            text(s, (px + 8, cy + 25, cw - 16, 40), form, style="detail")
-            rect(s, (px + 8, cy + 67, cw - 16, 1), "grey_line")
-            text(s, (px + 8, cy + 70, cw - 16, 54), metric, style="detail")
-        else:
-            text(s, (px + 8, cy + 25, cw - 16, 96), form, style="detail", gap_pt=0)
-        iw_ = _picture(s, img, px + cw + 10, cy, ch)
-        px += cw + 10 + iw_ + gap
+        text(s, (px + 12, cy + 26, cw - 24, ch - 28), md, style="detail", align="center")
 
-    # ---- 中：Agent OS 系统服务演进
-    _fan(s, (lib.LEFT, 317, lib.WIDTH, 54))
-    text(s, (340, 332, 600, 28), "Agent OS 系统服务演进", style="panel_title", align="center", valign="middle",
-         check=False)
+    # ---- 中：Agent OS 系统服务演进趋势
+    fan_y = bg_y + bg_h
+    _fan(s, (lib.LEFT, fan_y, lib.WIDTH, 58))
+    text(s, (340, fan_y + 12, 600, 28), "Agent OS 系统服务演进趋势", style="panel_title", align="center",
+         valign="middle", check=False)
 
-    # ---- 下：三个趋势，每个只放三样：一句话演进、一张图、产品化进展
+    # ---- 下：三个趋势，每框：一句话演进、示意图、一句话产品化进展、瓶颈与痛点
+    # 2026-11-12 汇报人修改：框名去掉「趋势一：」等序号，演进句改写，去掉项目目标与页脚来源；版面按此占满到页底
     trends = [
-        ("趋势一：推理服务化", _diagram_inference, "从每个应用自带模型，转为@@系统托管底座模型、按会话分配算力@@", [
-            "@@Apple Foundation Models@@：系统端侧模型向应用开放",
-            "@@Android AICore@@：系统托管 Gemini Nano，超 1.4 亿台",
-            "@@阶跃 Step AOS@@：端侧小模型加云端大模型，按任务分工"]),
-        ("趋势二：执行沙箱化", _diagram_sandbox, "从应用级权限，转为@@系统按会话隔离、按每次调用判定权限@@", [
-            "@@OpenAI dot、Grok Bot@@：每个 Agent 一台云端电脑",
-            "@@NVIDIA OpenShell@@：开源 Agent 沙箱运行时，默认拒绝",
-            "@@腾讯云 CubeSandbox@@：每会话独立内核，创建 <60ms"]),
-        ("趋势三：X+Agent 内存协同管理", _diagram_memory,
-         "从应用与模型各管各的，转为@@前台应用（X）与 Agent 统一记账、协同回收@@", [
-             "@@Apple AFM 3@@：权重存闪存，每个请求换入 1–4B 参数",
-             "@@Android 17@@：按应用 memcg 限额，超限先压入 zRAM",
-             "@@Apple、Google@@：12GB 内存为端侧 Agent 门槛"]),
+        ("推理服务化", _diagram_inference,
+         "从独立 LLM 模型，转为\n@@系统推理底座、应用按需调用@@",
+         "**产品化进展**：@@Apple Foundation Models@@、@@Android AICore@@ 已由系统托管端侧模型，向应用与 Agent 开放",
+         "!!瓶颈与痛点!!：32K–128K 长上下文 Prefill 慢、Decode 受带宽所限；NPU 与 PIM 缺统一调度"),
+        ("执行沙箱化", _diagram_sandbox,
+         "应用 / 系统权限隔离，沙箱内\n@@独立授权，长程操作联动@@",
+         "**产品化进展**：@@OpenAI dot@@、@@Grok Bot@@ 每个 Agent 一台云端电脑；@@NVIDIA OpenShell@@ 开源会话沙箱",
+         "!!瓶颈与痛点!!：会话无法快照，内存紧张时任务丢失；静态权限管不住单次调用，凭证对 Agent 可见"),
+        ("X+Agent 内存协同管理", _diagram_memory,
+         "Agent 内存 + 应用内存，@@统一记账、协同回收@@",
+         "**产品化进展**：@@Apple AFM 3@@ 权重存闪存、按需换入；@@Android 17@@ 按应用 memcg 限额；12GB 成为门槛",
+         "!!瓶颈与痛点!!：权重与 KV 不计入限额，前台应用与 Agent 相互挤占；回收被动，KV 丢弃后重算需 6–14 秒"),
     ]
-    g = 16
-    pw = (lib.WIDTH - 2 * g) / 3
-    for i, (head, draw, shift, evid) in enumerate(trends):
-        tx, ty, tw, th = lib.panel(s, (lib.LEFT + i * (pw + g), 382, pw, 300), head, title_style="heading")
-        text(s, (tx, ty, tw, 44), shift, style="body")
-        rect(s, (tx, ty + 50, tw, 134), "grey_l", kind="rounded", radius=8)
-        draw(s, tx + (tw - 320) / 2, ty + 54)
-        text(s, (tx, ty + 192, tw, 16), "**产品化进展**", style="detail")
-        text(s, (tx, ty + 210, tw, 60), "\n".join("- " + e for e in evid), style="detail", gap_pt=2)
-
-    footnote(s, "来源：报告「概括」（GT1–GT7、AN1）。token 增长为 Google、豆包的厂商自报数据（经媒体转述）；"
-                "「替用户付款」指支付宝 AI 付累计 3 亿笔（2026-05）；Grok 月活为二手转述；三款产品均未公开日活。\n"
-                "产品化进展见报告第一部分 1.1.3、1.2 节与第二部分 [W9][W16]；AICore 装机量、CubeSandbox 创建时延为厂商自报。",
-             y=687, w=1140, h=28)
+    gap = 16
+    pw = (lib.WIDTH - 2 * gap) / 3
+    py, bottom = fan_y + 74, 690
+    for i, (head, draw, shift, prod, pain) in enumerate(trends):
+        tx, ty, tw, th = lib.panel(s, (lib.LEFT + i * (pw + gap), py, pw, bottom - py), head, title_style="heading")
+        text(s, (tx, ty - 2, tw, 44), shift, style="body", valign="middle", gap_pt=0)   # 两行时在逗号处断开，单行时居中
+        ph = 56
+        pain_y = ty + th - ph
+        prod_y = pain_y - 8 - 38
+        dg_y = ty + 48
+        dg_h = prod_y - 6 - dg_y
+        rect(s, (tx, dg_y, tw, dg_h), "grey_l", kind="rounded", radius=8)
+        first = len(s.shapes)
+        draw(s, tx + (tw - 320) / 2, dg_y + 4)                  # 示意图按 125 高画好，再纵向拉伸填满底板
+        lib.stretch_y(s, first, dg_y + 4, (dg_h - 9) / 125)
+        text(s, (tx, prod_y, tw, 38), prod, style="detail")
+        box(s, (tx, pain_y, tw, ph), pain, fill="pink_l", line="grey_line", style="detail", align="left", inset=6)
 
 
 # ---------------------------------------------------------------- 1.1.1 业界三条路线
