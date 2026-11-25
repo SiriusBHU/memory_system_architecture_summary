@@ -6,6 +6,9 @@
      右上为三句竞争力目标，右下为聚合后的三项关键技术。
   3. 全套格式统一：标题位置与字号、深红与蓝两种强调色、字体、页码、同事三页技术页的卡片与交付线。
 
+  4. 2026-11-22 领导反馈：推理页新增「异构多 IP 计算快仿」并重排合并关键技术；沙箱页改为以执行开销为主线
+     （目标、三项关键技术、架构图、交付线），总览页同步。
+
 输入是手工改过的 pptx，所以这里是「打补丁」而不是从零生成：只动上面列出的形状，其余原样保留。
 《核心九页.pptx》不会被改写。
 
@@ -242,6 +245,227 @@ def _diagram_snapshot(s):
          check=False)
 
 
+# ---------------------------------------------------------------- 1b. 推理页与沙箱页（2026-11-22 领导反馈）
+#
+# 推理页（九页的第 6 页，成品 P7）：
+#   新增关键技术一「异构多 IP 计算快仿，支撑 Agent 云转端性能评估」（多 IP-Roofline 性能快仿、并行化机会寻找）；
+#   原关键技术一（超长序列推理）顺延为二；原二（NPU/PIM 异构融合）与原三（模型架构寻优）合并为三。
+# 沙箱页（九页的第 7 页，成品 P8）：
+#   专家意见：Agent 沙箱当前最大的问题是开销。现有方案在 Android 上跑非原生的 Linux，胶水层转换命令带来成倍开销，
+#   其中 ptrace 与 seccomp 拦截最高带来 30 倍以上开销；快照与快速恢复排在其次。据此：
+#   目标改为「以 Android 为 benchmark，原生沙箱执行开销低于参照物的一半」；
+#   关键技术一 端到端性能建模（开销分层拆解、沙箱负载建模）；二 原生执行（系统调用加速、原生 Linux 执行环境）；
+#   三 快速启动与快照恢复。左下架构图随之重画，交付线改成与三项关键技术对应。
+
+def set_title(slide, main, suffix):
+    """在原标题框里重写标题：冒号前 24 号、冒号后 18 号，其余格式沿用原来的 run。"""
+    p = title_shape(slide).text_frame.paragraphs[0]._p
+    runs = p.findall(qn("a:r"))
+    big = copy.deepcopy(next(r for r in runs if r.find(qn("a:rPr")).get("sz") == "2400"))
+    small = copy.deepcopy(next(r for r in runs if r.find(qn("a:rPr")).get("sz") == "1800"))
+    for r in runs:
+        p.remove(r)
+    end = p.find(qn("a:endParaRPr"))
+    for tpl, txt in ((big, main), (small, suffix)):
+        tpl.find(qn("a:t")).text = txt
+        if end is not None:
+            end.addprevious(tpl)
+        else:
+            p.append(tpl)
+
+
+def set_kt(shape, heading, bullets):
+    """重写一张关键技术卡：标题一行（深红加粗），下面每条是「子技术名（加粗）：说明，指标（蓝色加粗）」。"""
+    set_runs(shape, [(heading, True, RED)], para=0)
+    for i, (name, desc, metric) in enumerate(bullets, 1):
+        runs = [(name, True, BLACK), ("：" + desc, False, BLACK)]
+        if metric:
+            runs.append((metric, True, BLUE))
+        set_runs(shape, runs, para=i)
+
+
+def put_par(shape, idx, new_p):
+    """把文本框的第 idx 段整段换成 new_p（另一段的深拷贝），用于在卡片之间搬运原文。"""
+    old = shape.text_frame.paragraphs[idx]._p
+    old.addprevious(new_p)
+    old.getparent().remove(old)
+
+
+def set_plain(shape, lines):
+    """把一个框里的文字换成若干行，格式沿用原来第一段的第一个 run（交付线上的框用）。"""
+    ps = [p._p for p in shape.text_frame.paragraphs]
+    tpl = copy.deepcopy(ps[0])
+    for p in ps[1:]:
+        p.getparent().remove(p)
+    for i, line in enumerate(lines):
+        p = ps[0] if i == 0 else copy.deepcopy(tpl)
+        if i:
+            ps[0].getparent().append(p)
+        runs = p.findall(qn("a:r"))
+        for r in runs[1:]:
+            p.remove(r)
+        runs[0].find(qn("a:t")).text = line
+
+
+def rework_inference(s):
+    set_title(s, "端侧Agent OS推理服务能力提升", "：多 IP 快仿/异构融合推理加速，支撑超长序列 30+TPS 推理")
+    # ---- 挑战：第 ② 条末尾的「模型选型需要进行针对性设计」换成「云转端性能缺乏快速评估」，长度基本不变；
+    #      目标保持原文（原文已有「硬件-模型架构协同仿真寻优能力」，再加字会多折一行、排不下）
+    set_runs(by_id(s, 5), [
+        ("挑战：", True, BLACK), ("① 端侧 Agent 对 ", False, BLACK), ("32k~128k 超长上下文 ", True, RED),
+        ("推理需求激增，KV Cache占用与MoE专家路由对端侧 NPU 算力 / 内存容量提出挑战；"
+         "② 端侧异构计算 IP（UFS-PIM / DDR-PIM / NPU / HBF）迭出且", False, BLACK),
+        ("缺乏统一调度", True, RED), ("，", False, BLACK), ("云转端性能缺乏快速评估", True, RED)], para=0)
+
+    # ---- 右侧三张卡：新增一，原一顺延为二，原二、三合并为三
+    k1, k2, k3 = by_id(s, 47), by_id(s, 50), by_id(s, 53)
+    old1 = [copy.deepcopy(p._p) for p in k1.text_frame.paragraphs[:3]]
+    for i, p in enumerate(old1):                     # 原关键技术一整卡搬到第二张卡，只改标题里的序号
+        put_par(k2, i, p)
+    head = k2.text_frame.paragraphs[0].runs
+    head[0].text = head[0].text.replace("关键技术一", "关键技术二")
+    set_kt(k1, "关键技术一：异构多 IP 计算快仿，支撑 Agent 云转端性能评估", [
+        ("多 IP-Roofline 性能快仿", "对 Agent 执行与推理建立各 IP 的 Roofline 模型，快速给出性能上界，",
+         "支撑云转端性能精准评估"),
+        ("并行化机会寻找", "拆解 Agent 任务的执行与推理依赖，识别可并发的阶段与空闲 IP，",
+         "给出多 IP 并行化的加速空间")])
+    set_kt(k3, "关键技术三：NPU/PIM 异构融合与硬件亲和的架构寻优", [
+        ("异构融合调度", "按算术强度分派算子，带宽统一仲裁，权重 / KV 按 PIM 计算形态亲和排布，", "推理性能提升 10%"),
+        ("模型结构寻优", "建模注意力结构与层数/维度配比的资源-性能权衡，后训练寻优专家路由，",
+         "UFS 多 Channel 带宽利用率 > 80%")])
+
+    # ---- 左下架构图（在一个被缩放过的组合里，坐标按组合内的坐标系）：编号顺延，「端侧约束」改成新的关键技术一
+    by_id(s, 19).text_frame.paragraphs[0].runs[0].text = "2"        # 超长序列推理引擎
+    by_id(s, 21).text_frame.paragraphs[0].runs[0].text = "3"        # 异构融合调度（模型结构寻优原本就是 3）
+    sim = by_id(s, 42)                                              # 原「端侧约束：算力 · 带宽 · 存储」
+    sim.top, sim.height = Emu(px_to_emu(610)), Emu(px_to_emu(62))
+    sim.fill.solid()
+    sim.fill.fore_color.rgb = RGBColor(0xFD, 0xEA, 0xDA)
+    sim.line.color.rgb = RGBColor(0xA0, 0x00, 0x00)
+    sim.line.width = Pt(1.5)
+    set_runs(sim, [("多 IP 性能快仿", True, RED)], para=0)
+    sim.text_frame.paragraphs[0].runs[0].font.size = Pt(10)
+    set_runs(sim, [("Roofline 建模", False, BLACK)], para=1)
+    extra = copy.deepcopy(sim.text_frame.paragraphs[1]._p)
+    sim.text_frame.paragraphs[1]._p.addnext(extra)
+    extra.find(qn("a:r")).find(qn("a:t")).text = "云转端评估 · 并行化机会"
+    link = by_id(s, 44)                                             # 模型结构寻优到它的竖线，随框上沿缩短
+    link.height = Emu(px_to_emu(610) - link.top - px_to_emu(2))
+    dot = copy.deepcopy(by_id(s, 35)._element)                      # 借「3」那个红色编号的样子做一个「1」
+    sim._element.addnext(dot)
+    dot.find(".//" + qn("p:cNvPr")).set("id", str(max(sh.shape_id for sh in walk(s.shapes)) + 1))
+    off = dot.find(".//" + qn("a:off"))
+    off.set("x", str(px_to_emu(514 + 158 - 12)))
+    off.set("y", str(px_to_emu(610 - 8)))
+    dot.find(".//" + qn("a:t")).text = "1"
+
+    # ---- 交付线：三个日期与原交付件不动，第一个节点补上快仿评估
+    set_plain(by_id(s, 55), ["多 IP 快仿评估", "超长序列推理原型验证"])
+
+
+def rework_sandbox(s):
+    set_title(s, "端侧Agent OS执行沙箱", "：原生执行降低拦截开销，沙箱开销低于 Android 基准的一半")
+    top = by_id(s, 5)
+    set_runs(top, [
+        ("挑战：", True, BLACK),
+        ("① Agent 沙箱虚拟化开销大：现有方案在 Android 上运行非原生的 Linux 环境，胶水层转换命令带来成倍开销，",
+         False, BLACK),
+        ("ptrace 与 seccomp 拦截最高带来 30 倍以上开销", True, RED),
+        ("；② 沙箱启动、快照与恢复慢，仍影响会话切换与前台体验", False, BLACK)], para=0)
+    set_runs(top, [
+        ("目标：", True, BLACK),
+        ("提供原生执行的低开销 Agent 沙箱；以 Android 为 benchmark，", False, BLACK),
+        ("原生沙箱执行开销低于参照物的一半，后台执行时功耗开销 <3%", True, BLUE),
+        ("，前台应用帧率影响 <1%；RL 训练沙箱执行效率优化 20%，", False, BLACK),
+        ("内存超分比超过 3 倍", True, BLUE)], para=1)
+
+    # ---- 右侧三张卡
+    k1, k2, k3 = by_id(s, 45), by_id(s, 48), by_id(s, 51)
+    snap, tmpl = (copy.deepcopy(p._p) for p in k1.text_frame.paragraphs[1:3])   # 原文：快照恢复、模板写时复制
+    set_kt(k1, "关键技术一：Agent 沙箱端到端性能建模", [
+        ("性能开销分层拆解", "按胶水层命令转换、ptrace / seccomp 拦截、内核路径逐层计量工具调用的耗时，",
+         "定位拦截开销的来源"),
+        ("Agent 沙箱负载建模", "采集工具调用的命令、文件与进程操作，构建可回放的沙箱负载，",
+         "以 Android 为 benchmark 对比评测")])
+    set_kt(k2, "关键技术二：Agent 沙箱原生执行", [
+        ("系统调用加速", "规避或减少 ptrace / seccomp 拦截，执行过程中仅对敏感调用做拦截判定，",
+         "沙箱执行开销低于参照物的一半"),
+        ("原生 Linux 执行环境", "不再用用户态模拟 Linux，改由内核原生隔离能力承载，工具命令原生运行，",
+         "免去胶水层的命令转换开销")])
+    set_runs(k3, [("关键技术三：沙箱快速启动与快照恢复", True, RED)], para=0)
+    put_par(k3, 1, tmpl)                             # 启动在前：模板实例与写时复制（原文与指标不动）
+    put_par(k3, 2, snap)                             # 快照与恢复在后（原文与指标不动），只把「会话」改成「沙箱」
+    first = k3.text_frame.paragraphs[2].runs[0]
+    first.text = first.text.replace("会话快照", "沙箱快照")
+
+    # ---- 交付线：与三项关键技术一一对应，三个日期不动
+    set_plain(by_id(s, 53), ["沙箱性能建模与 Android 基准"])
+    set_plain(by_id(s, 56), ["原生执行原型验证"])
+    set_plain(by_id(s, 59), ["启动与快照恢复原型验证"])
+
+    # ---- 左下架构图重画：原图讲的是调用判定与出口代理，现在讲两条执行路径的开销对比
+    drop(s, range(7, 43))
+    _diagram_sandbox_overhead(s)
+
+
+def _kbox(s, b, n, title, lines):
+    """架构图里本页要做的模块（与其余技术页同一画法）：浅橙底深红框、右上角红色编号。"""
+    box(s, b, "\n".join([f"!!{title}!!", *lines]), style="detail", inset=4, fill="peach_l", line="red",
+        line_width=1.5, gap_pt=1, check=False)
+    badge(s, b[0] + b[2] - 2, b[1] + 2, n, d=20)
+
+
+def _diagram_sandbox_overhead(s):
+    """沙箱页左下的架构图（32..672 × 352..700）：同一份 Agent 沙箱负载走两条路径，左为参照物，右为原生沙箱。"""
+    def plain(b, md, fill="bg", line="grey_d", **kw):
+        return box(s, b, md, fill=fill, line=line, style="detail", inset=3, gap_pt=1, check=False, **kw)
+
+    lx, lw, rx, rw = 32, 294, 338, 334
+    lc, rc = lx + lw / 2, rx + rw / 2
+    # 调用方
+    plain((32, 352, 314, 24), "System Agent")
+    plain((358, 352, 314, 24), "三方 Agent")
+    for x in (189, 515):
+        arrow(s, (x, 377), (x, 391), color="grey_d")
+    text(s, (196, 377, 300, 14), "工具调用：命令 · 文件 · 进程 · 网络", style="caption", color="dark", valign="middle",
+         check=False)
+    # ① 端到端性能建模：同一份负载、两条路径、逐层计量
+    _kbox(s, (32, 392, 640, 46), 1, "端到端性能建模",
+          ["同一份 Agent 沙箱负载在两条路径上回放 · 按胶水层 / 拦截 / 内核路径分层计量开销"])
+    for x in (lc, rc):
+        arrow(s, (x, 439), (x, 449), color="grey_d")
+    # 左：参照物（目标句里「开销低于参照物的一半」指的就是它，用词保持一致）
+    y0, h0 = 450, 186
+    rect(s, (lx, y0, lw, h0), "grey_l", kind="rounded", radius=8)
+    text(s, (lx + 8, y0 + 4, lw - 16, 14), "**参照物：Android 上的现有沙箱**", style="caption", color="grey_d",
+         check=False)
+    plain((lx + 8, y0 + 24, lw - 16, 30), "胶水层：命令与路径转换")
+    arrow(s, (lc, y0 + 55), (lc, y0 + 61), color="grey_d", head=False)
+    plain((lx + 8, y0 + 62, lw - 16, 30), "用户态模拟的 Linux 环境（非原生）")
+    arrow(s, (lc, y0 + 93), (lc, y0 + 99), color="grey_d", head=False)
+    plain((lx + 8, y0 + 100, lw - 16, 44), "**ptrace / seccomp 逐调用拦截**\n!!最高带来 30 倍以上开销!!", fill="pink_l")
+    text(s, (lx + 8, y0 + 150, lw - 16, 30), "虚拟化开销成倍叠加，是当前的性能瓶颈", style="caption", color="dark",
+         align="center", valign="middle", check=False)
+    # 右：原生沙箱
+    rect(s, (rx, y0, rw, h0), "grey_l", kind="rounded", radius=8)
+    text(s, (rx + 8, y0 + 4, rw - 16, 14), "**原生沙箱（本项目）**　@@目标：执行开销低于参照物的一半@@", style="caption",
+         color="grey_d", check=False)
+    _kbox(s, (rx + 8, y0 + 24, rw - 16, 62), 2, "原生执行",
+          ["原生 Linux 执行环境，免胶水层转换", "系统调用加速，规避或减少拦截"])
+    _kbox(s, (rx + 8, y0 + 94, rw - 16, 44), 3, "启动 · 快照 · 恢复", ["模板写时复制拉起 · 热页优先恢复"])
+    weak = plain((rx + 8, y0 + 146, rw - 16, 24), "调用判定 · 出口代理 · 凭证托管（安全体系复用）", line="grey_line")
+    for r in weak.text_frame.paragraphs[0].runs:     # 权限这一行弱化：小一号、深灰
+        r.font.size = Pt(9)
+        r.font.color.rgb = RGBColor(0x59, 0x59, 0x59)
+    for x in (lc, rc):
+        arrow(s, (x, y0 + h0 + 1), (x, 645), color="grey_d")
+    # 内核与复用的安全体系
+    box(s, (32, 646, 640, 24), "**Android 内核**　namespace · seccomp-BPF · SELinux · AVF / pKVM", fill="bg",
+        line="grey_d", style="caption", inset=2, check=False)
+    box(s, (32, 678, 640, 22), "**安全体系（复用）**　签名与身份 · 权限框架 · Keystore / StrongBox · TEE 与证明",
+        fill="grey_l", line="grey_line", style="caption", inset=2, check=False)
+
+
 # ---------------------------------------------------------------- 2. 技术总览页
 #
 # 2026-11-20 第二版，按汇报人意见重做：
@@ -259,8 +483,8 @@ def _diagram_snapshot(s):
 OVERVIEW_TITLE = "总体架构与关键技术"
 OVERVIEW_SUFFIX = "：从场景到硬件 IP 端到端打通，构建仿真寻优、推理、内存与沙箱四项基座能力"
 
-GOALS = [   # 「⏎」处固定换行：上一行说清目标，下一行是那个数
-    "**端侧 Agent 可用**：32K–128K 长上下文推理⏎@@Decode ≥30 TPS@@，沙箱可快照、可恢复",   # 说「沙箱」，不说「会话」
+GOALS = [   # 「⏎」处固定换行；沙箱的目标按 2026-11-22 的反馈改成「开销低于 Android 基准的一半」
+    "**端侧 Agent 可用**：长序列 @@Decode ≥30 TPS@@，⏎@@原生沙箱开销低于 Android 基准的一半@@",
     "**X+Agent 共存**：减少前台应用丢帧与冷启动变慢⏎@@叠加场景内存均值优化 ≥150M@@",
     "**AI+图形可寻优**：算法与硬件由实机试错转向仿真⏎@@端侧能耗评估精度 75%@@",
 ]
@@ -268,16 +492,17 @@ KEY_TECHS = [   # 四项：AI+图形一项，Agent OS 的推理、内存、沙�
     ("AI+图形：仿真与自动寻优", [
         "**异构计算仿真**：XPU/存储/传输统一建模，量化分图与硬化",
         "**图形算法自动寻优**：LLM 进化搜索，仿真评估替代实机试错"]),
-    ("Agent OS 推理：超长序列异构融合", [
+    ("Agent OS 推理：多 IP 快仿与异构融合推理", [      # 与推理页的三项关键技术一一对应
+        "**多 IP 性能快仿**：Roofline 建模，支撑云转端性能评估",
         "**超长序列推理**：KV 稀疏与上下文压缩，专家路由多级复用",
-        "**NPU/PIM 异构融合**：算子按强度分派，权重/KV 亲和排布",
-        "**模型结构寻优**：硬件亲和的注意力与专家架构选型"]),
+        "**异构融合与架构寻优**：算子分派、亲和排布与模型结构寻优"]),
     ("Agent OS 内存：X+Agent 协同与主动管理", [
         "**X+Agent 内存协同**：会话级记账，主动回收，冷热预取",
         "**模型内存主动管理**：KV 冷热分层，专家缓存，零拷贝加载"]),
-    ("Agent OS 沙箱：快照与恢复", [
-        "**沙箱快照与恢复**：回收前先快照，切回时热页优先恢复",
-        "**模板与写时复制**：实例预热池化，共享只读层降内存开销"]),
+    ("Agent OS 沙箱：原生执行与低开销", [               # 与沙箱页的三项关键技术一一对应
+        "**端到端性能建模**：开销分层拆解，Agent 沙箱负载建模",
+        "**原生执行**：系统调用加速，减少 ptrace/seccomp 拦截",
+        "**启动与快照恢复**：模板写时复制拉起，热页优先恢复"]),
 ]
 
 
@@ -404,7 +629,7 @@ def _architecture(s):
     ky, kh = y3 + 22, h3 - 30
     _hdr(s, agent_x, y3 + 5, agent_w, "Agent OS 系统服务")
     sbx = _block(s, (sbx_b[0], ky, sbx_b[1], kh), "执行沙箱",
-                 ["会话沙箱 · 快照与恢复", "模板实例写时复制", "~~调用判定 · 出口代理~~"], C_SANDBOX, 4)
+                 ["原生执行 · 系统调用加速", "启动 · 快照 · 恢复", "~~调用判定 · 出口代理~~"], C_SANDBOX, 4)
     for r in sbx.text_frame.paragraphs[-1].runs:          # 权限一行弱化，但要看得清：用 595959，不用浅灰
         r.font.color.rgb = RGBColor(0x59, 0x59, 0x59)
     _block(s, (inf_b[0], ky, inf_b[1], kh), "推理服务",
@@ -453,7 +678,7 @@ def _architecture(s):
     _flow(s, mem_x, y5 + h5 + 1, y6 - 1)
     _flow(s, cmp_x, y5 + h5 + 1, y6 - 1)
 
-    # ---- 竖条：设计态的建模仿真与寻优，图形（紫）与 Agent OS 推理（蓝）的建模仿真能力都放在这里；
+    # ---- 竖条：设计态的建模仿真与寻优，图形（紫）、Agent OS 推理（蓝）与沙箱（橙）的建模仿真能力都放在这里；
     #      四段与运行态各层对齐：负载建模 → 算法与模型寻优 → 算子与通路仿真 → 硬件评估
     px, pw = 632, 144
     pb = y6 + h6
@@ -462,20 +687,24 @@ def _architecture(s):
          check=False)
     text(s, (px + 4, pb - 17, pw - 8, 14), "设计态 · 离线", style="caption", color="dark", align="center",
          valign="middle", check=False)
-    zones = [   # （起始 y，高，连到运行态的 y，图形侧的卡，推理侧的卡）；卡 =（标题，说明行，关键技术编号）
-        (y1 + 22, y2 + h2 - y1 - 22, y1 + h1 - 16,
-         ("负载仿真器", ["指令级 · 3DGS 负载"], None), ("长序列推理建模", ["时延/带宽/内存量化"], None)),
-        (y3 + 2, h3 - 4, y3 + h3 / 2,
-         ("图形算法自动寻优", ["LLM 进化搜索", "分层评估器"], 1), ("模型结构寻优", ["Attn 结构选型", "专家架构寻优"], 2)),
-        (y4 + 2, h4 - 4, y4 + h4 / 2,
-         ("异构计算仿真", ["算子调优与分图决策", "存算协同数据通路"], 1),
-         ("推理异构融合仿真", ["算子路由与带宽仲裁", "权重 / KV 亲和排布"], None)),
-        (y5, pb - 20 - y5, y6 + h6 / 2 - 8,
-         ("性能仿真器", ["算子硬化收益评估"], None), ("端侧约束建模", ["算力 · 带宽 · 存储"], None)),
+    zones = [   # （起始 y，高，连到运行态的 y，本段的卡片）；卡 =（底色，标题，说明行，关键技术编号）
+        (y1 + 22, y2 + h2 - y1 - 22, y1 + h1 - 16, [
+            (C_GFX, "负载仿真器", ["指令级 · 3DGS 负载"], None),
+            (C_COMPUTE, "长序列推理建模", ["时延/带宽/内存量化"], None)]),
+        (y3 + 2, h3 - 4, y3 + h3 / 2, [
+            (C_GFX, "图形算法自动寻优", ["LLM 进化搜索"], 1),
+            (C_COMPUTE, "模型结构寻优", ["Attn 与专家架构"], 2),
+            (C_SANDBOX, "沙箱性能建模", ["分层拆解与负载建模"], 4)]),
+        (y4 + 2, h4 - 4, y4 + h4 / 2, [
+            (C_GFX, "异构计算仿真", ["算子调优与分图决策", "存算协同数据通路"], 1),
+            (C_COMPUTE, "推理异构融合仿真", ["算子路由与带宽仲裁", "权重 / KV 亲和排布"], None)]),
+        (y5, pb - 20 - y5, y6 + h6 / 2 - 8, [
+            (C_GFX, "性能仿真器", ["算子硬化收益评估"], None),
+            (C_COMPUTE, "多 IP 性能快仿", ["云转端性能评估"], 2)]),
     ]
-    for zy, zh, _, gfx_card, inf_card in zones:
-        ch = (zh - 6) / 2
-        for k, (fill, (title, lines, n)) in enumerate(((C_GFX, gfx_card), (C_COMPUTE, inf_card))):
+    for zy, zh, _, zone_cards in zones:
+        ch = (zh - 6 * (len(zone_cards) - 1)) / len(zone_cards)
+        for k, (fill, title, lines, n) in enumerate(zone_cards):
             _block(s, (px + 8, zy + k * (ch + 6), pw - 16, ch), title, lines, fill, n, corner=True)
     for (zy0, zh0, *_), (zy1, *_) in zip(zones, zones[1:]):
         arrow(s, (px + pw / 2, zy0 + zh0 + 1), (px + pw / 2, zy1 - 1), color="grey_d")
@@ -518,7 +747,7 @@ def _soft_breaks(p):
 def _goals_and_techs(s):
     rx, rw, gap, bottom = 792, 456, 12, 696
     # ---- 竞争力目标：三句话，每句固定两行、只带一个数
-    y, h = 88, 220
+    y, h = 88, 216
     _card(s, (rx, y, rw, h))
     _heading(s, (rx + 13, y + 8, rw - 26, 26), "竞争力目标")
     text(s, (rx + 13, y + 40, rw - 26, h - 50), "\n".join(GOALS), style="body", gap_pt=2, check=False)
@@ -530,7 +759,7 @@ def _goals_and_techs(s):
     h = bottom - y
     _card(s, (rx, y, rw, h))
     _heading(s, (rx + 13, y + 8, rw - 26, 26), "关键技术")
-    title_h, spacing = 22, 1.3
+    title_h, spacing = 22, 1.25
     line_h = lib.SIZES["detail"] * lib.PX_PER_PT * 1.32 * spacing        # 分点一行在 PowerPoint 里的高度
     body = sum(title_h + len(points) * line_h for _, points in KEY_TECHS)
     between = (h - 40 - 10 - body) / (len(KEY_TECHS) - 1)                # 余量平均分到各项之间
@@ -924,6 +1153,8 @@ def build():
     prs = Presentation(SRC)
     lib.LAYOUTS["blank"] = prs.slides[0].slide_layout       # 与原有各页相同的空白版式
     fix_insight(prs.slides[0])
+    rework_inference(prs.slides[5])                         # 九页里的第 6 页：推理服务
+    rework_sandbox(prs.slides[6])                           # 九页里的第 7 页：执行沙箱
     add_overview(prs)
     move_slide(prs, len(prs.slides) - 1, 2)                 # 放到两页洞察之后、七页技术之前
     unify(prs)
